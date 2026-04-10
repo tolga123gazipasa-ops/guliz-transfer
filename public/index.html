@@ -2158,7 +2158,7 @@
 </a>
 
 <script>
-  const API = 'http://localhost:3001/api';
+  const API = window.location.origin + '/api';
   let currentUser = JSON.parse(localStorage.getItem('gt_user') || 'null');
   let userToken   = localStorage.getItem('gt_user_token') || null;
   let pendingUserId = null; // kayıt sonrası OTP için
