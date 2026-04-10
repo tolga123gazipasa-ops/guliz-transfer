@@ -1,0 +1,3002 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Güliz Transfer | VIP Vito Transferi</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D4ED8">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Güliz Transfer">
+<link rel="apple-touch-icon" href="/icons/icon-192.svg">
+<link rel="apple-touch-startup-image" href="/icons/icon-512.svg">
+
+<!-- SEO -->
+<meta name="description" content="VIP ve Shuttle Transfer — Havalimanı, Şehirlerarası. 7/24 Mercedes Vito.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="Güliz Transfer">
+<meta property="og:description" content="VIP ve Shuttle Transfer Hizmeti">
+<meta property="og:image" content="/icons/icon-512.svg">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1D4ED8;
+    --blue-light: #3B82F6;
+    --blue-pale: #EFF6FF;
+    --red: #DC2626;
+    --red-light: #EF4444;
+    --black: #0A0A0A;
+    --navy: #0D2B55;
+    --navy2: #122F62;
+    --gray: #888;
+    --light: #EFF6FF;
+    --white: #FFFFFF;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: var(--sans);
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.4rem 5%;
+    background: rgba(13,43,85,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid rgba(29,78,216,0.3);
+  }
+  .nav-logo {
+    display: flex; flex-direction: column; line-height: 1;
+  }
+  .nav-logo span:first-child {
+    font-family: var(--serif); font-size: 1.3rem; font-weight: 600; color: var(--blue);
+    letter-spacing: 0.04em;
+  }
+  .nav-logo span:last-child {
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); margin-top: 2px;
+  }
+  .nav-links { display: flex; gap: 2.5rem; }
+  .nav-links a {
+    font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--blue); }
+  .nav-cta {
+    font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--white); background: var(--red); border: none;
+    padding: 0.6rem 1.4rem; cursor: pointer; font-family: var(--sans);
+    font-weight: 500; transition: background 0.3s;
+  }
+  .nav-cta:hover { background: var(--red-light); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 72vh;
+    display: grid; grid-template-columns: 1fr 1fr; align-items: center;
+    padding: 5.5rem 5% 3rem;
+    gap: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(29,78,216,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: block; width: 40px; height: 0.5px; background: var(--blue);
+  }
+  .hero-eyebrow span {
+    font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--blue);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-weight: 500;
+    line-height: 1.12;
+    margin-bottom: 1.2rem;
+    color: var(--white);
+  }
+  .hero h1 em {
+    font-style: italic; color: var(--blue);
+  }
+  .hero-sub {
+    font-size: 0.9rem; color: rgba(255,255,255,0.55);
+    line-height: 1.75; max-width: 440px; margin-bottom: 1.8rem;
+  }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    padding: 0.9rem 2.2rem; background: var(--red); color: var(--white);
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase; border: none; cursor: pointer;
+    transition: all 0.3s; text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: var(--red-light); transform: translateY(-1px); }
+  .btn-outline {
+    padding: 0.9rem 2.2rem; background: transparent; color: var(--white);
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 400;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border: 0.5px solid rgba(255,255,255,0.3); cursor: pointer;
+    transition: all 0.3s; text-decoration: none; display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+  .hero-stats {
+    display: flex; gap: 2.5rem; margin-top: 2rem; padding-top: 1.5rem;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .stat-num {
+    font-family: var(--serif); font-size: 2rem; font-weight: 600; color: var(--blue);
+  }
+  .stat-label {
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); margin-top: 2px;
+  }
+
+  /* Hero right – car visual */
+  .hero-visual {
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .car-frame {
+    width: 100%; aspect-ratio: 16/10;
+    background: linear-gradient(135deg, #122F62 0%, #0D2B55 100%);
+    border: 0.5px solid rgba(29,78,216,0.2);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .car-frame::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+    background: linear-gradient(to top, rgba(29,78,216,0.05), transparent);
+  }
+  .car-svg { width: 82%; opacity: 0.95; }
+  .car-tag {
+    position: absolute; top: 1.2rem; right: 1.2rem;
+    background: rgba(29,78,216,0.12); border: 0.5px solid rgba(29,78,216,0.3);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue);
+  }
+
+  /* ── BOOKING FORM ── */
+  #rezervasyon {
+    background: var(--navy2);
+    padding: 6rem 5%;
+    border-top: 0.5px solid rgba(29,78,216,0.1);
+    border-bottom: 0.5px solid rgba(29,78,216,0.1);
+  }
+  .section-title-wrap { text-align: center; margin-bottom: 3.5rem; }
+  .section-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.8rem;
+    font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue);
+    margin-bottom: 1rem;
+  }
+  .section-eyebrow::before, .section-eyebrow::after {
+    content: ''; display: block; width: 28px; height: 0.5px; background: var(--blue);
+  }
+  .section-title {
+    font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 500; color: var(--white);
+  }
+
+  .booking-form {
+    max-width: 860px; margin: 0 auto;
+    background: rgba(255,255,255,0.02);
+    border: 0.5px solid rgba(29,78,216,0.15);
+    padding: 3rem;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label {
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+  .form-group input, .form-group select {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    color: var(--white); font-family: var(--sans);
+    font-size: 0.9rem; padding: 0.85rem 1rem;
+    outline: none; transition: border-color 0.3s;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--blue);
+  }
+  .form-group select option { background: var(--navy2); }
+  .form-submit {
+    width: 100%; margin-top: 1.5rem; padding: 1.1rem;
+    background: var(--red); color: var(--white);
+    font-family: var(--sans); font-size: 0.85rem; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    border: none; cursor: pointer; transition: all 0.3s;
+  }
+  .form-submit:hover { background: var(--red-light); }
+
+  /* ── SERVICES ── */
+  #hizmetler {
+    padding: 7rem 5%;
+  }
+  .services-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px;
+    margin-top: 4rem; background: rgba(29,78,216,0.12);
+  }
+  .service-card {
+    background: var(--navy); padding: 2.8rem 2.2rem;
+    transition: background 0.4s;
+    position: relative; overflow: hidden;
+  }
+  .service-card:hover { background: var(--navy2); }
+  .service-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1.5px;
+    background: var(--blue); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-icon {
+    width: 44px; height: 44px; margin-bottom: 1.5rem;
+    border: 0.5px solid rgba(29,78,216,0.3);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); font-size: 1.1rem;
+  }
+  .service-title {
+    font-family: var(--serif); font-size: 1.25rem; font-weight: 500;
+    color: var(--white); margin-bottom: 0.8rem;
+  }
+  .service-desc {
+    font-size: 0.875rem; color: rgba(255,255,255,0.45);
+    line-height: 1.75;
+  }
+  .service-price {
+    margin-top: 1.5rem; font-size: 0.72rem;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue);
+  }
+
+  /* ── WHY ── */
+  #neden {
+    background: var(--navy2); padding: 7rem 5%;
+    border-top: 0.5px solid rgba(29,78,216,0.1);
+  }
+  .why-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .why-left h2 {
+    font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3.2rem);
+    font-weight: 500; line-height: 1.15; margin-bottom: 1.5rem;
+  }
+  .why-left h2 span { color: var(--blue); font-style: italic; }
+  .why-left p {
+    font-size: 0.9rem; color: rgba(255,255,255,0.5); line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+  .why-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+  .why-list li {
+    display: flex; align-items: flex-start; gap: 1rem;
+    font-size: 0.875rem; color: rgba(255,255,255,0.7); line-height: 1.6;
+  }
+  .why-list li::before {
+    content: '✦'; color: var(--blue); font-size: 0.65rem; margin-top: 4px; flex-shrink: 0;
+  }
+  .why-right { display: flex; flex-direction: column; gap: 1px; background: rgba(29,78,216,0.1); }
+  .why-feat {
+    background: var(--navy); padding: 1.6rem 1.8rem;
+    display: flex; gap: 1.4rem; align-items: flex-start;
+    transition: background 0.3s;
+  }
+  .why-feat:hover { background: rgba(29,78,216,0.05); }
+  .why-num {
+    font-family: var(--serif); font-size: 1.8rem; font-weight: 600;
+    color: rgba(29,78,216,0.25); line-height: 1; flex-shrink: 0; width: 2rem;
+    text-align: right;
+  }
+  .why-feat-title { font-size: 0.9rem; font-weight: 500; color: var(--white); margin-bottom: 0.3rem; }
+  .why-feat-desc { font-size: 0.8rem; color: rgba(255,255,255,0.4); line-height: 1.6; }
+
+  /* ── ROUTES ── */
+  #rotalar { padding: 7rem 5%; }
+  .routes-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: rgba(29,78,216,0.1); margin-top: 4rem;
+  }
+  .route-card {
+    background: var(--navy); padding: 2rem 1.5rem;
+    transition: background 0.3s; cursor: default;
+  }
+  .route-card:hover { background: var(--navy2); }
+  .route-from {
+    font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); margin-bottom: 0.4rem;
+  }
+  .route-name {
+    font-family: var(--serif); font-size: 1.05rem; color: var(--white);
+    margin-bottom: 0.6rem;
+  }
+  .route-arrow {
+    font-size: 0.75rem; color: var(--blue); margin-bottom: 0.4rem;
+  }
+  .route-dest {
+    font-size: 0.82rem; color: rgba(255,255,255,0.5);
+  }
+  .route-price {
+    margin-top: 1.2rem; font-family: var(--serif); font-size: 1.4rem;
+    color: var(--blue);
+  }
+  .route-price sup { font-size: 0.8rem; }
+
+  /* ── TESTIMONIALS ── */
+  #yorumlar {
+    background: var(--navy2); padding: 7rem 5%;
+    border-top: 0.5px solid rgba(29,78,216,0.1);
+  }
+  .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; margin-top: 4rem; background: rgba(29,78,216,0.1); }
+  .testimonial-card {
+    background: var(--navy); padding: 2.5rem;
+  }
+  .t-stars { color: var(--blue); font-size: 0.7rem; letter-spacing: 0.2em; margin-bottom: 1.2rem; }
+  .t-text {
+    font-family: var(--serif); font-size: 0.95rem; font-style: italic;
+    color: rgba(255,255,255,0.75); line-height: 1.75; margin-bottom: 1.5rem;
+  }
+  .t-author { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+
+  /* ── CONTACT ── */
+  #iletisim { padding: 7rem 5%; }
+  .contact-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem;
+    max-width: 1000px; margin: 4rem auto 0;
+  }
+  .contact-info h3 {
+    font-family: var(--serif); font-size: 1.6rem; margin-bottom: 1rem;
+  }
+  .contact-info p { font-size: 0.875rem; color: rgba(255,255,255,0.5); line-height: 1.75; margin-bottom: 2rem; }
+  .contact-item {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+    font-size: 0.875rem; color: rgba(255,255,255,0.6);
+  }
+  .contact-item-icon {
+    width: 36px; height: 36px; border: 0.5px solid rgba(29,78,216,0.3);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); font-size: 0.85rem; flex-shrink: 0;
+  }
+  .whatsapp-btn {
+    display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.5rem;
+    background: #25D366; color: #fff; padding: 0.85rem 1.8rem;
+    font-family: var(--sans); font-size: 0.82rem; font-weight: 500;
+    letter-spacing: 0.08em; text-decoration: none; transition: opacity 0.3s;
+  }
+  .whatsapp-btn:hover { opacity: 0.9; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy2);
+    border-top: 0.5px solid rgba(29,78,216,0.15);
+    padding: 3rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1.5rem;
+  }
+  .footer-logo {
+    font-family: var(--serif); font-size: 1.1rem; font-weight: 600; color: var(--blue);
+  }
+  .footer-sub {
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.25); margin-top: 3px;
+  }
+  .footer-group-badge {
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+  }
+  .footer-group-badge strong { color: rgba(29,78,216,0.6); }
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-links a {
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--blue); }
+
+  /* ── CANLI DESTEK WIDGET ── */
+  .chat-btn {
+    position:fixed; bottom:2rem; left:2rem; z-index:200;
+    width:52px; height:52px; border-radius:50%;
+    background:var(--blue); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 20px rgba(29,78,216,0.4); cursor:pointer;
+    border:none; transition:transform 0.3s;
+  }
+  .chat-btn:hover { transform:scale(1.08); }
+  .chat-btn svg { width:24px; height:24px; fill:#fff; }
+  .chat-unread {
+    position:absolute; top:-4px; right:-4px;
+    background:#ef4444; color:#fff; border-radius:50%;
+    width:18px; height:18px; font-size:10px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    display:none;
+  }
+  .chat-box {
+    position:fixed; bottom:5.5rem; left:2rem; z-index:200;
+    width:320px; background:var(--navy); border:0.5px solid rgba(29,78,216,0.25);
+    display:none; flex-direction:column;
+    box-shadow:0 8px 40px rgba(0,0,0,0.6);
+    border-radius:4px; overflow:hidden;
+    animation:fadeUp 0.25s ease;
+  }
+  .chat-box.open { display:flex; }
+  .chat-head {
+    background:var(--navy2); padding:0.9rem 1.1rem;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:0.5px solid rgba(29,78,216,0.15);
+  }
+  .chat-head-info { display:flex; align-items:center; gap:0.7rem; }
+  .chat-online-dot { width:8px; height:8px; border-radius:50%; background:#4ade80; flex-shrink:0; }
+  .chat-head-title { font-size:0.82rem; font-weight:500; color:#fff; }
+  .chat-head-sub { font-size:0.65rem; color:rgba(255,255,255,0.35); }
+  .chat-close { background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:1rem; line-height:1; padding:0; }
+  .chat-messages {
+    flex:1; overflow-y:auto; padding:1rem; display:flex;
+    flex-direction:column; gap:0.6rem; max-height:280px; min-height:180px;
+  }
+  .chat-messages::-webkit-scrollbar { width:3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background:rgba(29,78,216,0.2); }
+  .chat-bubble {
+    max-width:80%; padding:0.55rem 0.85rem; font-size:0.8rem; line-height:1.5; border-radius:2px;
+  }
+  .chat-bubble.admin { background:rgba(29,78,216,0.1); border:0.5px solid rgba(29,78,216,0.2); color:rgba(255,255,255,0.85); align-self:flex-start; }
+  .chat-bubble.visitor { background:var(--blue); color:#000; align-self:flex-end; }
+  .chat-bubble-time { font-size:0.6rem; color:rgba(255,255,255,0.3); margin-top:2px; }
+  .chat-bubble.visitor .chat-bubble-time { color:rgba(0,0,0,0.4); }
+  .chat-typing { font-size:0.72rem; color:rgba(255,255,255,0.3); padding:0 1rem 0.5rem; display:none; }
+  .chat-name-bar {
+    padding:0.9rem 1rem; border-top:0.5px solid rgba(255,255,255,0.08);
+    background:var(--navy2); display:flex; flex-direction:column; gap:0.5rem;
+  }
+  .chat-name-bar p { font-size:0.72rem; color:rgba(255,255,255,0.35); margin-bottom:0.2rem; }
+  .chat-name-input {
+    width:100%; background:var(--navy2); border:0.5px solid rgba(255,255,255,0.1);
+    color:#fff; font-family:var(--sans); font-size:0.8rem; padding:0.5rem 0.75rem;
+    outline:none;
+  }
+  .chat-name-input:focus { border-color:var(--blue); }
+  .chat-name-input.required { border-color:rgba(239,68,68,0.5); }
+  .chat-start-btn {
+    width:100%; padding:0.6rem; background:var(--red); color:#fff;
+    font-family:var(--sans); font-size:0.78rem; font-weight:500;
+    letter-spacing:0.06em; border:none; cursor:pointer; transition:background 0.2s;
+  }
+  .chat-start-btn:hover { background:var(--red-light); }
+  .chat-input-row {
+    display:flex; gap:0; border-top:0.5px solid rgba(255,255,255,0.06);
+  }
+  .chat-input {
+    flex:1; background:var(--navy2); border:none; color:#fff;
+    font-family:var(--sans); font-size:0.82rem; padding:0.75rem 1rem;
+    outline:none; resize:none;
+  }
+  .chat-send {
+    width:44px; background:var(--red); border:none; color:#fff;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background 0.2s; flex-shrink:0;
+  }
+  .chat-send:hover { background:var(--red-light); }
+  .chat-send svg { width:16px; height:16px; fill:#fff; }
+
+  /* ── WHATSAPP FLOAT ── */
+  .wa-float {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #25D366; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.35); cursor: pointer;
+    text-decoration: none; transition: transform 0.3s;
+  }
+  .wa-float:hover { transform: scale(1.08); }
+  .wa-float svg { width: 26px; height: 26px; fill: #fff; }
+
+  /* ── AUTH MODAL ── */
+  .auth-modal-overlay {
+    display:none; position:fixed; inset:0; z-index:600;
+    background:rgba(0,0,0,0.9); backdrop-filter:blur(8px);
+    align-items:center; justify-content:center; padding:1rem;
+  }
+  .auth-modal-overlay.active { display:flex; }
+  .auth-box {
+    background:var(--navy); border:0.5px solid rgba(29,78,216,0.25);
+    width:100%; max-width:440px; animation:fadeUp 0.3s ease;
+  }
+  .auth-tabs {
+    display:flex; border-bottom:0.5px solid rgba(29,78,216,0.12);
+  }
+  .auth-tab {
+    flex:1; padding:1rem; text-align:center;
+    font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase;
+    color:rgba(255,255,255,0.35); cursor:pointer; transition:all 0.2s;
+    background:transparent; border:none; font-family:var(--sans);
+  }
+  .auth-tab.active { color:var(--blue); border-bottom:1.5px solid var(--blue); }
+  .auth-body { padding:1.8rem; }
+  .auth-field { display:flex; flex-direction:column; gap:0.45rem; margin-bottom:1rem; }
+  .auth-field label { font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.4); }
+  .auth-field input {
+    background:rgba(255,255,255,0.04); border:0.5px solid rgba(255,255,255,0.12);
+    color:#fff; font-family:var(--sans); font-size:0.88rem;
+    padding:0.75rem 1rem; outline:none; transition:border-color 0.2s;
+  }
+  .auth-field input:focus { border-color:var(--blue); }
+  .auth-submit {
+    width:100%; padding:0.9rem; background:var(--red); color:var(--white);
+    font-family:var(--sans); font-size:0.82rem; font-weight:500;
+    letter-spacing:0.1em; text-transform:uppercase; border:none; cursor:pointer;
+    transition:background 0.2s; margin-top:0.5rem;
+  }
+  .auth-submit:hover { background:var(--red-light); }
+  .auth-msg { font-size:0.78rem; padding:0.6rem; margin-bottom:1rem; display:none; border-radius:2px; }
+  .auth-msg.err { background:rgba(239,68,68,0.1); color:#f87171; }
+  .auth-msg.ok  { background:rgba(34,197,94,0.1);  color:#4ade80; }
+
+  /* OTP ekranı */
+  .otp-screen { display:none; }
+  .otp-screen.active { display:block; }
+  .otp-code-input {
+    width:100%; text-align:center; font-family:monospace;
+    font-size:2rem; letter-spacing:0.4em; padding:1rem;
+    background:rgba(255,255,255,0.04); border:0.5px solid rgba(29,78,216,0.3);
+    color:var(--blue); outline:none;
+  }
+
+  /* Booking auth choice */
+  .booking-choice {
+    display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;
+  }
+  .choice-btn {
+    flex:1; padding:0.8rem 1rem; border:0.5px solid rgba(255,255,255,0.12);
+    background:transparent; color:rgba(255,255,255,0.6);
+    font-family:var(--sans); font-size:0.8rem; letter-spacing:0.06em;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .choice-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .choice-btn.primary { background:var(--red); color:var(--white); border-color:var(--red); font-weight:500; }
+  .choice-btn.primary:hover { background:var(--red-light); }
+
+  /* User badge nav */
+  .user-badge {
+    display:flex; align-items:center; gap:0.6rem;
+    font-size:0.78rem; color:rgba(255,255,255,0.6);
+  }
+  .user-dot { width:7px; height:7px; border-radius:50%; background:var(--blue); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-content > * { opacity: 0; animation: fadeUp 0.7s ease forwards; }
+  .hero-content .hero-eyebrow { animation-delay: 0.1s; }
+  .hero-content h1 { animation-delay: 0.25s; }
+  .hero-content .hero-sub { animation-delay: 0.4s; }
+  .hero-content .hero-buttons { animation-delay: 0.55s; }
+  .hero-content .hero-stats { animation-delay: 0.7s; }
+  .hero-visual { opacity: 0; animation: fadeUp 0.9s 0.3s ease forwards; }
+
+  /* ── PAYMENT MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.88); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--navy); border: 0.5px solid rgba(29,78,216,0.25);
+    width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+    animation: fadeUp 0.35s ease;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.4rem 1.8rem; border-bottom: 0.5px solid rgba(29,78,216,0.12);
+  }
+  .modal-header h3 { font-family: var(--serif); font-size: 1.2rem; color: var(--white); }
+  .modal-close {
+    background: none; border: none; color: rgba(255,255,255,0.4);
+    font-size: 1.3rem; cursor: pointer; transition: color 0.2s; line-height: 1;
+  }
+  .modal-close:hover { color: var(--blue); }
+  .modal-body { padding: 1.8rem; }
+
+  /* Steps */
+  .steps-bar {
+    display: flex; align-items: center; gap: 0; margin-bottom: 2rem;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 0.5rem; flex: 1;
+  }
+  .step-circle {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 500;
+    border: 0.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.3);
+    transition: all 0.3s;
+  }
+  .step-circle.active { background: var(--blue); color: var(--black); border-color: var(--blue); }
+  .step-circle.done { background: rgba(29,78,216,0.15); color: var(--blue); border-color: var(--blue); }
+  .step-label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.3); transition: color 0.3s; }
+  .step-label.active { color: var(--blue); }
+  .step-line { flex: 1; height: 0.5px; background: rgba(255,255,255,0.1); margin: 0 0.5rem; }
+
+  /* Summary box */
+  .summary-box {
+    background: rgba(29,78,216,0.05); border: 0.5px solid rgba(29,78,216,0.15);
+    padding: 1.2rem 1.4rem; margin-bottom: 1.5rem;
+  }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.4rem 0; font-size: 0.85rem;
+  }
+  .summary-row .label { color: rgba(255,255,255,0.4); }
+  .summary-row .val { color: var(--white); }
+  .summary-row.total { border-top: 0.5px solid rgba(29,78,216,0.2); margin-top: 0.5rem; padding-top: 0.8rem; }
+  .summary-row.total .label { color: var(--blue); font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; }
+  .summary-row.total .val { font-family: var(--serif); font-size: 1.4rem; color: var(--blue); }
+
+  /* Card inputs */
+  .card-logos { display: flex; gap: 0.5rem; margin-bottom: 1.4rem; }
+  .card-logo {
+    padding: 0.3rem 0.7rem; border: 0.5px solid rgba(255,255,255,0.12);
+    font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.35); border-radius: 3px;
+  }
+  .card-logo.visa { color: #1A1FE8; border-color: rgba(26,31,232,0.3); }
+  .card-logo.mc { color: #EB001B; border-color: rgba(235,0,27,0.25); }
+  .card-logo.troy { color: var(--blue); border-color: rgba(29,78,216,0.3); }
+  .card-visual {
+    background: linear-gradient(135deg, #0D2B55, #122F62);
+    border: 0.5px solid rgba(29,78,216,0.2);
+    border-radius: 8px; padding: 1.4rem 1.6rem; margin-bottom: 1.5rem;
+    position: relative; overflow: hidden; min-height: 140px;
+  }
+  .card-visual::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: rgba(29,78,216,0.05);
+  }
+  .card-chip {
+    width: 32px; height: 24px; background: rgba(29,78,216,0.3);
+    border-radius: 3px; margin-bottom: 1rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 3px;
+  }
+  .card-chip div { background: rgba(29,78,216,0.5); border-radius: 1px; }
+  .card-num-display {
+    font-family: 'Courier New', monospace; font-size: 1rem;
+    letter-spacing: 0.18em; color: rgba(255,255,255,0.8); margin-bottom: 0.8rem;
+  }
+  .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+  .card-holder-display { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .card-exp-display { font-size: 0.72rem; color: rgba(255,255,255,0.5); }
+
+  .secure-badge {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; color: rgba(255,255,255,0.3);
+    margin-top: 1rem; padding-top: 1rem;
+    border-top: 0.5px solid rgba(255,255,255,0.06);
+  }
+  .secure-badge::before { content: '🔒'; font-size: 12px; }
+
+  /* Installment */
+  .installment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+  .inst-opt {
+    border: 0.5px solid rgba(255,255,255,0.1); padding: 0.6rem 0.5rem;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .inst-opt:hover { border-color: rgba(29,78,216,0.4); }
+  .inst-opt.selected { border-color: var(--blue); background: rgba(29,78,216,0.08); }
+  .inst-count { font-size: 0.75rem; font-weight: 500; color: var(--white); }
+  .inst-amount { font-size: 0.68rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+  /* Success */
+  .success-screen { text-align: center; padding: 2rem 0; display: none; }
+  .success-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(29,78,216,0.1); border: 0.5px solid var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin: 0 auto 1.5rem;
+  }
+  .success-screen h3 { font-family: var(--serif); font-size: 1.5rem; color: var(--blue); margin-bottom: 0.75rem; }
+  .success-screen p { font-size: 0.875rem; color: rgba(255,255,255,0.5); line-height: 1.7; }
+  .booking-ref {
+    margin: 1.5rem auto; display: inline-block;
+    background: rgba(29,78,216,0.08); border: 0.5px solid rgba(29,78,216,0.2);
+    padding: 0.6rem 1.4rem; font-family: monospace; letter-spacing: 0.14em;
+    font-size: 1rem; color: var(--blue);
+  }
+
+  /* ── HERO SLIDER ── */
+  .hero-slider {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/10;
+    overflow: hidden;
+    border: 0.5px solid rgba(29,78,216,0.25);
+    box-shadow: 0 0 60px rgba(29,78,216,0.08), 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .hs-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(0.4,0,0.2,1);
+    z-index: 1;
+  }
+  .hs-slide.active {
+    opacity: 1;
+    z-index: 2;
+  }
+
+  /* Ken Burns zoom */
+  .hs-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.08);
+    transition: transform 6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+  .hs-slide.active .hs-img {
+    transform: scale(1);
+  }
+
+  /* Karartma katmanları */
+  .hs-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.3) 100%),
+      linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 60%);
+    z-index: 1;
+  }
+
+  /* Altın ışıltı köşesi */
+  .hs-glow {
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 70%;
+    height: 80%;
+    background: radial-gradient(ellipse, rgba(29,78,216,0.12) 0%, transparent 65%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Metin bloğu */
+  .hs-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.8rem 2rem 1.4rem;
+    z-index: 3;
+    transform: translateY(14px);
+    opacity: 0;
+    transition: transform 0.8s 0.6s cubic-bezier(0.2,1,0.4,1), opacity 0.8s 0.6s ease;
+  }
+  .hs-slide.active .hs-caption {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .hs-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.55rem;
+  }
+  .hs-tag::before {
+    content: '';
+    display: block;
+    width: 22px;
+    height: 0.5px;
+    background: var(--blue);
+  }
+
+  .hs-title {
+    font-family: var(--serif);
+    font-size: clamp(1.05rem, 2vw, 1.5rem);
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 0.35rem;
+  }
+  .hs-title em {
+    font-style: italic;
+    color: var(--blue);
+  }
+
+  .hs-desc {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+
+  /* Nokta navigasyon */
+  .hs-dots {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    z-index: 4;
+  }
+  .hs-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    transition: all 0.4s ease;
+    border: none;
+    padding: 0;
+  }
+  .hs-dot.active {
+    background: var(--blue);
+    box-shadow: 0 0 8px rgba(29,78,216,0.7);
+    transform: scale(1.4);
+  }
+
+  /* Progress bar */
+  .hs-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 1.5px;
+    width: 0%;
+    background: linear-gradient(to right, var(--blue), var(--blue-light));
+    z-index: 5;
+    box-shadow: 0 0 6px rgba(29,78,216,0.5);
+    transition: width linear;
+  }
+
+  /* Kenar çizgisi animasyonu */
+  .hs-border {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .hs-border::before,
+  .hs-border::after {
+    content: '';
+    position: absolute;
+    background: var(--blue);
+  }
+  .hs-border::before {
+    top: 0; left: 0; width: 0; height: 1.5px;
+    animation: borderH 6s linear infinite;
+    animation-delay: 0s;
+  }
+  .hs-border::after {
+    top: 0; right: 0; width: 1.5px; height: 0;
+    animation: borderV 6s linear infinite;
+    animation-delay: 1.5s;
+  }
+  @keyframes borderH {
+    0%,100% { width:0; left:0; }
+    50% { width:100%; left:0; }
+    51% { width:100%; left:0; }
+    99% { width:0; left:100%; }
+  }
+  @keyframes borderV {
+    0%,100% { height:0; top:0; }
+    50% { height:100%; top:0; }
+    51% { height:100%; top:0; }
+    99% { height:0; top:100%; }
+  }
+
+  /* Slide sayacı */
+  .hs-counter {
+    position: absolute;
+    top: 1.1rem;
+    left: 1.1rem;
+    z-index: 4;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.35);
+    font-family: var(--serif);
+  }
+  .hs-counter span {
+    color: var(--blue);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding-top: 7rem; }
+    .hero-visual { display: none; }
+    .form-grid { grid-template-columns: 1fr; }
+    .services-grid, .testimonials-grid { grid-template-columns: 1fr; }
+    .routes-grid { grid-template-columns: 1fr 1fr; }
+    .why-wrap, .contact-wrap { grid-template-columns: 1fr; gap: 3rem; }
+    .nav-links { display: none; }
+    footer { flex-direction: column; align-items: flex-start; }
+    .installment-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ══════════════════════════════════════
+     VIP / SHUTTLE SEÇİM EKRANI
+  ══════════════════════════════════════ */
+  .transfer-type-selector {
+    display: flex;
+    gap: 1px;
+    margin-bottom: 2.2rem;
+    background: rgba(29,78,216,0.1);
+    border: 0.5px solid rgba(29,78,216,0.15);
+  }
+
+  .tts-btn {
+    flex: 1;
+    padding: 1.1rem 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.35s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .tts-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--blue);
+    transform: scaleX(0);
+    transition: transform 0.35s ease;
+  }
+  .tts-btn.active {
+    background: rgba(29,78,216,0.07);
+  }
+  .tts-btn.active::after {
+    transform: scaleX(1);
+  }
+  .tts-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .tts-label {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--white);
+    transition: color 0.3s;
+  }
+  .tts-btn.active .tts-label { color: var(--blue); }
+  .tts-sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .tts-btn.active .tts-sub { color: rgba(29,78,216,0.65); }
+  .tts-price {
+    margin-top: 0.1rem;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.2);
+    transition: color 0.3s;
+  }
+  .tts-btn.active .tts-price { color: var(--blue); }
+
+  /* Form bölümleri — sadece aktif göster */
+  .form-section {
+    display: none;
+    animation: fadeUp 0.4s ease forwards;
+  }
+  .form-section.visible { display: block; }
+
+  /* ─── SHUTTLE KOLTUK HARİTASI ───────────── */
+  .seat-map-wrap {
+    margin-bottom: 1.5rem;
+  }
+  .seat-map-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .seat-map-label::after {
+    content: '';
+    flex: 1;
+    height: 0.5px;
+    background: rgba(255,255,255,0.07);
+  }
+  .seat-legend {
+    display: flex;
+    gap: 1.2rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .seat-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.08em;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-dot.available { background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,255,255,0.2); }
+  .legend-dot.selected  { background: var(--blue); }
+  .legend-dot.taken     { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08); }
+
+  /* Araç dış çerçevesi */
+  .vito-body {
+    background: rgba(255,255,255,0.02);
+    border: 0.5px solid rgba(29,78,216,0.15);
+    border-radius: 4px;
+    padding: 1.2rem 1.5rem 1rem;
+    position: relative;
+  }
+  .vito-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+  }
+  .vito-header::before {
+    content: '';
+    display: block;
+    width: 40px; height: 3px;
+    background: rgba(29,78,216,0.2);
+    border-radius: 2px;
+    margin: 0 auto 0.5rem;
+  }
+
+  /* Sürücü koltuğu */
+  .driver-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.6rem;
+    padding-right: 0.5rem;
+  }
+  .seat-driver {
+    width: 38px; height: 38px;
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.06em;
+  }
+
+  /* Orta çizgi (koridor) */
+  .seat-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .seat-row {
+    display: grid;
+    grid-template-columns: 1fr 12px 1fr;
+    gap: 0.3rem;
+    align-items: center;
+  }
+  .seat-row-side {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+  }
+  .seat-row-side.right { justify-content: flex-start; }
+  .seat-aisle { /* boşluk */  }
+
+  .seat {
+    width: 38px; height: 38px;
+    background: rgba(255,255,255,0.05);
+    border: 0.5px solid rgba(255,255,255,0.14);
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    transition: all 0.25s ease;
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.05em;
+    position: relative;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .seat:hover:not(.taken) {
+    border-color: rgba(29,78,216,0.5);
+    background: rgba(29,78,216,0.08);
+    color: rgba(29,78,216,0.7);
+    transform: translateY(-1px);
+  }
+  .seat.selected {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: var(--black);
+    box-shadow: 0 0 12px rgba(29,78,216,0.4);
+  }
+  .seat.taken {
+    background: rgba(255,255,255,0.02);
+    border-color: rgba(255,255,255,0.05);
+    cursor: not-allowed;
+    color: rgba(255,255,255,0.1);
+  }
+  .seat-num {
+    font-family: var(--serif);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* Seçim özeti */
+  .seat-summary {
+    margin-top: 1rem;
+    padding: 0.7rem 1rem;
+    background: rgba(29,78,216,0.05);
+    border: 0.5px solid rgba(29,78,216,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 40px;
+  }
+  .seat-summary-text {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.5);
+  }
+  .seat-summary-text strong {
+    color: var(--blue);
+    font-weight: 500;
+  }
+  .seat-summary-price {
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--blue);
+    font-weight: 600;
+  }
+
+  /* PWA yükleme banner */
+  #pwa-install-bar {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 999;
+    background: rgba(10,10,10,0.97);
+    border-top: 0.5px solid rgba(29,78,216,0.25);
+    padding: 1rem 1.4rem;
+    align-items: center;
+    gap: 1rem;
+    backdrop-filter: blur(12px);
+    animation: slideUp 0.4s ease;
+  }
+  #pwa-install-bar.show { display: flex; }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .pwa-bar-icon {
+    width: 42px; height: 42px;
+    background: rgba(29,78,216,0.1);
+    border: 0.5px solid rgba(29,78,216,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--serif);
+    font-size: 0.75rem;
+    color: var(--blue);
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .pwa-bar-text { flex: 1; }
+  .pwa-bar-text strong {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--white);
+    margin-bottom: 2px;
+  }
+  .pwa-bar-text span {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.4);
+  }
+  .pwa-install-btn {
+    padding: 0.55rem 1.2rem;
+    background: var(--blue);
+    color: var(--black);
+    border: none;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.3s;
+  }
+  .pwa-install-btn:hover { background: var(--blue-light); }
+  .pwa-bar-close {
+    background: none; border: none;
+    color: rgba(255,255,255,0.3);
+    font-size: 1.2rem; cursor: pointer;
+    padding: 0 0.2rem;
+    transition: color 0.2s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .pwa-bar-close:hover { color: var(--blue); }
+
+  @media (max-width: 600px) {
+    .transfer-type-selector { gap: 0; }
+    .tts-btn { padding: 0.9rem 0.5rem; }
+    .seat { width: 34px; height: 34px; }
+    .seat-num { font-size: 0.7rem; }
+    .pwa-install-bar { padding: 0.8rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <span>Güliz Transfer</span>
+    <span>Güliz Şirketler Grubu</span>
+  </div>
+  <div class="nav-links">
+    <a href="#hizmetler">Hizmetler</a>
+    <a href="#rotalar">Rotalar</a>
+    <a href="#neden">Neden Biz</a>
+    <a href="#yorumlar">Yorumlar</a>
+    <a href="#iletisim">İletişim</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.8rem;">
+    <div id="navUserBadge" class="user-badge" style="display:none;">
+      <span class="user-dot"></span>
+      <span id="navUserName"></span>
+      <button onclick="userLogout()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:0.7rem;cursor:pointer;padding:0 0.2rem;">Çıkış</button>
+    </div>
+    <button id="navLoginBtn" class="nav-cta" style="background:transparent;border:0.5px solid rgba(29,78,216,0.4);color:var(--blue);" onclick="openAuthModal('login')">Giriş Yap</button>
+    <button class="nav-cta" onclick="document.getElementById('rezervasyon').scrollIntoView({behavior:'smooth'})">Rezervasyon</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span>Vip Vito Transfer Hizmeti</span></div>
+    <h1>Konforlu Yolculuk,<br><em>Ayrıcalıklı</em><br>Deneyim</h1>
+    <p class="hero-sub">Havalimanından varış noktanıza kadar lüks Mercedes Vito araçlarımızla güvenli, zamanında ve konforlu transfer hizmeti sunuyoruz.</p>
+    <div class="hero-buttons">
+      <a href="#rezervasyon" class="btn-primary">Hemen Rezervasyon</a>
+      <a href="#hizmetler" class="btn-outline">Hizmetlerimiz</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">5.000+</div>
+        <div class="stat-label">Mutlu Yolcu</div>
+      </div>
+      <div>
+        <div class="stat-num">7/24</div>
+        <div class="stat-label">Hizmet</div>
+      </div>
+      <div>
+        <div class="stat-num">%100</div>
+        <div class="stat-label">Güvenli Transfer</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-slider" id="heroSlider">
+
+      <!-- Slide 1 -->
+      <div class="hs-slide active">
+        <img class="hs-img" src="slider/slider1.png" alt="Havalimanı Transferi">
+        <div class="hs-overlay"></div>
+        <div class="hs-glow"></div>
+        <div class="hs-caption">
+          <div class="hs-tag">VIP Transfer</div>
+          <div class="hs-title">Havalimanı <em>Transferi</em></div>
+          <div class="hs-desc">İstanbul'un her noktasından konforlu & zamanında ulaşım</div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="hs-slide">
+        <img class="hs-img" src="slider/slider2.png" alt="Mercedes Vito VIP">
+        <div class="hs-overlay"></div>
+        <div class="hs-glow"></div>
+        <div class="hs-caption">
+          <div class="hs-tag">Premium Araç</div>
+          <div class="hs-title"><em>Mercedes Vito</em> ile Seyahat</div>
+          <div class="hs-desc">Geniş iç hacim, deri koltuk, sessiz yolculuk deneyimi</div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="hs-slide">
+        <img class="hs-img" src="slider/slider3.png" alt="7/24 Hizmet">
+        <div class="hs-overlay"></div>
+        <div class="hs-glow"></div>
+        <div class="hs-caption">
+          <div class="hs-tag">Kesintisiz Hizmet</div>
+          <div class="hs-title">7 / 24 <em>Yanınızdayız</em></div>
+          <div class="hs-desc">Gece yarısı iniş ya da sabah erken kalkış — fark etmez</div>
+        </div>
+      </div>
+
+      <!-- Slide 4 -->
+      <div class="hs-slide">
+        <img class="hs-img" src="slider/slider4.png" alt="Kurumsal Transfer">
+        <div class="hs-overlay"></div>
+        <div class="hs-glow"></div>
+        <div class="hs-caption">
+          <div class="hs-tag">Kurumsal Çözüm</div>
+          <div class="hs-title">Toplantılarınıza <em>Zamanında</em></div>
+          <div class="hs-desc">Kurumsal hesap, fatura ve öncelikli rezervasyon avantajı</div>
+        </div>
+      </div>
+
+      <!-- Slide 5 -->
+      <div class="hs-slide">
+        <img class="hs-img" src="slider/slider5.png" alt="Premium Konfor">
+        <div class="hs-overlay"></div>
+        <div class="hs-glow"></div>
+        <div class="hs-caption">
+          <div class="hs-tag">Lüks & Güvenlik</div>
+          <div class="hs-title"><em>Premium</em> Konfor Garantisi</div>
+          <div class="hs-desc">Her yolculukta aynı kalite — profesyonel sürücü, sigortalı araç</div>
+        </div>
+      </div>
+
+      <!-- Nokta navigasyon -->
+      <div class="hs-dots" id="hsDots">
+        <button class="hs-dot active" onclick="hsGoTo(0)"></button>
+        <button class="hs-dot" onclick="hsGoTo(1)"></button>
+        <button class="hs-dot" onclick="hsGoTo(2)"></button>
+        <button class="hs-dot" onclick="hsGoTo(3)"></button>
+        <button class="hs-dot" onclick="hsGoTo(4)"></button>
+      </div>
+
+      <!-- Sayaç -->
+      <div class="hs-counter">
+        <span id="hsCurr">01</span> / 05
+      </div>
+
+      <!-- Progress bar -->
+      <div class="hs-progress" id="hsProgress"></div>
+
+      <!-- Kenar animasyonu -->
+      <div class="hs-border"></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section id="rezervasyon">
+  <div class="section-title-wrap">
+    <div class="section-eyebrow">Online Rezervasyon</div>
+    <h2 class="section-title">Transferinizi Planlayın</h2>
+  </div>
+  <form class="booking-form" onsubmit="handleBooking(event)">
+
+    <!-- Üyelik seçim çubuğu -->
+    <div id="bookingUserBar" style="margin-bottom:1.5rem;">
+      <!-- Giriş yapmamışsa -->
+      <div id="guestChoiceBar" class="booking-choice">
+        <button type="button" class="choice-btn primary" onclick="proceedAsGuest()">Üyeliksiz Devam Et</button>
+        <button type="button" class="choice-btn" onclick="openAuthModal('login')">Giriş Yap</button>
+        <button type="button" class="choice-btn" onclick="openAuthModal('register')">Üye Ol</button>
+      </div>
+      <!-- Giriş yapılmışsa -->
+      <div id="memberBar" style="display:none;background:rgba(29,78,216,0.06);border:0.5px solid rgba(29,78,216,0.2);padding:0.8rem 1.2rem;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+        <span style="font-size:0.82rem;color:rgba(255,255,255,0.7);">Üye olarak devam ediyorsunuz: <strong id="memberNameDisplay" style="color:var(--blue);"></strong></span>
+        <button type="button" onclick="userLogout()" style="background:none;border:0.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:0.72rem;padding:0.3rem 0.8rem;cursor:pointer;font-family:var(--sans);">Çıkış</button>
+      </div>
+    </div>
+
+    <!-- ── VIP / SHUTTLE SEÇİCİ ── -->
+    <div class="transfer-type-selector">
+      <button type="button" class="tts-btn active" id="ttsVip" onclick="setTransferType('vip')">
+        <span class="tts-icon">🚐</span>
+        <span class="tts-label">VIP Transfer</span>
+        <span class="tts-sub">Özel Araç</span>
+        <span class="tts-price">Tüm araç sizin</span>
+      </button>
+      <button type="button" class="tts-btn" id="ttsShuttle" onclick="setTransferType('shuttle')">
+        <span class="tts-icon">🪑</span>
+        <span class="tts-label">Shuttle</span>
+        <span class="tts-sub">Paylaşımlı</span>
+        <span class="tts-price">Koltuk seç & tasarruf et</span>
+      </button>
+    </div>
+
+    <!-- ── VIP BÖLÜMÜ ── -->
+    <div class="form-section visible" id="section-vip">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Kalkış Noktası</label>
+          <select id="fromSelect" onchange="updateMapRoute()">
+            <option value="">Seçiniz...</option>
+            <option value="Gazipaşa Havalimanı (GZP)">Gazipaşa Havalimanı (GZP)</option>
+            <option value="İstanbul Havalimanı (IST)">İstanbul Havalimanı (IST)</option>
+            <option value="Sabiha Gökçen Havalimanı (SAW)">Sabiha Gökçen Havalimanı (SAW)</option>
+            <option value="Adres / Otel">Adres / Otel</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Varış Noktası</label>
+          <select id="toSelect" onchange="updateMapRoute()">
+            <option value="">Seçiniz...</option>
+            <option value="Alanya Merkez">Alanya Merkez</option>
+            <option value="Alanya Oba">Alanya Oba</option>
+            <option value="Alanya Mahmutlar">Alanya Mahmutlar</option>
+            <option value="Alanya Kestel">Alanya Kestel</option>
+            <option value="Alanya Avsallar">Alanya Avsallar</option>
+            <option value="Gazipaşa Merkez">Gazipaşa Merkez</option>
+            <option value="Antalya Merkez">Antalya Merkez</option>
+            <option value="Side">Side</option>
+            <option value="Manavgat">Manavgat</option>
+            <option value="Adres / Otel">Adres / Otel (belirtin)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Transfer Tarihi</label>
+          <input type="date" id="transferDate">
+        </div>
+        <div class="form-group">
+          <label>Transfer Saati</label>
+          <input type="time" id="transferTime">
+        </div>
+        <div class="form-group">
+          <label>Yolcu Sayısı</label>
+          <select id="passengerCount">
+            <option>1 Yolcu</option>
+            <option>2 Yolcu</option>
+            <option>3 Yolcu</option>
+            <option>4 Yolcu</option>
+            <option>5 Yolcu</option>
+            <option>6 Yolcu</option>
+            <option>7 Yolcu</option>
+            <option>8+ Yolcu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Uçuş Numarası (Opsiyonel)</label>
+          <input type="text" id="flightNo" placeholder="TK 1234">
+        </div>
+        <div class="form-group full">
+          <label>Ad Soyad</label>
+          <input type="text" id="bookingName" placeholder="Adınız ve soyadınız">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="tel" id="bookingPhone" placeholder="+90 5XX XXX XX XX">
+        </div>
+        <div class="form-group">
+          <label>E-posta</label>
+          <input type="email" id="bookingEmail" placeholder="ornek@email.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SHUTTLE BÖLÜMÜ ── -->
+    <div class="form-section" id="section-shuttle">
+      <div class="form-grid" style="margin-bottom:1.5rem;">
+        <div class="form-group">
+          <label>Kalkış Noktası</label>
+          <select id="shuttleFrom" onchange="updateMapRoute()">
+            <option value="">Seçiniz...</option>
+            <option value="Gazipaşa Havalimanı (GZP)">Gazipaşa Havalimanı (GZP)</option>
+            <option value="İstanbul Havalimanı (IST)">İstanbul Havalimanı (IST)</option>
+            <option value="Sabiha Gökçen Havalimanı (SAW)">Sabiha Gökçen Havalimanı (SAW)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Varış Noktası</label>
+          <select id="shuttleTo" onchange="updateMapRoute()">
+            <option value="">Seçiniz...</option>
+            <option value="Alanya Merkez">Alanya Merkez</option>
+            <option value="Alanya Oba">Alanya Oba</option>
+            <option value="Alanya Mahmutlar">Alanya Mahmutlar</option>
+            <option value="Alanya Kestel">Alanya Kestel</option>
+            <option value="Alanya Avsallar">Alanya Avsallar</option>
+            <option value="Gazipaşa Merkez">Gazipaşa Merkez</option>
+            <option value="Antalya Merkez">Antalya Merkez</option>
+            <option value="Side">Side</option>
+            <option value="Manavgat">Manavgat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Transfer Tarihi</label>
+          <input type="date" id="shuttleDate">
+        </div>
+        <div class="form-group">
+          <label>Transfer Saati</label>
+          <input type="time" id="shuttleTime">
+        </div>
+        <div class="form-group full">
+          <label>Ad Soyad</label>
+          <input type="text" id="shuttleName" placeholder="Adınız ve soyadınız">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="tel" id="shuttlePhone" placeholder="+90 5XX XXX XX XX">
+        </div>
+        <div class="form-group">
+          <label>E-posta</label>
+          <input type="email" id="shuttleEmail" placeholder="ornek@email.com">
+        </div>
+      </div>
+
+      <!-- KOLTUK HARİTASI -->
+      <div class="seat-map-wrap">
+        <div class="seat-map-label">Koltuk Seçimi</div>
+
+        <div class="seat-legend">
+          <div class="seat-legend-item"><div class="legend-dot available"></div>Müsait</div>
+          <div class="seat-legend-item"><div class="legend-dot selected"></div>Seçiminiz</div>
+          <div class="seat-legend-item"><div class="legend-dot taken"></div>Dolu</div>
+        </div>
+
+        <div class="vito-body">
+          <div class="vito-header">Mercedes Vito — 8 Yolcu Kapasitesi</div>
+
+          <!-- Sürücü -->
+          <div class="driver-row">
+            <div class="seat-driver">ŞOFÖR</div>
+          </div>
+
+          <!-- Koltuklar: 2 + 2 + 2 + 2 = 8 koltuk (2 yan 1 koridor) -->
+          <div class="seat-rows" id="seatMap">
+            <!-- Sıra 1 -->
+            <div class="seat-row">
+              <div class="seat-row-side">
+                <div class="seat" data-seat="1" onclick="toggleSeat(this)"><span class="seat-num">1</span></div>
+                <div class="seat" data-seat="2" onclick="toggleSeat(this)"><span class="seat-num">2</span></div>
+              </div>
+              <div class="seat-aisle"></div>
+              <div class="seat-row-side right">
+                <div class="seat" data-seat="3" onclick="toggleSeat(this)"><span class="seat-num">3</span></div>
+                <div class="seat" data-seat="4" onclick="toggleSeat(this)"><span class="seat-num">4</span></div>
+              </div>
+            </div>
+            <!-- Sıra 2 -->
+            <div class="seat-row">
+              <div class="seat-row-side">
+                <div class="seat" data-seat="5" onclick="toggleSeat(this)"><span class="seat-num">5</span></div>
+                <div class="seat" data-seat="6" onclick="toggleSeat(this)"><span class="seat-num">6</span></div>
+              </div>
+              <div class="seat-aisle"></div>
+              <div class="seat-row-side right">
+                <div class="seat taken" data-seat="7"><span class="seat-num">7</span></div>
+                <div class="seat" data-seat="8" onclick="toggleSeat(this)"><span class="seat-num">8</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Özet -->
+          <div class="seat-summary">
+            <div class="seat-summary-text">
+              Seçili: <strong id="selectedSeatsText">—</strong>
+            </div>
+            <div class="seat-summary-price" id="seatTotalPrice"></div>
+          </div>
+        </div>
+
+        <input type="hidden" id="selectedSeatsInput" name="selectedSeats">
+      </div>
+    </div>
+
+    <button type="submit" class="form-submit" id="bookingSubmitBtn">Devam Et → Ödeme</button>
+
+    <!-- Google Maps Route Preview -->
+    <div id="mapSection" style="margin-top:2rem;">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem;">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--blue);"></div>
+        <span style="font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.4);">Güzergah Haritası</span>
+        <div style="flex:1;height:0.5px;background:rgba(255,255,255,0.07);"></div>
+        <a id="mapsLink" href="#" target="_blank" style="font-size:0.7rem;color:var(--blue);text-decoration:none;letter-spacing:0.08em;">Google Maps'te Aç →</a>
+      </div>
+      <div id="mapContainer" style="width:100%;height:320px;border:0.5px solid rgba(29,78,216,0.2);overflow:hidden;position:relative;">
+        <div id="mapPlaceholder" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);gap:0.8rem;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(29,78,216,0.4)" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span style="font-size:0.78rem;color:rgba(255,255,255,0.25);">Kalkış ve varış noktası seçildiğinde harita görünür</span>
+        </div>
+        <iframe id="mapFrame" src="" width="100%" height="100%" style="border:none;display:none;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </form>
+</section>
+
+<!-- AUTH MODAL -->
+<div class="auth-modal-overlay" id="authModal">
+  <div class="auth-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.8rem;border-bottom:0.5px solid rgba(29,78,216,0.12);">
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--white);">Güliz Transfer</div>
+      <button onclick="closeAuthModal()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Giriş Yap</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Üye Ol</button>
+    </div>
+    <div class="auth-body">
+      <div id="authMsg" class="auth-msg"></div>
+
+      <!-- Giriş formu -->
+      <div id="loginForm">
+        <div class="auth-field">
+          <label>E-posta</label>
+          <input type="email" id="authLoginEmail" placeholder="ornek@email.com" onkeydown="if(event.key==='Enter')doUserLogin()">
+        </div>
+        <div class="auth-field">
+          <label>Şifre</label>
+          <input type="password" id="authLoginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doUserLogin()">
+        </div>
+        <button class="auth-submit" onclick="doUserLogin()">Giriş Yap</button>
+        <div style="display:flex;justify-content:space-between;margin-top:1rem;font-size:0.75rem;color:rgba(255,255,255,0.3);">
+          <span>Hesabınız yok mu? <span style="color:var(--blue);cursor:pointer;" onclick="switchAuthTab('register')">Üye Ol</span></span>
+          <span style="color:var(--blue);cursor:pointer;" onclick="showForgotForm()">Şifremi Unuttum</span>
+        </div>
+      </div>
+
+      <!-- Şifremi Unuttum — telefon gir -->
+      <div id="forgotForm" style="display:none;">
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:1.2rem;line-height:1.6;">
+          Kayıtlı telefon numaranızı girin. SMS ile doğrulama kodu göndereceğiz.
+        </p>
+        <div class="auth-field">
+          <label>Telefon Numarası</label>
+          <input type="tel" id="forgotPhone" placeholder="+90 5XX XXX XX XX" onkeydown="if(event.key==='Enter')doForgotPassword()">
+        </div>
+        <button class="auth-submit" onclick="doForgotPassword()">Kod Gönder</button>
+        <p style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:1rem;">
+          <span style="color:var(--blue);cursor:pointer;" onclick="switchAuthTab('login')">← Girişe Dön</span>
+        </p>
+      </div>
+
+      <!-- Şifremi Unuttum — OTP + yeni şifre -->
+      <div id="resetForm" style="display:none;">
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:1.2rem;line-height:1.6;">
+          Telefonunuza gelen <strong style="color:#fff;">6 haneli kodu</strong> ve yeni şifrenizi girin.
+        </p>
+        <div class="auth-field">
+          <label>Doğrulama Kodu</label>
+          <input type="text" id="resetOtpInput" class="otp-code-input" maxlength="6" placeholder="——————" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+        </div>
+        <div class="auth-field" style="margin-top:1rem;">
+          <label>Yeni Şifre (min. 6 karakter)</label>
+          <input type="password" id="resetNewPass" placeholder="••••••••">
+        </div>
+        <div class="auth-field">
+          <label>Yeni Şifre (Tekrar)</label>
+          <input type="password" id="resetNewPassConfirm" placeholder="••••••••">
+        </div>
+        <button class="auth-submit" onclick="doResetPassword()">Şifreyi Sıfırla</button>
+        <p style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:1rem;">
+          Kod gelmedi mi? <span style="color:var(--blue);cursor:pointer;" onclick="showForgotForm()">Tekrar Gönder</span>
+        </p>
+      </div>
+
+      <!-- Kayıt formu -->
+      <div id="registerForm" style="display:none;">
+        <div class="auth-field">
+          <label>Ad Soyad</label>
+          <input type="text" id="authRegName" placeholder="Adınız Soyadınız">
+        </div>
+        <div class="auth-field">
+          <label>E-posta</label>
+          <input type="email" id="authRegEmail" placeholder="ornek@email.com">
+        </div>
+        <div class="auth-field">
+          <label>Telefon (+90 ile başlayan)</label>
+          <input type="tel" id="authRegPhone" placeholder="+90 5XX XXX XX XX">
+        </div>
+        <div class="auth-field">
+          <label>Şifre (min. 6 karakter)</label>
+          <input type="password" id="authRegPass" placeholder="••••••••">
+        </div>
+        <button class="auth-submit" onclick="doUserRegister()">Üye Ol</button>
+        <p style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:1rem;">
+          Zaten üye misiniz? <span style="color:var(--blue);cursor:pointer;" onclick="switchAuthTab('login')">Giriş Yap</span>
+        </p>
+      </div>
+
+      <!-- SMS OTP ekranı -->
+      <div id="otpScreen" class="otp-screen">
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.6);margin-bottom:1.2rem;line-height:1.6;">
+          Telefonunuza gönderilen <strong style="color:var(--white);">6 haneli kodu</strong> girin.
+          Ayrıca e-posta adresinize de yedek kod gönderdik.
+        </p>
+        <div class="auth-field">
+          <label>Doğrulama Kodu</label>
+          <input type="text" id="otpInput" class="otp-code-input" maxlength="6" placeholder="——————" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+        </div>
+        <button class="auth-submit" onclick="doVerifyOtp()">Doğrula</button>
+        <p style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-top:1rem;">
+          Kod gelmedi mi? <span style="color:var(--blue);cursor:pointer;" onclick="resendOtp()">Yeniden Gönder</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalTitle">Rezervasyon & Ödeme</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Steps bar -->
+      <div class="steps-bar">
+        <div class="step-item">
+          <div class="step-circle active" id="s1">1</div>
+          <span class="step-label active" id="sl1">Özet</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-circle" id="s2">2</div>
+          <span class="step-label" id="sl2">Kart Bilgileri</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+          <div class="step-circle" id="s3">3</div>
+          <span class="step-label" id="sl3">Onay</span>
+        </div>
+      </div>
+
+      <!-- STEP 1: Summary -->
+      <div id="step1">
+        <div class="summary-box">
+          <div class="summary-row"><span class="label">Güzergah</span><span class="val" id="s-route">—</span></div>
+          <div class="summary-row"><span class="label">Tarih & Saat</span><span class="val" id="s-datetime">—</span></div>
+          <div class="summary-row"><span class="label">Yolcu</span><span class="val" id="s-pax">—</span></div>
+          <div class="summary-row"><span class="label">Uçuş No</span><span class="val" id="s-flight">—</span></div>
+          <div class="summary-row"><span class="label">Ad Soyad</span><span class="val" id="s-name">—</span></div>
+          <div class="summary-row total"><span class="label">Toplam Tutar</span><span class="val" id="s-total">—</span></div>
+        </div>
+        <p style="font-size:0.78rem;color:rgba(255,255,255,0.35);margin-bottom:1.5rem;line-height:1.6;">
+          Fiyat sabit olup trafik veya bekleme nedeniyle değişmez. İyzico güvenli ödeme altyapısı kullanılmaktadır.
+        </p>
+        <button class="form-submit" onclick="goStep(2)">Kart Bilgilerini Gir →</button>
+      </div>
+
+      <!-- STEP 2: Card -->
+      <div id="step2" style="display:none;">
+        <!-- Card visual preview -->
+        <div class="card-visual">
+          <div class="card-chip"><div></div><div></div><div></div><div></div></div>
+          <div class="card-num-display" id="cardNumDisplay">•••• •••• •••• ••••</div>
+          <div class="card-bottom">
+            <div>
+              <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Kart Sahibi</div>
+              <div class="card-holder-display" id="cardHolderDisplay">AD SOYAD</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Son Kullanma</div>
+              <div class="card-exp-display" id="cardExpDisplay">MM/YY</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-logos">
+          <span class="card-logo visa">VISA</span>
+          <span class="card-logo mc">Mastercard</span>
+          <span class="card-logo troy">Troy</span>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:1.2rem;">
+          <div class="form-group full">
+            <label>Kart Üzerindeki Ad Soyad</label>
+            <input type="text" id="cardHolder" placeholder="AD SOYAD" oninput="updateCard()" style="text-transform:uppercase;">
+          </div>
+          <div class="form-group full">
+            <label>Kart Numarası</label>
+            <input type="text" id="cardNum" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNum(this)">
+          </div>
+          <div class="form-group">
+            <label>Son Kullanma Tarihi</label>
+            <input type="text" id="cardExp" placeholder="AA/YY" maxlength="5" oninput="formatExp(this)">
+          </div>
+          <div class="form-group">
+            <label>CVV / CVC</label>
+            <input type="text" id="cardCvv" placeholder="•••" maxlength="3" oninput="this.value=this.value.replace(/\D/g,'')">
+          </div>
+        </div>
+
+        <!-- Installment -->
+        <div style="margin-bottom:1.2rem;">
+          <label style="font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);display:block;margin-bottom:0.7rem;">Taksit Seçeneği</label>
+          <div class="installment-grid" id="installmentGrid"></div>
+        </div>
+
+        <div class="secure-badge">SSL 256-bit şifreleme ile korunan güvenli ödeme — iyzico altyapısı</div>
+        <div style="display:flex;gap:0.8rem;margin-top:1.2rem;">
+          <button class="btn-outline" onclick="goStep(1)" style="flex:1;">← Geri</button>
+          <button class="form-submit" onclick="processPayment()" style="flex:2;">Ödemeyi Tamamla</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Success -->
+      <div class="success-screen" id="step3">
+        <div class="success-icon">✓</div>
+        <h3>Ödeme Başarılı!</h3>
+        <p>Rezervasyonunuz onaylandı. Onay bilgileri e-posta ve SMS ile gönderildi.</p>
+        <div class="booking-ref" id="bookingRef">GT-000000</div>
+        <p style="margin-top:1rem;">Sürücünüz transfer saatinden <strong style="color:rgba(255,255,255,0.7);">30 dk önce</strong> sizi arayacaktır.</p>
+        <button class="btn-outline" onclick="closeModal()" style="margin-top:1.5rem;width:100%;text-align:center;">Tamam, Kapat</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="hizmetler">
+  <div class="section-title-wrap">
+    <div class="section-eyebrow">Hizmetlerimiz</div>
+    <h2 class="section-title">Her İhtiyaca Uygun Transfer</h2>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">✈</div>
+      <div class="service-title">Havalimanı Transferi</div>
+      <p class="service-desc">İstanbul Havalimanı ve Sabiha Gökçen'den şehrin her noktasına konforlu VIP transfer hizmeti. Uçuş takibi dahil.</p>
+      <div class="service-price">Fiyat teklifi alın →</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">★</div>
+      <div class="service-title">VIP Özel Transfer</div>
+      <p class="service-desc">Özel etkinlikler, iş toplantıları ve özel günleriniz için kişisel şoförlü lüks Mercedes Vito hizmeti.</p>
+      <div class="service-price">Fiyat teklifi alın →</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">◈</div>
+      <div class="service-title">Kurumsal Transfer</div>
+      <p class="service-desc">Şirketinizin misafirlerine ve çalışanlarına yönelik düzenli ve güvenilir kurumsal transfer çözümleri.</p>
+      <div class="service-price">Kurumsal teklif alın →</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">◎</div>
+      <div class="service-title">Şehir Turu</div>
+      <p class="service-desc">İstanbul'un tarihi ve turistik mekânlarını konforlu aracımızla keşfedin. Özel güzergah planlama mevcut.</p>
+      <div class="service-price">Fiyat teklifi alın →</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">⬡</div>
+      <div class="service-title">Şehirlerarası Transfer</div>
+      <p class="service-desc">İstanbul'dan Türkiye'nin her şehrine rahat ve güvenli şehirlerarası VIP yolculuk imkânı.</p>
+      <div class="service-price">Fiyat teklifi alın →</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">♦</div>
+      <div class="service-title">Düğün & Özel Gün</div>
+      <p class="service-desc">Özel günlerinizi unutulmaz kılmak için süslenmiş araç ve özel karşılama servisi ile lüks transfer.</p>
+      <div class="service-price">Fiyat teklifi alın →</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="neden">
+  <div class="why-wrap">
+    <div class="why-left">
+      <div class="section-eyebrow" style="justify-content:flex-start; margin-bottom:1.2rem;">Neden Güliz Transfer?</div>
+      <h2>Lüks ve <span>Güven</span><br>Bir Arada</h2>
+      <p>Güliz Şirketler Grubu çatısı altında sunduğumuz transfer hizmeti, yılların birikimiyle oluşturduğumuz güven ve kalite anlayışını her yolculuğa taşır.</p>
+      <ul class="why-list">
+        <li>Profesyonel ve deneyimli sürücü kadrosu</li>
+        <li>Son model, bakımlı Mercedes Vito araç filosu</li>
+        <li>Uçuş takibi ile gecikmesiz karşılama</li>
+        <li>7/24 müşteri desteği ve acil hat</li>
+        <li>Sabit fiyat garantisi, gizli ücret yok</li>
+      </ul>
+    </div>
+    <div class="why-right">
+      <div class="why-feat">
+        <div class="why-num">01</div>
+        <div>
+          <div class="why-feat-title">Zamanında Varış</div>
+          <div class="why-feat-desc">Her transferde dakiklik birinci önceliğimizdir. Gecikmeli uçuşlar otomatik takip edilir.</div>
+        </div>
+      </div>
+      <div class="why-feat">
+        <div class="why-num">02</div>
+        <div>
+          <div class="why-feat-title">Sabit Fiyat</div>
+          <div class="why-feat-desc">Rezervasyon anında belirlenen fiyat değişmez. Trafik veya bekleme nedeniyle ek ücret alınmaz.</div>
+        </div>
+      </div>
+      <div class="why-feat">
+        <div class="why-num">03</div>
+        <div>
+          <div class="why-feat-title">Güvenli Ödeme</div>
+          <div class="why-feat-desc">Online kredi kartı, havale veya nakit ödeme seçenekleri. SSL güvenli ödeme altyapısı.</div>
+        </div>
+      </div>
+      <div class="why-feat">
+        <div class="why-num">04</div>
+        <div>
+          <div class="why-feat-title">İçki & İkram</div>
+          <div class="why-feat-desc">VIP transferlerde su ve ikram servisi. Talep üzerine özel karşılama paketi.</div>
+        </div>
+      </div>
+      <div class="why-feat">
+        <div class="why-num">05</div>
+        <div>
+          <div class="why-feat-title">Güliz Güvencesi</div>
+          <div class="why-feat-desc">Güliz Şirketler Grubu'nun kurumsal güvencesiyle her transferde tam destek ve sorumluluk.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROUTES -->
+<section id="rotalar">
+  <div class="section-title-wrap">
+    <div class="section-eyebrow">Popüler Rotalar</div>
+    <h2 class="section-title">Sık Kullanılan Güzergahlar</h2>
+  </div>
+  <div class="routes-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="route-card" onclick="setRoute('Gazipaşa Havalimanı (GZP)','Alanya Merkez')">
+      <div class="route-from">Gazipaşa Havalimanı</div>
+      <div class="route-name">GZP → Alanya</div>
+      <div class="route-arrow">↓</div>
+      <div class="route-dest">Yaklaşık 25–35 dk</div>
+      <div class="route-price"><sup>₺</sup>650</div>
+    </div>
+    <div class="route-card" onclick="setRoute('Gazipaşa Havalimanı (GZP)','Side')">
+      <div class="route-from">Gazipaşa Havalimanı</div>
+      <div class="route-name">GZP → Side</div>
+      <div class="route-arrow">↓</div>
+      <div class="route-dest">Yaklaşık 60–75 dk</div>
+      <div class="route-price"><sup>₺</sup>950</div>
+    </div>
+    <div class="route-card" onclick="setRoute('Gazipaşa Havalimanı (GZP)','Antalya Merkez')">
+      <div class="route-from">Gazipaşa Havalimanı</div>
+      <div class="route-name">GZP → Antalya</div>
+      <div class="route-arrow">↓</div>
+      <div class="route-dest">Yaklaşık 90–110 dk</div>
+      <div class="route-price"><sup>₺</sup>1.350</div>
+    </div>
+    <div class="route-card" onclick="setRoute('Gazipaşa Havalimanı (GZP)','Alanya Mahmutlar')">
+      <div class="route-from">Gazipaşa Havalimanı</div>
+      <div class="route-name">GZP → Mahmutlar</div>
+      <div class="route-arrow">↓</div>
+      <div class="route-dest">Yaklaşık 35–45 dk</div>
+      <div class="route-price"><sup>₺</sup>750</div>
+    </div>
+  </div>
+  <p style="text-align:center; margin-top:2rem; font-size:0.78rem; color:rgba(255,255,255,0.3); letter-spacing:0.06em;">
+    * Fiyatlar 1–3 yolcu için geçerlidir. Trafik durumuna göre süre değişebilir. Güncel fiyat için iletişime geçin.
+  </p>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="yorumlar">
+  <div class="section-title-wrap">
+    <div class="section-eyebrow">Müşteri Yorumları</div>
+    <h2 class="section-title">Yolcularımız Ne Diyor?</h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="t-stars">★★★★★</div>
+      <p class="t-text">"Uçağım 1.5 saat geç kalktı, sürücü beni yine de bekledi. Araç tertemiz, sürücü son derece kibar ve profesyoneldi."</p>
+      <div class="t-author">Mehmet Y. — İstanbul</div>
+    </div>
+    <div class="testimonial-card">
+      <div class="t-stars">★★★★★</div>
+      <p class="t-text">"Yabancı misafirlerimizi havalimanından almak için Güliz Transfer'i tercih ettik. Kurumsal hizmet kalitesi gerçekten etkileyiciydi."</p>
+      <div class="t-author">Selin K. — Kurumsal Müşteri</div>
+    </div>
+    <div class="testimonial-card">
+      <div class="t-stars">★★★★★</div>
+      <p class="t-text">"Bebek koltuğu talep ettim, sorunsuz karşıladılar. Güliz Şirketler Grubu'nun diğer hizmetlerini de kullanıyorum, kalite tutarlı."</p>
+      <div class="t-author">Ayşe D. — Aile Müşterisi</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="iletisim">
+  <div class="section-title-wrap">
+    <div class="section-eyebrow">İletişim</div>
+    <h2 class="section-title">Bizimle İletişime Geçin</h2>
+  </div>
+  <div class="contact-wrap">
+    <div class="contact-info">
+      <h3>Güliz Transfer</h3>
+      <p>Güliz Şirketler Grubu bünyesinde VIP transfer hizmeti sunuyoruz. Her türlü sorunuz için bize ulaşabilirsiniz.</p>
+      <div class="contact-item">
+        <div class="contact-item-icon">✆</div>
+        <span>+90 (212) XXX XX XX</span>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-icon">@</div>
+        <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="452c2b232a052230292c3f3137242b362320376b262a28">[email&#160;protected]</a></span>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-icon">◎</div>
+        <span>İstanbul, Türkiye</span>
+      </div>
+      <a href="https://wa.me/905XXXXXXXXX" class="whatsapp-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp ile Yazın
+      </a>
+    </div>
+    <div>
+      <form onsubmit="handleContact(event)" style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="form-group">
+          <label>Ad Soyad</label>
+          <input type="text" placeholder="Adınız Soyadınız">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="tel" placeholder="+90 5XX XXX XX XX">
+        </div>
+        <div class="form-group">
+          <label>Mesajınız</label>
+          <textarea style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.12);color:#fff;font-family:var(--sans);font-size:0.9rem;padding:0.85rem 1rem;outline:none;resize:vertical;min-height:120px;transition:border-color 0.3s;" placeholder="Transfer hakkında bilgi almak istiyorum..." onfocus="this.style.borderColor='#1D4ED8'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%;text-align:center;">Mesaj Gönder</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">Güliz Transfer</div>
+    <div class="footer-sub">VIP Vito Transfer Hizmeti</div>
+  </div>
+  <div class="footer-group-badge">
+    <strong>Güliz Şirketler Grubu</strong> bünyesinde hizmet vermektedir
+  </div>
+  <div class="footer-links">
+    <a href="#hizmetler">Hizmetler</a>
+    <a href="#rotalar">Rotalar</a>
+    <a href="#rezervasyon">Rezervasyon</a>
+    <a href="#iletisim">İletişim</a>
+  </div>
+  <div style="font-size:0.68rem;color:rgba(255,255,255,0.2);width:100%;text-align:center;margin-top:0.5rem;">
+    © 2025 Güliz Transfer. Tüm hakları saklıdır.
+  </div>
+</footer>
+
+<!-- CANLI DESTEK WIDGET -->
+<button class="chat-btn" onclick="toggleChat()" title="Canlı Destek">
+  <span class="chat-unread" id="chatUnread">0</span>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+</button>
+
+<div class="chat-box" id="chatBox">
+  <div class="chat-head">
+    <div class="chat-head-info">
+      <div class="chat-online-dot"></div>
+      <div>
+        <div class="chat-head-title">Güliz Transfer Destek</div>
+        <div class="chat-head-sub">Genellikle birkaç dakika içinde yanıt veririz</div>
+      </div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-bubble admin">
+      Merhaba! 👋 Size nasıl yardımcı olabiliriz?
+      <div class="chat-bubble-time">Güliz Transfer</div>
+    </div>
+  </div>
+  <div class="chat-typing" id="chatTypingIndicator">Yanıt yazılıyor...</div>
+
+  <!-- Kimlik formu — telefon zorunlu -->
+  <div class="chat-name-bar" id="chatNameBar">
+    <p>Sohbet başlatmak için bilgilerinizi girin:</p>
+    <input class="chat-name-input" id="chatNameInput" type="text" placeholder="Adınız Soyadınız" maxlength="50">
+    <input class="chat-name-input" id="chatPhoneInput" type="tel" placeholder="Telefon Numarası (+90 5XX...)" maxlength="20"
+      onkeydown="if(event.key==='Enter')startChat()">
+    <button class="chat-start-btn" onclick="startChat()">Sohbeti Başlat →</button>
+  </div>
+
+  <!-- Mesaj giriş alanı — başlangıçta gizli -->
+  <div class="chat-input-row" id="chatInputRow" style="display:none;">
+    <textarea class="chat-input" id="chatInput" placeholder="Mesajınızı yazın..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"
+      oninput="onChatTyping()"></textarea>
+    <button class="chat-send" onclick="sendChatMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- WhatsApp Float -->
+<a href="https://wa.me/905XXXXXXXXX" class="wa-float" target="_blank" title="WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+  const API = 'http://localhost:3001/api';
+  let currentUser = JSON.parse(localStorage.getItem('gt_user') || 'null');
+  let userToken   = localStorage.getItem('gt_user_token') || null;
+  let pendingUserId = null; // kayıt sonrası OTP için
+
+  /* ── Auth state yönetimi ── */
+  function refreshAuthUI() {
+    const badge    = document.getElementById('navUserBadge');
+    const loginBtn = document.getElementById('navLoginBtn');
+    const guestBar = document.getElementById('guestChoiceBar');
+    const memberBar= document.getElementById('memberBar');
+    const nameDisp = document.getElementById('memberNameDisplay');
+    const navName  = document.getElementById('navUserName');
+    if (currentUser) {
+      badge.style.display    = 'flex';
+      loginBtn.style.display = 'none';
+      guestBar.style.display = 'none';
+      memberBar.style.display= 'flex';
+      if (nameDisp) nameDisp.textContent = currentUser.name;
+      if (navName)  navName.textContent  = currentUser.name;
+      // Formu doldur
+      const n = document.getElementById('bookingName');
+      const p = document.getElementById('bookingPhone');
+      const e = document.getElementById('bookingEmail');
+      if (n && !n.value) n.value = currentUser.name  || '';
+      if (p && !p.value) p.value = currentUser.phone || '';
+      if (e && !e.value) e.value = currentUser.email || '';
+    } else {
+      badge.style.display    = 'none';
+      loginBtn.style.display = 'block';
+      guestBar.style.display = 'flex';
+      memberBar.style.display= 'none';
+    }
+  }
+
+  function userLogout() {
+    localStorage.removeItem('gt_user');
+    localStorage.removeItem('gt_user_token');
+    currentUser = null; userToken = null;
+    refreshAuthUI();
+  }
+
+  /* ── Auth Modal ── */
+  function openAuthModal(tab) {
+    document.getElementById('authModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    switchAuthTab(tab || 'login');
+    clearAuthMsg();
+  }
+  function closeAuthModal() {
+    document.getElementById('authModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function hideAllAuthForms() {
+    ['loginForm','registerForm','forgotForm','resetForm'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById('otpScreen').classList.remove('active');
+  }
+
+  function switchAuthTab(tab) {
+    document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+    document.getElementById('tabRegister').classList.toggle('active', tab==='register');
+    hideAllAuthForms();
+    document.getElementById(tab==='login' ? 'loginForm' : 'registerForm').style.display = 'block';
+    clearAuthMsg();
+  }
+
+  function showForgotForm() {
+    hideAllAuthForms();
+    document.getElementById('tabLogin').classList.remove('active');
+    document.getElementById('tabRegister').classList.remove('active');
+    document.getElementById('forgotForm').style.display = 'block';
+    document.getElementById('forgotPhone').value = '';
+    clearAuthMsg();
+  }
+  function showAuthMsg(msg, type) {
+    const el = document.getElementById('authMsg');
+    el.textContent = msg;
+    el.className = 'auth-msg ' + type;
+    el.style.display = 'block';
+  }
+  function clearAuthMsg() {
+    const el = document.getElementById('authMsg');
+    el.style.display = 'none';
+  }
+
+  async function doUserLogin() {
+    const email = document.getElementById('authLoginEmail').value.trim();
+    const pass  = document.getElementById('authLoginPass').value;
+    if (!email || !pass) { showAuthMsg('E-posta ve şifre zorunludur', 'err'); return; }
+    try {
+      const res  = await fetch(API+'/users/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      currentUser = data.user; userToken = data.token;
+      localStorage.setItem('gt_user', JSON.stringify(currentUser));
+      localStorage.setItem('gt_user_token', userToken);
+      refreshAuthUI();
+      closeAuthModal();
+    } catch(e) { showAuthMsg(e.message, 'err'); }
+  }
+
+  async function doUserRegister() {
+    const name  = document.getElementById('authRegName').value.trim();
+    const email = document.getElementById('authRegEmail').value.trim();
+    const phone = document.getElementById('authRegPhone').value.trim();
+    const pass  = document.getElementById('authRegPass').value;
+    if (!name||!email||!phone||!pass) { showAuthMsg('Tüm alanlar zorunludur', 'err'); return; }
+    try {
+      const res  = await fetch(API+'/users/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,email,phone,password:pass}) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      pendingUserId = data.userId;
+      // OTP ekranını göster
+      document.getElementById('loginForm').style.display    = 'none';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('otpScreen').classList.add('active');
+      showAuthMsg('Telefonunuza doğrulama kodu gönderildi. E-postanızı da kontrol edin.', 'ok');
+    } catch(e) { showAuthMsg(e.message, 'err'); }
+  }
+
+  async function doVerifyOtp() {
+    const code = document.getElementById('otpInput').value.trim();
+    if (code.length !== 6) { showAuthMsg('6 haneli kodu girin', 'err'); return; }
+    try {
+      const res  = await fetch(API+'/users/verify-phone', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:pendingUserId,code}) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      currentUser = data.user; userToken = data.token;
+      localStorage.setItem('gt_user', JSON.stringify(currentUser));
+      localStorage.setItem('gt_user_token', userToken);
+      refreshAuthUI();
+      closeAuthModal();
+    } catch(e) { showAuthMsg(e.message, 'err'); }
+  }
+
+  async function resendOtp() {
+    if (!pendingUserId) return;
+    try {
+      await fetch(API+'/users/resend-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:pendingUserId}) });
+      showAuthMsg('Kod yeniden gönderildi', 'ok');
+    } catch(e) { showAuthMsg('Gönderilemedi', 'err'); }
+  }
+
+  /* ── Şifremi Unuttum ── */
+  let resetUserId = null;
+
+  async function doForgotPassword() {
+    const phone = document.getElementById('forgotPhone').value.trim();
+    if (!phone) { showAuthMsg('Telefon numarası zorunludur', 'err'); return; }
+    const btn = document.querySelector('#forgotForm .auth-submit');
+    btn.textContent = 'Gönderiliyor...'; btn.disabled = true;
+    try {
+      const res  = await fetch(API+'/users/forgot-password', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({phone}) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      resetUserId = data.userId;
+      // OTP + yeni şifre ekranına geç
+      hideAllAuthForms();
+      document.getElementById('resetForm').style.display = 'block';
+      document.getElementById('resetOtpInput').value     = '';
+      document.getElementById('resetNewPass').value      = '';
+      document.getElementById('resetNewPassConfirm').value = '';
+      showAuthMsg('Telefonunuza doğrulama kodu gönderildi.', 'ok');
+    } catch(e) { showAuthMsg(e.message, 'err'); }
+    finally { btn.textContent = 'Kod Gönder'; btn.disabled = false; }
+  }
+
+  async function doResetPassword() {
+    const code    = document.getElementById('resetOtpInput').value.trim();
+    const newPass = document.getElementById('resetNewPass').value;
+    const confirm = document.getElementById('resetNewPassConfirm').value;
+    if (code.length !== 6)    { showAuthMsg('6 haneli kodu girin', 'err'); return; }
+    if (newPass.length < 6)   { showAuthMsg('Şifre en az 6 karakter olmalı', 'err'); return; }
+    if (newPass !== confirm)  { showAuthMsg('Şifreler eşleşmiyor', 'err'); return; }
+    if (!resetUserId)         { showAuthMsg('Lütfen önce telefon numaranızı girin', 'err'); showForgotForm(); return; }
+    const btn = document.querySelector('#resetForm .auth-submit');
+    btn.textContent = 'Güncelleniyor...'; btn.disabled = true;
+    try {
+      const res  = await fetch(API+'/users/reset-password', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({userId:resetUserId, code, newPassword:newPass}) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      showAuthMsg('✓ ' + data.message, 'ok');
+      resetUserId = null;
+      setTimeout(() => { switchAuthTab('login'); clearAuthMsg(); }, 2000);
+    } catch(e) { showAuthMsg(e.message, 'err'); }
+    finally { btn.textContent = 'Şifreyi Sıfırla'; btn.disabled = false; }
+  }
+
+  function proceedAsGuest() {
+    // misafir seçilince seçim çubuğunu gizle, direkt forma geç
+    document.getElementById('guestChoiceBar').style.display = 'none';
+    document.getElementById('bookingName').focus();
+  }
+
+  document.getElementById('authModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAuthModal();
+  });
+
+  /* ── Tarih / Saat otomatik doldur ── */
+  (function setDefaultDateTime() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const dateEl = document.getElementById('transferDate');
+    const timeEl = document.getElementById('transferTime');
+    if (dateEl) dateEl.value = dateStr;
+    if (timeEl) timeEl.value = timeStr;
+  })();
+
+  // Sayfa yüklenince auth durumunu yansıt
+  window.addEventListener('DOMContentLoaded', refreshAuthUI);
+
+  /* ── Koordinatlar ── */
+  const coords = {
+    'Gazipaşa Havalimanı (GZP)': '36.2993,32.3006',
+    'İstanbul Havalimanı (IST)': '41.2753,28.7519',
+    'Sabiha Gökçen Havalimanı (SAW)': '40.8985,29.3092',
+    'Alanya Merkez': '36.5441,31.9990',
+    'Alanya Oba': '36.5600,32.0500',
+    'Alanya Mahmutlar': '36.5667,32.1167',
+    'Alanya Kestel': '36.5833,32.0667',
+    'Alanya Avsallar': '36.5333,31.8500',
+    'Gazipaşa Merkez': '36.2693,32.3158',
+    'Antalya Merkez': '36.8969,30.7133',
+    'Side': '36.7674,31.3889',
+    'Manavgat': '36.7742,31.4422',
+    'Adres / Otel': null,
+  };
+
+  /* ── Fiyat tablosu ── */
+  const prices = {
+    'Gazipaşa Havalimanı (GZP)|Alanya Merkez': 650,
+    'Gazipaşa Havalimanı (GZP)|Alanya Oba': 700,
+    'Gazipaşa Havalimanı (GZP)|Alanya Mahmutlar': 750,
+    'Gazipaşa Havalimanı (GZP)|Alanya Kestel': 720,
+    'Gazipaşa Havalimanı (GZP)|Alanya Avsallar': 800,
+    'Gazipaşa Havalimanı (GZP)|Gazipaşa Merkez': 400,
+    'Gazipaşa Havalimanı (GZP)|Antalya Merkez': 1350,
+    'Gazipaşa Havalimanı (GZP)|Side': 950,
+    'Gazipaşa Havalimanı (GZP)|Manavgat': 900,
+    'İstanbul Havalimanı (IST)|Alanya Merkez': 4500,
+    'Sabiha Gökçen Havalimanı (SAW)|Alanya Merkez': 4200,
+  };
+  function getPrice(from, to) {
+    return prices[from+'|'+to] || prices[to+'|'+from] || 1200;
+  }
+
+  let currentPrice = 0;
+  let selectedInstallment = 1;
+
+  /* ── Harita güncelle ── */
+  function updateMapRoute() {
+    const from = document.getElementById('fromSelect').value;
+    const to   = document.getElementById('toSelect').value;
+    if (!from || !to) return;
+
+    const fc = coords[from];
+    const tc = coords[to];
+    const placeholder = document.getElementById('mapPlaceholder');
+    const frame = document.getElementById('mapFrame');
+    const mapsLink = document.getElementById('mapsLink');
+
+    const originQ   = from.replace(/\s*\(.*\)/, '').trim();
+    const destQ     = to.replace(/\s*\(.*\)/, '').trim() + ', Türkiye';
+    const mapsUrl   = 'https://www.google.com/maps/dir/' + encodeURIComponent(originQ + ', Türkiye') + '/' + encodeURIComponent(destQ);
+    mapsLink.href = mapsUrl;
+
+    if (fc && tc) {
+      const embedUrl = 'https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-placeholder&origin=' + encodeURIComponent(originQ + ', Turkey') + '&destination=' + encodeURIComponent(to.replace(/\s*\(.*\)/,'').trim() + ', Turkey') + '&mode=driving&language=tr';
+      // Fallback: embed static map showing both points
+      const staticUrl = 'https://maps.google.com/maps?saddr=' + fc + '&daddr=' + tc + '&output=embed&hl=tr';
+      frame.src = staticUrl;
+      frame.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else {
+      frame.style.display = 'none';
+      placeholder.style.display = 'flex';
+      placeholder.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(29,78,216,0.5)" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg><span style="font-size:0.78rem;color:rgba(255,255,255,0.3);">Varış adresinizi girdikten sonra harita görünecek</span>';
+    }
+  }
+
+  /* Rota kartlarından hızlı seç */
+  function setRoute(from, to) {
+    const fs = document.getElementById('fromSelect');
+    const ts = document.getElementById('toSelect');
+    for (let o of fs.options) { if (o.value === from) { fs.value = from; break; } }
+    for (let o of ts.options) { if (o.value === to)   { ts.value = to;   break; } }
+    updateMapRoute();
+    document.getElementById('rezervasyon').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function handleBooking(e) {
+    e.preventDefault();
+    const from   = document.getElementById('fromSelect').value;
+    const to     = document.getElementById('toSelect').value;
+    const date   = document.getElementById('transferDate').value;
+    const time   = document.getElementById('transferTime').value;
+    const name   = document.getElementById('bookingName').value.trim();
+    // pax ve flight hâlâ index bazlı (üçüncü/dördüncü select ve input)
+    const form   = e.target;
+    const selects = form.querySelectorAll('select');
+    const pax    = selects[2] ? selects[2].value : '1 Yolcu';
+    const flightInput = form.querySelector('input[placeholder="TK 1234"]');
+    const flight = flightInput ? (flightInput.value || 'Belirtilmedi') : 'Belirtilmedi';
+    if (!from || !to || !date || !name) { alert('Lütfen zorunlu alanları doldurun.'); return; }
+    currentPrice = getPrice(from, to);
+    document.getElementById('s-route').textContent    = from + ' → ' + to;
+    document.getElementById('s-datetime').textContent = date + ' — ' + (time || '--:--');
+    document.getElementById('s-pax').textContent      = pax;
+    document.getElementById('s-flight').textContent   = flight;
+    document.getElementById('s-name').textContent     = name;
+    document.getElementById('s-total').textContent    = '₺' + currentPrice.toLocaleString('tr-TR');
+    buildInstallments(currentPrice);
+    openModal();
+  }
+
+  function buildInstallments(price) {
+    const opts = [
+      { n:1,  label:'Tek Çekim' },
+      { n:2,  label:'2 Taksit',  rate:1.04 },
+      { n:3,  label:'3 Taksit',  rate:1.06 },
+      { n:6,  label:'6 Taksit',  rate:1.10 },
+      { n:9,  label:'9 Taksit',  rate:1.15 },
+      { n:12, label:'12 Taksit', rate:1.20 },
+    ];
+    const grid = document.getElementById('installmentGrid');
+    grid.innerHTML = '';
+    opts.forEach(o => {
+      const total   = o.rate ? Math.round(price * o.rate) : price;
+      const monthly = Math.round(total / o.n);
+      const div = document.createElement('div');
+      div.className = 'inst-opt' + (o.n === 1 ? ' selected' : '');
+      div.innerHTML = '<div class="inst-count">' + o.label + '</div>'
+        + '<div class="inst-amount">₺' + monthly.toLocaleString('tr-TR') + '/ay</div>';
+      div.onclick = () => {
+        document.querySelectorAll('.inst-opt').forEach(x => x.classList.remove('selected'));
+        div.classList.add('selected');
+        selectedInstallment = o.n;
+      };
+      grid.appendChild(div);
+    });
+  }
+
+  function openModal() {
+    document.getElementById('paymentModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    goStep(1);
+  }
+  function closeModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function goStep(n) {
+    [1,2,3].forEach(i => {
+      const el = document.getElementById('step'+i);
+      if (el) el.style.display = (i===n) ? 'block' : 'none';
+      const sc = document.getElementById('s'+i);
+      const sl = document.getElementById('sl'+i);
+      if (sc) { sc.className='step-circle'+(i<n?' done':i===n?' active':''); sc.textContent=i<n?'✓':i; }
+      if (sl)   sl.className='step-label'+(i===n?' active':'');
+    });
+    document.getElementById('modalTitle').textContent =
+      n===1 ? 'Rezervasyon Özeti' : n===2 ? 'Kart Bilgileri' : 'Rezervasyon Onayı';
+    if (n===3) {
+      document.getElementById('step3').style.display = 'block';
+      document.getElementById('bookingRef').textContent = 'GT-'+Math.floor(100000+Math.random()*900000);
+    }
+  }
+
+  function formatCardNum(el) {
+    let v = el.value.replace(/\D/g,'').substring(0,16);
+    el.value = v.replace(/(.{4})/g,'$1 ').trim();
+    document.getElementById('cardNumDisplay').textContent =
+      el.value.length > 0 ? el.value : '•••• •••• •••• ••••';
+  }
+  function formatExp(el) {
+    let v = el.value.replace(/\D/g,'');
+    if (v.length >= 2) v = v.substring(0,2)+'/'+v.substring(2,4);
+    el.value = v;
+    document.getElementById('cardExpDisplay').textContent = el.value || 'MM/YY';
+  }
+  function updateCard() {
+    const h = document.getElementById('cardHolder').value.toUpperCase();
+    document.getElementById('cardHolderDisplay').textContent = h || 'AD SOYAD';
+  }
+
+  function processPayment() {
+    const num    = document.getElementById('cardNum').value.replace(/\s/g,'');
+    const holder = document.getElementById('cardHolder').value;
+    const exp    = document.getElementById('cardExp').value;
+    const cvv    = document.getElementById('cardCvv').value;
+    if (num.length < 16 || !holder || exp.length < 5 || cvv.length < 3) {
+      alert('Lütfen tüm kart bilgilerini eksiksiz girin.'); return;
+    }
+    const btn = document.querySelector('#step2 .form-submit');
+    btn.textContent = 'İşleniyor...'; btn.disabled = true;
+    setTimeout(() => { btn.textContent='Ödemeyi Tamamla'; btn.disabled=false; goStep(3); }, 2000);
+  }
+
+  function handleContact(e) {
+    e.preventDefault();
+    alert('Mesajınız iletildi! En kısa sürede dönüş yapacağız.');
+  }
+
+  document.getElementById('paymentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+</script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+/* ══════════════════════════════════
+   CANLI DESTEK — Ziyaretçi tarafı
+══════════════════════════════════ */
+const CHAT_SESSION_KEY = 'gt_chat_session';
+let chatSessionId = localStorage.getItem(CHAT_SESSION_KEY);
+if (!chatSessionId) {
+  chatSessionId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,8);
+  localStorage.setItem(CHAT_SESSION_KEY, chatSessionId);
+}
+
+const chatSocket = io({ transports: ['websocket','polling'] });
+let chatOpen     = false;
+let chatTypingTimer = null;
+let isTyping = false;
+
+function getDevice() {
+  return /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'Mobil' : 'Masaüstü';
+}
+
+const savedChatName  = localStorage.getItem('gt_chat_name')  || '';
+const savedChatPhone = localStorage.getItem('gt_chat_phone') || '';
+let chatIdentified   = !!(savedChatName && savedChatPhone);
+
+chatSocket.on('connect', () => {
+  chatSocket.emit('visitor:connect', {
+    sessionId: chatSessionId,
+    name:      savedChatName  || 'Ziyaretçi',
+    phone:     savedChatPhone || '',
+    page:      location.href,
+    pageTitle: document.title,
+    device:    getDevice(),
+  });
+});
+
+// Daha önce kimlik bilgisi verilmişse formu gizle, input'u göster
+if (chatIdentified) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('chatNameBar').style.display  = 'none';
+    document.getElementById('chatInputRow').style.display = 'flex';
+    if (savedChatName)  document.getElementById('chatNameInput').value  = savedChatName;
+    if (savedChatPhone) document.getElementById('chatPhoneInput').value = savedChatPhone;
+  });
+}
+
+// Sayfa başlığı değişince bildir (SPA desteği)
+const _pushState = history.pushState;
+history.pushState = function() {
+  _pushState.apply(this, arguments);
+  chatSocket.emit('visitor:page', { sessionId: chatSessionId, page: location.href, pageTitle: document.title });
+};
+
+// Admin'den mesaj geldi
+chatSocket.on('chat:message', (msg) => {
+  appendChatBubble('admin', msg.text, msg.time);
+  if (!chatOpen) {
+    const badge = document.getElementById('chatUnread');
+    badge.style.display = 'flex';
+    badge.textContent   = parseInt(badge.textContent||0) + 1;
+    // Chat butonunu titrelt
+    document.querySelector('.chat-btn').style.animation = 'none';
+    setTimeout(() => document.querySelector('.chat-btn').style.animation = '', 10);
+  }
+});
+
+// Admin geçmiş mesajlar
+chatSocket.on('chat:history', (messages) => {
+  messages.forEach(m => appendChatBubble(m.from === 'admin' ? 'admin' : 'visitor', m.text, m.time));
+});
+
+// Admin yazıyor
+chatSocket.on('chat:admin_typing', (typing) => {
+  document.getElementById('chatTypingIndicator').style.display = typing ? 'block' : 'none';
+  if (typing) scrollChatToBottom();
+});
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatBox').classList.toggle('open', chatOpen);
+  if (chatOpen) {
+    // Unread badge sıfırla
+    const badge = document.getElementById('chatUnread');
+    badge.style.display = 'none'; badge.textContent = '0';
+    chatSocket.emit('visitor:action', { sessionId: chatSessionId, action: 'chat_opened', detail: '' });
+    scrollChatToBottom();
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function startChat() {
+  const name  = document.getElementById('chatNameInput').value.trim();
+  const phone = document.getElementById('chatPhoneInput').value.trim();
+
+  if (!phone) {
+    document.getElementById('chatPhoneInput').classList.add('required');
+    document.getElementById('chatPhoneInput').placeholder = '⚠ Telefon numarası zorunludur!';
+    document.getElementById('chatPhoneInput').focus();
+    return;
+  }
+  document.getElementById('chatPhoneInput').classList.remove('required');
+
+  const displayName = name || 'Ziyaretçi';
+  localStorage.setItem('gt_chat_name',  displayName);
+  localStorage.setItem('gt_chat_phone', phone);
+  chatIdentified = true;
+
+  // Sunucuya kimliği güncelle
+  chatSocket.emit('visitor:connect', {
+    sessionId: chatSessionId,
+    name:      displayName,
+    phone,
+    page:      location.href,
+    pageTitle: document.title,
+    device:    getDevice(),
+  });
+
+  document.getElementById('chatNameBar').style.display  = 'none';
+  document.getElementById('chatInputRow').style.display = 'flex';
+  document.getElementById('chatInput').focus();
+}
+
+function sendChatMessage() {
+  if (!chatIdentified) { startChat(); return; }
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+  chatSocket.emit('visitor:message', {
+    sessionId: chatSessionId,
+    text,
+    name:  localStorage.getItem('gt_chat_name')  || 'Ziyaretçi',
+    phone: localStorage.getItem('gt_chat_phone') || '',
+  });
+  appendChatBubble('visitor', text, new Date().toISOString());
+  input.value = '';
+  input.style.height = 'auto';
+  stopTyping();
+}
+
+function appendChatBubble(from, text, time) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'chat-bubble ' + (from === 'admin' ? 'admin' : 'visitor');
+  const t = new Date(time).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+  div.innerHTML = escapeHtmlChat(text) + `<div class="chat-bubble-time">${t}</div>`;
+  msgs.appendChild(div);
+  scrollChatToBottom();
+}
+
+function escapeHtmlChat(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function scrollChatToBottom() {
+  const msgs = document.getElementById('chatMessages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function onChatTyping() {
+  if (!isTyping) { isTyping = true; chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: true }); }
+  clearTimeout(chatTypingTimer);
+  chatTypingTimer = setTimeout(stopTyping, 2000);
+  // Auto-resize textarea
+  const el = document.getElementById('chatInput');
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+}
+function stopTyping() {
+  isTyping = false;
+  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false });
+}
+
+// Form doldurma aktivitelerini izle
+document.addEventListener('change', (e) => {
+  if (!e.target.closest('.booking-form')) return;
+  const label = e.target.previousElementSibling?.textContent || e.target.name || e.target.id || 'alan';
+  const val   = e.target.tagName === 'SELECT' ? e.target.options[e.target.selectedIndex]?.text : e.target.value;
+  chatSocket.emit('visitor:action', { sessionId: chatSessionId, action: 'form_fill', detail: `${label}: ${val}` });
+});
+
+// Rezervasyon butonuna tıklama
+document.addEventListener('click', (e) => {
+  if (e.target.matches('.form-submit') || e.target.closest('.form-submit')) {
+    chatSocket.emit('visitor:action', { sessionId: chatSessionId, action: 'booking_attempt', detail: 'Rezervasyon butonu tıklandı' });
+  }
+  if (e.target.matches('.btn-primary') || e.target.closest('.btn-primary')) {
+    chatSocket.emit('visitor:action', { sessionId: chatSessionId, action: 'click', detail: e.target.textContent.trim() });
+  }
+});
+</script>
+
+<!-- ── PWA + VIP/SHUTTLE + KOLTUK JS ── -->
+<script>
+/* ══════════════════════════════════════════════
+   1. SERVICE WORKER KAYDI
+══════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[PWA] SW kayıtlı:', reg.scope))
+      .catch(err => console.warn('[PWA] SW hatası:', err));
+  });
+}
+
+/* ══════════════════════════════════════════════
+   2. PWA YÜKLEME BANNER
+══════════════════════════════════════════════ */
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const bar = document.getElementById('pwa-install-bar');
+  if (bar && !localStorage.getItem('pwa-dismissed')) {
+    bar.classList.add('show');
+  }
+});
+
+function pwaInstall() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      document.getElementById('pwa-install-bar').classList.remove('show');
+    }
+    deferredPrompt = null;
+  });
+}
+
+function pwaDismiss() {
+  document.getElementById('pwa-install-bar').classList.remove('show');
+  localStorage.setItem('pwa-dismissed', '1');
+}
+
+/* iOS'ta "Paylaş → Ana Ekrana Ekle" ipucu */
+(function() {
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone;
+  if (isIos && !isStandalone && !localStorage.getItem('ios-hint-shown')) {
+    setTimeout(() => {
+      const bar = document.getElementById('pwa-install-bar');
+      if (bar) {
+        bar.querySelector('.pwa-bar-text strong').textContent = 'Uygulamayı Ana Ekrana Ekle';
+        bar.querySelector('.pwa-bar-text span').textContent = 'Safari\'de Paylaş → Ana Ekrana Ekle';
+        bar.querySelector('.pwa-install-btn').textContent = 'Nasıl Yapılır?';
+        bar.querySelector('.pwa-install-btn').onclick = () => {
+          alert('Safari\'de alttaki Paylaş butonuna dokun, ardından "Ana Ekrana Ekle"yi seç.');
+          pwaDismiss();
+        };
+        bar.classList.add('show');
+        localStorage.setItem('ios-hint-shown', '1');
+      }
+    }, 3000);
+  }
+})();
+
+/* URL parametresinden transfer tipi oku */
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('type') === 'shuttle') {
+    setTransferType('shuttle');
+  }
+})();
+
+/* ══════════════════════════════════════════════
+   3. VIP / SHUTTLE SEÇİCİ
+══════════════════════════════════════════════ */
+let currentTransferType = 'vip';
+
+function setTransferType(type) {
+  currentTransferType = type;
+
+  document.getElementById('ttsVip').classList.toggle('active', type === 'vip');
+  document.getElementById('ttsShuttle').classList.toggle('active', type === 'shuttle');
+
+  document.getElementById('section-vip').classList.toggle('visible', type === 'vip');
+  document.getElementById('section-shuttle').classList.toggle('visible', type === 'shuttle');
+
+  const btn = document.getElementById('bookingSubmitBtn');
+  if (type === 'shuttle') {
+    btn.textContent = 'Koltukları Onayla → Ödeme';
+  } else {
+    btn.textContent = 'Devam Et → Ödeme';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   4. KOLTUK HARİTASI
+══════════════════════════════════════════════ */
+const SHUTTLE_SEAT_PRICE = 350; // TL / koltuk
+let selectedSeats = [];
+
+function toggleSeat(el) {
+  if (el.classList.contains('taken')) return;
+
+  const seatNum = parseInt(el.dataset.seat);
+
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    selectedSeats = selectedSeats.filter(s => s !== seatNum);
+  } else {
+    el.classList.add('selected');
+    selectedSeats.push(seatNum);
+    selectedSeats.sort((a, b) => a - b);
+  }
+
+  updateSeatSummary();
+}
+
+function updateSeatSummary() {
+  const textEl  = document.getElementById('selectedSeatsText');
+  const priceEl = document.getElementById('seatTotalPrice');
+  const input   = document.getElementById('selectedSeatsInput');
+
+  if (selectedSeats.length === 0) {
+    textEl.textContent  = '—';
+    priceEl.textContent = '';
+    input.value = '';
+    return;
+  }
+
+  textEl.innerHTML = selectedSeats.map(s => `<strong>${s}</strong>`).join(', ') + ' No\'lu koltuk' + (selectedSeats.length > 1 ? 'lar' : '');
+  const total = selectedSeats.length * SHUTTLE_SEAT_PRICE;
+  priceEl.textContent = total.toLocaleString('tr-TR') + ' ₺';
+  input.value = selectedSeats.join(',');
+}
+
+/* Shuttle submit kontrolü */
+const origHandleBooking = window.handleBooking;
+window.handleBooking = function(e) {
+  if (currentTransferType === 'shuttle') {
+    if (selectedSeats.length === 0) {
+      e.preventDefault();
+      alert('Lütfen en az bir koltuk seçin.');
+      return;
+    }
+    // Shuttle alanlarını VIP alanlarına kopyala (mevcut handleBooking bunları okur)
+    document.getElementById('bookingName').value  = document.getElementById('shuttleName').value;
+    document.getElementById('bookingPhone').value = document.getElementById('shuttlePhone').value;
+    document.getElementById('bookingEmail').value = document.getElementById('shuttleEmail').value;
+    document.getElementById('transferDate').value  = document.getElementById('shuttleDate').value;
+    document.getElementById('transferTime').value  = document.getElementById('shuttleTime').value;
+  }
+  if (origHandleBooking) origHandleBooking(e);
+};
+</script>
+
+<!-- PWA Yükleme Banner (body içinde, en altta) -->
+<div id="pwa-install-bar">
+  <div class="pwa-bar-icon">GT</div>
+  <div class="pwa-bar-text">
+    <strong>Güliz Transfer Uygulaması</strong>
+    <span>Ana ekrana ekle — ücretsiz, hızlı, bildirim alırsın</span>
+  </div>
+  <button class="pwa-install-btn" onclick="pwaInstall()">Yükle</button>
+  <button class="pwa-bar-close" onclick="pwaDismiss()" aria-label="Kapat">&times;</button>
+</div>
+
+<!-- ── HERO SLIDER JS ── -->
+<script>
+(function () {
+  const INTERVAL = 5000;   // ms arası geçiş
+  const slides   = document.querySelectorAll('.hs-slide');
+  const dots     = document.querySelectorAll('.hs-dot');
+  const progress = document.getElementById('hsProgress');
+  const counter  = document.getElementById('hsCurr');
+  let current    = 0;
+  let timer      = null;
+  let progTimer  = null;
+  let startTime  = null;
+
+  function pad(n){ return String(n+1).padStart(2,'0'); }
+
+  function startProgress() {
+    clearInterval(progTimer);
+    startTime = Date.now();
+    progress.style.transition = 'none';
+    progress.style.width = '0%';
+    // micro delay to allow repaint
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        progress.style.transition = `width ${INTERVAL}ms linear`;
+        progress.style.width = '100%';
+      });
+    });
+  }
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    counter.textContent = pad(current);
+    startProgress();
+  }
+
+  function next() { goTo(current + 1); }
+
+  function autoPlay() {
+    clearInterval(timer);
+    timer = setInterval(next, INTERVAL);
+  }
+
+  // Public: nokta tıklama
+  window.hsGoTo = function(idx) {
+    goTo(idx);
+    autoPlay();
+  };
+
+  // Touch/swipe desteği
+  let tsX = null;
+  const slider = document.getElementById('heroSlider');
+  slider.addEventListener('touchstart', e => { tsX = e.touches[0].clientX; }, { passive: true });
+  slider.addEventListener('touchend', e => {
+    if (tsX === null) return;
+    const dx = e.changedTouches[0].clientX - tsX;
+    if (Math.abs(dx) > 40) { goTo(current + (dx < 0 ? 1 : -1)); autoPlay(); }
+    tsX = null;
+  }, { passive: true });
+
+  // Hover'da durdur
+  slider.addEventListener('mouseenter', () => { clearInterval(timer); clearInterval(progTimer); });
+  slider.addEventListener('mouseleave', () => { autoPlay(); startProgress(); });
+
+  // Başlat
+  startProgress();
+  autoPlay();
+})();
+</script>
+
+</body>
+</html>

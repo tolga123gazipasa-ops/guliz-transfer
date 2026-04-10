@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Güliz Transfer — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --gold:#C9A84C; --gold-l:#E8C97A; --black:#0A0A0A; --dark:#111;
+  --dark2:#1A1A1A; --dark3:#222; --border:rgba(201,168,76,0.15);
+  --text:rgba(255,255,255,0.85); --muted:rgba(255,255,255,0.4);
+  --serif:'Playfair Display',serif; --sans:'DM Sans',sans-serif;
+  --sidebar:220px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--black);color:var(--text);font-family:var(--sans);font-weight:300;display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--dark2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar-logo{padding:1.4rem 1.4rem 1rem;border-bottom:0.5px solid var(--border)}
+.sidebar-logo span{font-family:var(--serif);font-size:1.05rem;color:var(--gold);display:block}
+.sidebar-logo small{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1.4rem;font-size:0.82rem;color:var(--muted);cursor:pointer;transition:all 0.2s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,0.05)}
+.nav-icon{font-size:14px;width:16px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding:1rem 1.4rem;border-top:0.5px solid var(--border)}
+.logout-btn{width:100%;padding:0.6rem;background:transparent;border:0.5px solid rgba(255,255,255,0.1);color:var(--muted);font-family:var(--sans);font-size:0.78rem;cursor:pointer;transition:all 0.2s}
+.logout-btn:hover{border-color:rgba(255,0,0,0.3);color:#ff6b6b}
+
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:1rem 2rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--dark)}
+.topbar-title{font-family:var(--serif);font-size:1.1rem;color:var(--text)}
+.admin-badge{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:0.5rem}
+.admin-dot{width:7px;height:7px;border-radius:50%;background:#2ecc71}
+
+/* PAGES */
+.page{display:none;padding:2rem;animation:fadeIn 0.3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--dark2);border:0.5px solid var(--border);padding:1.2rem 1.4rem}
+.stat-label{font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem}
+.stat-val{font-family:var(--serif);font-size:1.8rem;color:var(--gold)}
+.stat-sub{font-size:0.72rem;color:var(--muted);margin-top:0.3rem}
+
+/* TABLE */
+.table-wrap{background:var(--dark2);border:0.5px solid var(--border);overflow-x:auto}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;border-bottom:0.5px solid var(--border)}
+.table-header h3{font-family:var(--serif);font-size:1rem;font-weight:500}
+.search-input{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.5rem 0.9rem;outline:none;min-width:220px}
+.search-input:focus{border-color:var(--gold)}
+table{width:100%;border-collapse:collapse}
+th{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:0.75rem 1rem;text-align:left;border-bottom:0.5px solid var(--border)}
+td{font-size:0.82rem;padding:0.8rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.05);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.02)}
+
+/* BADGES */
+.badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;border-radius:2px}
+.badge-pending  {background:rgba(234,179,8,0.15); color:#fbbf24}
+.badge-confirmed{background:rgba(59,130,246,0.15);color:#60a5fa}
+.badge-assigned {background:rgba(139,92,246,0.15);color:#a78bfa}
+.badge-completed{background:rgba(34,197,94,0.15); color:#4ade80}
+.badge-cancelled{background:rgba(239,68,68,0.15); color:#f87171}
+.badge-paid     {background:rgba(34,197,94,0.15); color:#4ade80}
+.badge-unpaid   {background:rgba(234,179,8,0.15); color:#fbbf24}
+.badge-available{background:rgba(34,197,94,0.15); color:#4ade80}
+.badge-busy     {background:rgba(239,68,68,0.15); color:#f87171}
+.badge-offline  {background:rgba(107,114,128,0.2);color:#9ca3af}
+
+/* BUTTONS */
+.btn{padding:0.45rem 1rem;font-family:var(--sans);font-size:0.75rem;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s;border:0.5px solid}
+.btn-gold{background:var(--gold);color:var(--black);border-color:var(--gold)}
+.btn-gold:hover{background:var(--gold-l)}
+.btn-outline{background:transparent;color:var(--muted);border-color:rgba(255,255,255,0.15)}
+.btn-outline:hover{color:var(--text);border-color:rgba(255,255,255,0.3)}
+.btn-danger{background:transparent;color:#f87171;border-color:rgba(239,68,68,0.3)}
+.btn-danger:hover{background:rgba(239,68,68,0.1)}
+.btn-sm{padding:0.3rem 0.7rem;font-size:0.7rem}
+
+/* FORMS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.form-group{display:flex;flex-direction:column;gap:0.4rem}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.form-group input,.form-group select,.form-group textarea{
+  background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);
+  color:var(--text);font-family:var(--sans);font-size:0.85rem;
+  padding:0.65rem 0.9rem;outline:none;transition:border-color 0.2s;
+  -webkit-appearance:none;appearance:none;
+}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold)}
+.form-group select option{background:#1e1e1e;color:var(--text)}
+.form-group select option:hover,.form-group select option:checked{background:#2a2a2a;color:var(--gold)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--dark2);border:0.5px solid var(--border);width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.6rem;border-bottom:0.5px solid var(--border)}
+.modal-head h3{font-family:var(--serif);font-size:1rem}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+.modal-body{padding:1.6rem}
+
+/* CHART */
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:2rem}
+.chart-card{background:var(--dark2);border:0.5px solid var(--border);padding:1.4rem}
+.chart-title{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
+
+/* LOGIN */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--black)}
+.login-box{background:var(--dark2);border:0.5px solid var(--border);padding:2.5rem;width:100%;max-width:400px}
+.login-logo{font-family:var(--serif);font-size:1.3rem;color:var(--gold);margin-bottom:0.3rem}
+.login-sub{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem}
+.login-btn{width:100%;padding:0.9rem;background:var(--gold);color:var(--black);font-family:var(--sans);font-size:0.85rem;font-weight:500;border:none;cursor:pointer;margin-top:1rem}
+
+/* SECTION TITLE */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.section-head h2{font-family:var(--serif);font-size:1.2rem;font-weight:500}
+
+/* PRICE TABLE */
+.price-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.05)}
+.price-row:last-child{border-bottom:none}
+.price-edit{display:flex;align-items:center;gap:0.5rem}
+.price-input{width:90px;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--gold);font-family:var(--sans);font-size:0.9rem;padding:0.35rem 0.6rem;outline:none}
+.price-input:focus{border-color:var(--gold)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:0.6rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.filter-btn{padding:0.4rem 1rem;font-size:0.72rem;letter-spacing:0.08em;background:transparent;border:0.5px solid rgba(255,255,255,0.12);color:var(--muted);cursor:pointer;transition:all 0.2s}
+.filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── CANLI DESTEK ── */
+.support-wrap{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 120px);border:0.5px solid var(--border)}
+.visitor-list{border-right:0.5px solid var(--border);overflow-y:auto;background:var(--dark2)}
+.visitor-list-head{padding:0.9rem 1.2rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.visitor-list-head span{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.online-count{background:rgba(74,222,128,0.15);color:#4ade80;font-size:0.68rem;padding:2px 8px;border-radius:20px}
+.visitor-item{padding:0.85rem 1.2rem;cursor:pointer;border-bottom:0.5px solid rgba(255,255,255,0.04);transition:background 0.15s;position:relative}
+.visitor-item:hover{background:rgba(255,255,255,0.03)}
+.visitor-item.active{background:rgba(201,168,76,0.06);border-left:2px solid var(--gold)}
+.visitor-item.has-unread{background:rgba(201,168,76,0.04)}
+.v-name{font-size:0.82rem;color:var(--text);display:flex;align-items:center;gap:0.5rem;margin-bottom:3px}
+.v-online{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.v-offline{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.2);flex-shrink:0}
+.v-page{font-size:0.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.v-time{font-size:0.62rem;color:rgba(255,255,255,0.2)}
+.v-unread{position:absolute;top:0.85rem;right:1rem;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+.chat-panel{display:flex;flex-direction:column;background:var(--black)}
+.chat-panel-head{padding:0.9rem 1.4rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:1rem}
+.chat-panel-name{font-family:var(--serif);font-size:1rem}
+.chat-panel-meta{font-size:0.7rem;color:var(--muted)}
+.chat-panel-page{font-size:0.72rem;color:var(--gold);text-decoration:none;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.activity-log{width:260px;border-left:0.5px solid var(--border);background:var(--dark2);overflow-y:auto;display:flex;flex-direction:column}
+.activity-head{padding:0.7rem 1rem;border-bottom:0.5px solid var(--border);display:flex;gap:0.5rem}
+.activity-tab{font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;padding:0.25rem 0.6rem;border-radius:2px}
+.activity-tab.active{background:rgba(201,168,76,0.12);color:var(--gold)}
+.activity-item{padding:0.55rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.03);font-size:0.7rem}
+.activity-item .a-time{color:rgba(255,255,255,0.2);font-size:0.6rem;margin-bottom:1px}
+.activity-item .a-action{color:var(--text);font-size:0.72rem}
+.activity-item .a-detail{color:var(--muted);font-size:0.68rem;margin-top:1px}
+.activity-item .a-duration{color:var(--gold);font-size:0.65rem;margin-top:1px}
+.page-hist-item{padding:0.6rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.03)}
+.page-hist-title{font-size:0.75rem;color:var(--text);margin-bottom:2px}
+.page-hist-url{font-size:0.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.page-hist-dur{font-size:0.65rem;color:var(--gold);margin-top:2px}
+
+.admin-messages{flex:1;overflow-y:auto;padding:1.2rem;display:flex;flex-direction:column;gap:0.7rem}
+.admin-messages::-webkit-scrollbar{width:3px}
+.admin-messages::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.2)}
+.msg-bubble{max-width:70%;padding:0.6rem 1rem;font-size:0.82rem;line-height:1.5}
+.msg-bubble.from-visitor{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);color:var(--text);align-self:flex-start;border-radius:0 8px 8px 8px}
+.msg-bubble.from-admin{background:rgba(201,168,76,0.15);border:0.5px solid rgba(201,168,76,0.25);color:var(--text);align-self:flex-end;border-radius:8px 0 8px 8px}
+.msg-time{font-size:0.6rem;color:var(--muted);margin-top:3px}
+.admin-typing-row{padding:0.5rem 1.2rem;font-size:0.72rem;color:var(--muted);display:none}
+
+.admin-input-row{display:flex;gap:0;border-top:0.5px solid var(--border)}
+.admin-chat-input{flex:1;background:#1e1e1e;border:none;color:var(--text);font-family:var(--sans);font-size:0.85rem;padding:0.9rem 1.2rem;outline:none;resize:none}
+.admin-send-btn{padding:0 1.4rem;background:var(--gold);border:none;color:var(--black);cursor:pointer;font-size:0.8rem;font-weight:500;letter-spacing:0.05em;transition:background 0.2s}
+.admin-send-btn:hover{background:var(--gold-l)}
+
+.no-visitor-selected{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:0.8rem}
+.no-visitor-selected .icon{font-size:2.5rem;opacity:0.3}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .main{margin-left:0}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .chart-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">Güliz Transfer</div>
+    <div class="login-sub">Yönetim Paneli</div>
+    <div class="form-group" style="margin-bottom:0.9rem">
+      <label>E-posta</label>
+      <input type="email" id="loginEmail" placeholder="admin@guliztransfer.com">
+    </div>
+    <div class="form-group">
+      <label>Şifre</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <p id="loginErr" style="color:#f87171;font-size:0.78rem;margin-top:0.5rem;display:none"></p>
+    <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
+    <p style="font-size:0.68rem;color:var(--muted);margin-top:1.2rem;text-align:center">
+      Demo: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="98f9fcf5f1f6d8ffedf4f1e2eceaf9f6ebfefdeab6fbf7f5">[email&#160;protected]</a> / Guliz2025!
+    </p>
+  </div>
+</div>
+
+<!-- ADMIN LAYOUT -->
+<div id="adminLayout" style="display:none;width:100%">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span>Güliz Transfer</span>
+      <small>Admin Paneli</small>
+    </div>
+    <nav style="padding:0.8rem 0">
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="nav-icon">◈</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('bookings')">
+        <span class="nav-icon">📋</span> Rezervasyonlar
+        <span id="pendingBadge" style="margin-left:auto;background:rgba(251,191,36,0.2);color:#fbbf24;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none"></span>
+      </div>
+      <div class="nav-item" onclick="showPage('drivers')">
+        <span class="nav-icon">🚐</span> Sürücüler
+      </div>
+      <div class="nav-item" onclick="showPage('routes')">
+        <span class="nav-icon">📍</span> Rotalar & Fiyatlar
+      </div>
+      <div class="nav-item" onclick="showPage('stats')">
+        <span class="nav-icon">📊</span> İstatistikler
+      </div>
+      <div class="nav-item" onclick="showPage('support')">
+        <span class="nav-icon">💬</span> Canlı Destek
+        <span id="supportBadge" style="margin-left:auto;background:rgba(74,222,128,0.2);color:#4ade80;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('settings')">
+        <span class="nav-icon">⚙</span> Ayarlar
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.6rem" id="adminNameDisplay"></div>
+      <button class="logout-btn" onclick="doLogout()">Çıkış Yap</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="pageTitle">Dashboard</span>
+      <span class="admin-badge"><span class="admin-dot"></span><span id="adminEmailDisplay"></span></span>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card"><div class="stat-label">Toplam Rezervasyon</div><div class="stat-val" id="st-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">Bugünkü Transfer</div><div class="stat-val" id="st-today">—</div></div>
+        <div class="stat-card"><div class="stat-label">Toplam Gelir</div><div class="stat-val" id="st-revenue">—</div><div class="stat-sub">Onaylı ödemeler</div></div>
+        <div class="stat-card"><div class="stat-label">Bekleyen Onay</div><div class="stat-val" id="st-pending" style="color:#fbbf24">—</div></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Aylık Rezervasyon & Gelir (2025)</div>
+          <canvas id="monthlyChart" height="120"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">En Popüler Rotalar</div>
+          <div id="topRoutesEl"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Son Rezervasyonlar</h3>
+          <button class="btn btn-outline btn-sm" onclick="showPage('bookings')">Tümünü Gör →</button>
+        </div>
+        <table><thead><tr>
+          <th>Ref</th><th>Müşteri</th><th>Güzergah</th><th>Tarih</th><th>Tutar</th><th>Durum</th>
+        </tr></thead><tbody id="recentBookings"></tbody></table>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="page" id="page-bookings">
+      <div class="section-head">
+        <h2>Rezervasyonlar</h2>
+        <button class="btn btn-gold btn-sm" onclick="openNewBookingModal()">+ Yeni Rezervasyon</button>
+      </div>
+      <div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
+        <div class="filter-bar" style="margin-bottom:0">
+          <button class="filter-btn active" onclick="filterBookings('all',this)">Tümü</button>
+          <button class="filter-btn" onclick="filterBookings('pending',this)">Bekleyen</button>
+          <button class="filter-btn" onclick="filterBookings('confirmed',this)">Onaylı</button>
+          <button class="filter-btn" onclick="filterBookings('assigned',this)">Atandı</button>
+          <button class="filter-btn" onclick="filterBookings('completed',this)">Tamamlandı</button>
+          <button class="filter-btn" onclick="filterBookings('cancelled',this)">İptal</button>
+        </div>
+        <input type="date" id="dateFilter" onchange="loadBookings()" style="background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.4rem 0.7rem;outline:none">
+        <input class="search-input" type="text" id="searchInput" placeholder="İsim, ref veya telefon..." oninput="loadBookings()">
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>Ref</th><th>Müşteri</th><th>Güzergah</th><th>Tarih / Saat</th><th>Yolcu</th><th>Tutar</th><th>Ödeme</th><th>Durum</th><th>Sürücü</th><th>İşlem</th>
+        </tr></thead><tbody id="bookingsTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- DRIVERS -->
+    <div class="page" id="page-drivers">
+      <div class="section-head">
+        <h2>Sürücüler</h2>
+        <button class="btn btn-gold btn-sm" onclick="openDriverModal()">+ Sürücü Ekle</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>Ad Soyad</th><th>Telefon</th><th>Plaka</th><th>Durum</th><th>İşlem</th>
+        </tr></thead><tbody id="driversTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ROUTES -->
+    <div class="page" id="page-routes">
+      <div class="section-head">
+        <h2>Rotalar & Fiyatlar</h2>
+        <button class="btn btn-gold btn-sm" onclick="openRouteModal()">+ Yeni Rota</button>
+      </div>
+      <div class="table-wrap">
+        <div id="routesList"></div>
+      </div>
+    </div>
+
+    <!-- CANLI DESTEK -->
+    <div class="page" id="page-support">
+      <div class="section-head" style="margin-bottom:1rem">
+        <h2>Canlı Destek</h2>
+        <span id="supportOnlineText" style="font-size:0.75rem;color:#4ade80;">0 ziyaretçi çevrimiçi</span>
+      </div>
+      <div class="support-wrap">
+
+        <!-- Sol: Ziyaretçi listesi -->
+        <div class="visitor-list" id="visitorList">
+          <div class="visitor-list-head">
+            <span>Ziyaretçiler</span>
+            <span class="online-count" id="onlineCountBadge">0 online</span>
+          </div>
+          <div style="display:flex;border-bottom:0.5px solid var(--border);">
+            <button id="vTabAll" onclick="setVisitorTab('all')" style="flex:1;padding:0.5rem;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;background:rgba(201,168,76,0.08);color:var(--gold);border:none;cursor:pointer;border-bottom:1.5px solid var(--gold);">Tümü</button>
+            <button id="vTabOnline" onclick="setVisitorTab('online')" style="flex:1;padding:0.5rem;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--muted);border:none;cursor:pointer;">Online</button>
+            <button id="vTabHistory" onclick="setVisitorTab('history')" style="flex:1;padding:0.5rem;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;background:transparent;color:var(--muted);border:none;cursor:pointer;">Geçmiş</button>
+          </div>
+          <div id="visitorItems">
+            <div style="padding:2rem 1rem;text-align:center;color:var(--muted);font-size:0.8rem;">
+              Henüz ziyaretçi yok
+            </div>
+          </div>
+        </div>
+
+        <!-- Sağ: Chat + aktivite -->
+        <div style="display:flex;flex:1;overflow:hidden">
+
+          <!-- Chat paneli -->
+          <div class="chat-panel" style="flex:1">
+            <div id="noChatSelected" class="no-visitor-selected">
+              <span class="icon">💬</span>
+              <span>Sohbet başlatmak için bir ziyaretçi seçin</span>
+            </div>
+            <div id="chatPanelContent" style="display:none;flex-direction:column;height:100%">
+              <div class="chat-panel-head">
+                <div style="flex:1">
+                  <div class="chat-panel-name" id="cpName">—</div>
+                  <div class="chat-panel-meta">
+                    <span id="cpDevice"></span> ·
+                    <a id="cpPage" class="chat-panel-page" href="#" target="_blank"></a>
+                  </div>
+                </div>
+                <div style="font-size:0.68rem;color:var(--muted);text-align:right">
+                  <div id="cpOnlineStatus"></div>
+                  <div id="cpTime"></div>
+                </div>
+              </div>
+              <div class="admin-messages" id="adminMessages"></div>
+              <div class="admin-typing-row" id="adminTypingRow">Ziyaretçi yazıyor...</div>
+              <div class="admin-input-row">
+                <textarea class="admin-chat-input" id="adminChatInput" placeholder="Mesajınızı yazın... (Enter = gönder)" rows="1"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();adminSendMessage();}"
+                  oninput="onAdminTyping()"></textarea>
+                <button class="admin-send-btn" onclick="adminSendMessage()">Gönder</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aktivite logu -->
+          <div class="activity-log" id="activityLog">
+            <div class="activity-head">
+              <span class="activity-tab active" id="tabActivity" onclick="switchActivityTab('activity')">Aktivite</span>
+              <span class="activity-tab" id="tabPages" onclick="switchActivityTab('pages')">Sayfalar</span>
+            </div>
+            <div id="activityItems" style="flex:1;overflow-y:auto">
+              <div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Ziyaretçi seçin</div>
+            </div>
+            <div id="pageHistItems" style="flex:1;overflow-y:auto;display:none">
+              <div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Ziyaretçi seçin</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-head"><h2>Ayarlar</h2></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:860px">
+
+        <!-- Profil Güncelle -->
+        <div class="chart-card" style="border:0.5px solid var(--border)">
+          <div class="chart-title">Kullanıcı Bilgileri</div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Ad Soyad</label>
+            <input type="text" id="settingsName" placeholder="Ad Soyad">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem">
+            <label>E-posta</label>
+            <input type="email" id="settingsEmail" placeholder="admin@guliztransfer.com">
+          </div>
+          <p id="profileMsg" style="font-size:0.78rem;margin-bottom:0.8rem;display:none"></p>
+          <button class="btn btn-gold" style="width:100%;padding:0.7rem" onclick="saveProfile()">Kaydet</button>
+        </div>
+
+        <!-- Şifre Değiştir -->
+        <div class="chart-card" style="border:0.5px solid var(--border)">
+          <div class="chart-title">Şifre Değiştir</div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Mevcut Şifre</label>
+            <input type="password" id="currentPass" placeholder="••••••••">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Yeni Şifre</label>
+            <input type="password" id="newPass" placeholder="En az 6 karakter">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem">
+            <label>Yeni Şifre (Tekrar)</label>
+            <input type="password" id="newPassConfirm" placeholder="••••••••">
+          </div>
+          <p id="passMsg" style="font-size:0.78rem;margin-bottom:0.8rem;display:none"></p>
+          <button class="btn btn-gold" style="width:100%;padding:0.7rem" onclick="changePassword()">Şifreyi Güncelle</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="page" id="page-stats">
+      <div class="section-head"><h2>İstatistikler</h2></div>
+      <div class="chart-grid" style="grid-template-columns:1fr 1fr">
+        <div class="chart-card">
+          <div class="chart-title">Aylık Rezervasyon Sayısı</div>
+          <canvas id="bookingChart" height="160"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Aylık Gelir (₺)</div>
+          <canvas id="revenueChart" height="160"></canvas>
+        </div>
+      </div>
+      <div class="chart-card" style="border:0.5px solid var(--border);padding:1.4rem">
+        <div class="chart-title">Rota Bazında Rezervasyon Dağılımı</div>
+        <canvas id="routeChart" height="80"></canvas>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+
+<!-- Booking Detail / Edit Modal -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="bookingModalTitle">Rezervasyon Detayı</h3>
+      <button class="modal-close" onclick="closeModal('bookingModal')">✕</button>
+    </div>
+    <div class="modal-body" id="bookingModalBody"></div>
+  </div>
+</div>
+
+<!-- Driver Modal -->
+<div class="modal-overlay" id="driverModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="driverModalTitle">Sürücü Ekle</h3>
+      <button class="modal-close" onclick="closeModal('driverModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full"><label>Ad Soyad</label><input id="driverName" type="text" placeholder="Ahmet Yılmaz"></div>
+        <div class="form-group"><label>Telefon</label><input id="driverPhone" type="tel" placeholder="+90 5XX XXX XX XX"></div>
+        <div class="form-group"><label>Araç Plakası</label><input id="driverPlate" type="text" placeholder="07 ABC 123"></div>
+      </div>
+      <input type="hidden" id="driverEditId">
+      <button class="btn btn-gold" style="width:100%;padding:0.75rem" onclick="saveDriver()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Route Modal -->
+<div class="modal-overlay" id="routeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Yeni Rota Ekle</h3>
+      <button class="modal-close" onclick="closeModal('routeModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full"><label>Kalkış Noktası</label><input id="routeFrom" type="text" placeholder="Gazipaşa Havalimanı (GZP)"></div>
+        <div class="form-group full"><label>Varış Noktası</label><input id="routeTo" type="text" placeholder="Alanya Merkez"></div>
+        <div class="form-group"><label>Fiyat (₺)</label><input id="routePrice" type="number" placeholder="650"></div>
+        <div class="form-group"><label>Süre</label><input id="routeDuration" type="text" placeholder="25-35 dk"></div>
+      </div>
+      <button class="btn btn-gold" style="width:100%;padding:0.75rem" onclick="saveRoute()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const API = 'http://localhost:3001/api';
+let token = localStorage.getItem('gt_token');
+let currentAdmin = JSON.parse(localStorage.getItem('gt_admin') || 'null');
+let bookingFilter = 'all';
+let allDrivers = [];
+let allRoutes  = [];
+
+/* ── AUTH ── */
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass  = document.getElementById('loginPass').value;
+  document.getElementById('loginErr').style.display = 'none';
+
+  // Demo mode — no backend needed for UI preview
+  if (email === 'admin@guliztransfer.com' && pass === 'Guliz2025!') {
+    token = 'demo-token';
+    currentAdmin = { name:'Süper Admin', email, role:'superadmin' };
+    localStorage.setItem('gt_token', token);
+    localStorage.setItem('gt_admin', JSON.stringify(currentAdmin));
+    enterAdmin();
+    return;
+  }
+
+  try {
+    const res  = await fetch(API+'/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    token = data.token;
+    currentAdmin = data.admin;
+    localStorage.setItem('gt_token', token);
+    localStorage.setItem('gt_admin', JSON.stringify(currentAdmin));
+    enterAdmin();
+  } catch(e) {
+    const el = document.getElementById('loginErr');
+    el.textContent = e.message;
+    el.style.display = 'block';
+  }
+}
+
+function enterAdmin() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('adminLayout').style.display = 'flex';
+  document.getElementById('adminNameDisplay').textContent = currentAdmin.name;
+  document.getElementById('adminEmailDisplay').textContent = currentAdmin.email;
+  loadDashboard();
+  loadDrivers();
+  loadRoutes();
+}
+
+function doLogout() {
+  localStorage.removeItem('gt_token');
+  localStorage.removeItem('gt_admin');
+  location.reload();
+}
+
+/* Auto-login if token exists */
+if (token && currentAdmin) {
+  document.addEventListener('DOMContentLoaded', () => {
+    enterAdmin();
+  });
+}
+
+/* ── NAV ── */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const pages = ['dashboard','bookings','drivers','routes','stats','support','settings'];
+  document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',settings:'Ayarlar'};
+  document.getElementById('pageTitle').textContent = titles[name];
+  if (name === 'bookings') loadBookings();
+  if (name === 'stats')    loadStats();
+  if (name === 'settings') loadSettings();
+  if (name === 'support')  { supportAdminJoin(); clearSupportBadge(); }
+}
+
+/* ── API HELPER ── */
+async function api(path, opts={}) {
+  const headers = { 'Content-Type':'application/json', ...(opts.headers||{}) };
+  if (token !== 'demo-token') headers['Authorization'] = 'Bearer '+token;
+  const res = await fetch(API+path, { ...opts, headers });
+  if (!res.ok) throw new Error((await res.json()).error || 'Hata');
+  return res.json();
+}
+
+/* ── DASHBOARD ── */
+async function loadDashboard() {
+  // Demo data
+  const stats = {
+    totalBookings: 247,
+    todayBookings: 8,
+    totalRevenue:  186400,
+    pendingCount:  5,
+    topRoutes: [
+      { route:'GZP → Alanya Merkez',    count:98,  revenue:63700 },
+      { route:'GZP → Alanya Mahmutlar', count:61,  revenue:45750 },
+      { route:'GZP → Alanya Oba',       count:43,  revenue:30100 },
+      { route:'GZP → Side',             count:28,  revenue:26600 },
+      { route:'GZP → Antalya Merkez',   count:17,  revenue:22950 },
+    ]
+  };
+
+  document.getElementById('st-total').textContent   = stats.totalBookings;
+  document.getElementById('st-today').textContent   = stats.todayBookings;
+  document.getElementById('st-revenue').textContent = '₺' + stats.totalRevenue.toLocaleString('tr-TR');
+  document.getElementById('st-pending').textContent = stats.pendingCount;
+
+  if (stats.pendingCount > 0) {
+    const pb = document.getElementById('pendingBadge');
+    pb.textContent = stats.pendingCount;
+    pb.style.display = 'inline-block';
+  }
+
+  // Top routes
+  const el = document.getElementById('topRoutesEl');
+  el.innerHTML = stats.topRoutes.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">
+      <span style="font-size:0.8rem;color:rgba(255,255,255,0.6)">${r.route}</span>
+      <span style="font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--gold)">${r.count}</span>
+    </div>`).join('');
+
+  // Monthly chart
+  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const bookData   = [12,18,24,31,28,35,42,38,19,0,0,0];
+  const revenueData= [7800,11700,15600,20150,18200,22750,27300,24700,12350,0,0,0];
+
+  new Chart(document.getElementById('monthlyChart'), {
+    type:'bar',
+    data:{
+      labels:months,
+      datasets:[
+        { label:'Rezervasyon', data:bookData, backgroundColor:'rgba(201,168,76,0.5)', borderColor:'rgba(201,168,76,0.8)', borderWidth:1 },
+        { label:'Gelir (₺100)', data:revenueData.map(v=>Math.round(v/100)), type:'line', borderColor:'rgba(255,255,255,0.3)', backgroundColor:'transparent', pointBackgroundColor:'rgba(255,255,255,0.5)', tension:0.4 }
+      ]
+    },
+    options:{ plugins:{legend:{labels:{color:'rgba(255,255,255,0.4)',font:{size:11}}}}, scales:{ x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}} } }
+  });
+
+  // Recent bookings
+  const recent = getDemoBookings().slice(0,6);
+  document.getElementById('recentBookings').innerHTML = recent.map(b => `
+    <tr>
+      <td style="font-family:monospace;color:var(--gold);font-size:0.78rem">${b.booking_ref}</td>
+      <td>${b.customer_name}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
+      <td style="font-size:0.78rem">${b.transfer_date}</td>
+      <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
+      <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
+    </tr>`).join('');
+}
+
+/* ── BOOKINGS ── */
+function getDemoBookings() {
+  const statuses = ['pending','confirmed','assigned','completed','completed','cancelled'];
+  const routes   = [
+    ['Gazipaşa Havalimanı (GZP)','Alanya Merkez',650],
+    ['Gazipaşa Havalimanı (GZP)','Alanya Mahmutlar',750],
+    ['Gazipaşa Havalimanı (GZP)','Side',950],
+    ['Gazipaşa Havalimanı (GZP)','Antalya Merkez',1350],
+    ['Gazipaşa Havalimanı (GZP)','Alanya Oba',700],
+  ];
+  const names = ['Ahmet Yılmaz','Fatma Demir','Mehmet Kaya','Ayşe Şahin','Ali Öztürk','Zeynep Arslan','Mustafa Çelik','Elif Güneş'];
+  const drivers = ['Hasan B.','Murat T.','Serkan D.','—'];
+  return Array.from({length:30},(_, i)=>{
+    const r = routes[i % routes.length];
+    const s = statuses[i % statuses.length];
+    return {
+      id: i+1,
+      booking_ref: 'GT-'+(100000+i),
+      customer_name: names[i%names.length],
+      customer_phone: '+90 532 '+(100+i)+' 00 0'+(i%9),
+      from_point: r[0], to_point: r[1], price: r[2],
+      transfer_date: '2025-0'+(8+(i%2))+'-'+(10+i%20),
+      transfer_time: (8+i%12)+':'+(i%2===0?'00':'30'),
+      passenger_count: 1+(i%4),
+      status: s,
+      payment_status: s==='completed'?'paid':'unpaid',
+      driver_name: s==='assigned'||s==='completed'?drivers[i%3]:null,
+    };
+  });
+}
+
+function loadBookings() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const date   = document.getElementById('dateFilter').value;
+  let data = getDemoBookings();
+  if (bookingFilter !== 'all') data = data.filter(b => b.status === bookingFilter);
+  if (date)   data = data.filter(b => b.transfer_date === date);
+  if (search) data = data.filter(b =>
+    b.customer_name.toLowerCase().includes(search) ||
+    b.booking_ref.toLowerCase().includes(search)   ||
+    b.customer_phone.includes(search)
+  );
+
+  document.getElementById('bookingsTable').innerHTML = data.map(b => `
+    <tr>
+      <td style="font-family:monospace;color:var(--gold);font-size:0.75rem">${b.booking_ref}</td>
+      <td>
+        <div style="font-size:0.82rem">${b.customer_name}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${b.customer_phone}</div>
+      </td>
+      <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
+      <td style="font-size:0.78rem">${b.transfer_date}<br><span style="color:var(--muted)">${b.transfer_time}</span></td>
+      <td style="font-size:0.78rem;color:var(--muted)">${b.passenger_count} kişi</td>
+      <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
+      <td><span class="badge badge-${b.payment_status}">${b.payment_status==='paid'?'Ödendi':'Bekliyor'}</span></td>
+      <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
+      <td style="font-size:0.78rem;color:var(--muted)">${b.driver_name || '—'}</td>
+      <td>
+        <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-outline btn-sm" onclick="openBookingDetail(${b.id})">Detay</button>
+          ${b.status==='pending'?`<button class="btn btn-gold btn-sm" onclick="confirmBooking(${b.id})">Onayla</button>`:''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterBookings(status, btn) {
+  bookingFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadBookings();
+}
+
+function openBookingDetail(id) {
+  const b = getDemoBookings().find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('bookingModalTitle').textContent = 'Rezervasyon — '+b.booking_ref;
+  document.getElementById('bookingModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem">
+      ${field('Müşteri',b.customer_name)} ${field('Telefon',b.customer_phone)}
+      ${field('Güzergah',b.from_point+' → '+b.to_point,true)}
+      ${field('Tarih',b.transfer_date)} ${field('Saat',b.transfer_time)}
+      ${field('Yolcu',b.passenger_count+' kişi')} ${field('Tutar','₺'+parseInt(b.price).toLocaleString('tr-TR'))}
+      ${field('Durum','<span class="badge badge-'+b.status+'">'+statusLabel(b.status)+'</span>',false,true)}
+      ${field('Ödeme','<span class="badge badge-'+b.payment_status+'">'+(b.payment_status==='paid'?'Ödendi':'Bekliyor')+'</span>',false,true)}
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.5rem">Sürücü Ata</label>
+      <div style="display:flex;gap:0.6rem">
+        <select id="assignDriver" style="flex:1;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.5rem 0.7rem;-webkit-appearance:none;appearance:none;outline:none;">
+          <option value="" style="background:#1e1e1e;color:rgba(255,255,255,0.5);">Sürücü seç...</option>
+          ${allDrivers.map(d=>`<option value="${d.id}" style="background:#1e1e1e;color:#fff;" ${b.driver_name===d.name?'selected':''}>${d.name} — ${d.plate}</option>`).join('')}
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="assignDriver(${b.id})">Ata</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+      ${b.status==='pending'?`<button class="btn btn-gold btn-sm" onclick="updateStatus(${b.id},'confirmed')">✓ Onayla</button>`:''}
+      ${b.status==='confirmed'||b.status==='assigned'?`<button class="btn btn-outline btn-sm" onclick="updateStatus(${b.id},'completed')">Tamamlandı</button>`:''}
+      ${b.status!=='cancelled'&&b.status!=='completed'?`<button class="btn btn-danger btn-sm" onclick="updateStatus(${b.id},'cancelled')">İptal Et</button>`:''}
+    </div>
+  `;
+  openModal('bookingModal');
+}
+
+function field(label, val, full=false, raw=false) {
+  return `<div class="form-group${full?' full':''}" style="background:rgba(255,255,255,0.02);border:0.5px solid rgba(255,255,255,0.06);padding:0.7rem 0.9rem">
+    <div style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">${label}</div>
+    <div style="font-size:0.85rem">${raw?val:escapeHtml(String(val))}</div>
+  </div>`;
+}
+
+function confirmBooking(id) { updateStatus(id,'confirmed'); }
+function updateStatus(id, status) {
+  alert(`Rezervasyon #${id} durumu "${statusLabel(status)}" olarak güncellendi.\n(Gerçek sistemde API çağrısı yapılır)`);
+  closeModal('bookingModal');
+  loadBookings();
+}
+function assignDriver(id) {
+  const d = document.getElementById('assignDriver').value;
+  if (!d) { alert('Lütfen sürücü seçin'); return; }
+  const driver = allDrivers.find(x => x.id == d);
+  alert(`${driver?.name || 'Sürücü'} rezervasyon #${id} için atandı.\n(Gerçek sistemde API çağrısı yapılır)`);
+  closeModal('bookingModal');
+}
+
+/* ── DRIVERS ── */
+function loadDrivers() {
+  allDrivers = [
+    { id:1, name:'Hasan Bozkurt',   phone:'+90 532 111 22 33', plate:'07 ABC 001', status:'available' },
+    { id:2, name:'Murat Tekbaş',    phone:'+90 535 444 55 66', plate:'07 DEF 002', status:'busy'      },
+    { id:3, name:'Serkan Duman',    phone:'+90 542 777 88 99', plate:'07 GHI 003', status:'available' },
+    { id:4, name:'Kadir Yıldırım',  phone:'+90 544 222 33 44', plate:'07 JKL 004', status:'offline'   },
+  ];
+  renderDrivers();
+}
+
+function renderDrivers() {
+  document.getElementById('driversTable').innerHTML = allDrivers.map(d => `
+    <tr>
+      <td>${d.name}</td>
+      <td>${d.phone}</td>
+      <td style="font-family:monospace;color:var(--gold)">${d.plate}</td>
+      <td><span class="badge badge-${d.status}">${d.status==='available'?'Müsait':d.status==='busy'?'Görevde':'Çevrimdışı'}</span></td>
+      <td>
+        <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-outline btn-sm" onclick="openDriverModal(${d.id})">Düzenle</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDriver(${d.id})">Sil</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openDriverModal(id) {
+  document.getElementById('driverEditId').value = id || '';
+  if (id) {
+    const d = allDrivers.find(x => x.id === id);
+    document.getElementById('driverModalTitle').textContent = 'Sürücü Düzenle';
+    document.getElementById('driverName').value  = d.name;
+    document.getElementById('driverPhone').value = d.phone;
+    document.getElementById('driverPlate').value = d.plate;
+  } else {
+    document.getElementById('driverModalTitle').textContent = 'Sürücü Ekle';
+    document.getElementById('driverName').value  = '';
+    document.getElementById('driverPhone').value = '';
+    document.getElementById('driverPlate').value = '';
+  }
+  openModal('driverModal');
+}
+
+function saveDriver() {
+  const name  = document.getElementById('driverName').value;
+  const phone = document.getElementById('driverPhone').value;
+  const plate = document.getElementById('driverPlate').value;
+  if (!name||!phone||!plate) { alert('Tüm alanları doldurun'); return; }
+  const editId = parseInt(document.getElementById('driverEditId').value);
+  if (editId) {
+    const d = allDrivers.find(x => x.id===editId);
+    d.name=name; d.phone=phone; d.plate=plate;
+  } else {
+    allDrivers.push({ id: Date.now(), name, phone, plate, status:'available' });
+  }
+  renderDrivers();
+  closeModal('driverModal');
+}
+
+function deleteDriver(id) {
+  if (!confirm('Bu sürücüyü silmek istediğinizden emin misiniz?')) return;
+  allDrivers = allDrivers.filter(d => d.id !== id);
+  renderDrivers();
+}
+
+/* ── ROUTES ── */
+function loadRoutes() {
+  allRoutes = [
+    { id:1, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Merkez',    price:650,  duration:'25-35 dk', active:true },
+    { id:2, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Mahmutlar', price:750,  duration:'35-45 dk', active:true },
+    { id:3, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Oba',       price:700,  duration:'30-40 dk', active:true },
+    { id:4, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Avsallar',  price:800,  duration:'40-50 dk', active:true },
+    { id:5, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Gazipaşa Merkez',  price:400,  duration:'10-15 dk', active:true },
+    { id:6, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Side',             price:950,  duration:'60-75 dk', active:true },
+    { id:7, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Manavgat',         price:900,  duration:'55-70 dk', active:true },
+    { id:8, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Antalya Merkez',   price:1350, duration:'90-110 dk', active:true },
+  ];
+  renderRoutes();
+}
+
+function renderRoutes() {
+  document.getElementById('routesList').innerHTML = allRoutes.map(r => `
+    <div class="price-row">
+      <div>
+        <div style="font-size:0.85rem">${r.from_point} <span style="color:var(--gold)">→</span> ${r.to_point}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${r.duration}</div>
+      </div>
+      <div class="price-edit">
+        <span style="color:var(--muted);font-size:0.8rem">₺</span>
+        <input class="price-input" type="number" value="${r.price}" id="price_${r.id}" onblur="saveRoutePrice(${r.id})">
+        <button class="btn btn-outline btn-sm" onclick="saveRoutePrice(${r.id})">Kaydet</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleRoute(${r.id})">${r.active?'Pasif':'Aktif'}</button>
+      </div>
+    </div>`).join('');
+}
+
+function saveRoutePrice(id) {
+  const r = allRoutes.find(x => x.id===id);
+  const newPrice = parseFloat(document.getElementById('price_'+id).value);
+  if (isNaN(newPrice)||newPrice<=0) { alert('Geçerli bir fiyat girin'); return; }
+  r.price = newPrice;
+  alert(`Fiyat güncellendi: ₺${newPrice}\n(Gerçek sistemde API çağrısı yapılır)`);
+}
+
+function toggleRoute(id) {
+  const r = allRoutes.find(x => x.id===id);
+  r.active = !r.active;
+  renderRoutes();
+}
+
+function openRouteModal() { openModal('routeModal'); }
+function saveRoute() {
+  const from = document.getElementById('routeFrom').value;
+  const to   = document.getElementById('routeTo').value;
+  const price = parseFloat(document.getElementById('routePrice').value);
+  const dur   = document.getElementById('routeDuration').value;
+  if (!from||!to||!price) { alert('Zorunlu alanları doldurun'); return; }
+  allRoutes.push({ id:Date.now(), from_point:from, to_point:to, price, duration:dur, active:true });
+  renderRoutes();
+  closeModal('routeModal');
+}
+
+/* ── STATS ── */
+function loadStats() {
+  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const bookData    = [12,18,24,31,28,35,42,38,19,0,0,0];
+  const revenueData = [7800,11700,15600,20150,18200,22750,27300,24700,12350,0,0,0];
+  const routeLabels = ['GZP → Alanya M.','GZP → Mahmutlar','GZP → Oba','GZP → Side','GZP → Antalya'];
+  const routeData   = [98,61,43,28,17];
+
+  const chartOpts = (color) => ({
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+      y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}
+    }
+  });
+
+  new Chart(document.getElementById('bookingChart'),{
+    type:'bar',
+    data:{labels:months,datasets:[{data:bookData,backgroundColor:'rgba(201,168,76,0.5)',borderColor:'rgba(201,168,76,0.8)',borderWidth:1}]},
+    options:chartOpts()
+  });
+  new Chart(document.getElementById('revenueChart'),{
+    type:'line',
+    data:{labels:months,datasets:[{data:revenueData,borderColor:'rgba(201,168,76,0.8)',backgroundColor:'rgba(201,168,76,0.08)',tension:0.4,fill:true,pointBackgroundColor:'rgba(201,168,76,0.8)'}]},
+    options:chartOpts()
+  });
+  new Chart(document.getElementById('routeChart'),{
+    type:'bar',
+    data:{labels:routeLabels,datasets:[{data:routeData,backgroundColor:['rgba(201,168,76,0.6)','rgba(201,168,76,0.5)','rgba(201,168,76,0.4)','rgba(201,168,76,0.3)','rgba(201,168,76,0.2)'],borderWidth:0}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{display:false}}}}
+  });
+}
+
+/* ── HELPERS ── */
+function statusLabel(s) {
+  return {pending:'Bekliyor',confirmed:'Onaylandı',assigned:'Sürücü Atandı',completed:'Tamamlandı',cancelled:'İptal'}[s] || s;
+}
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ══════════════════════════════════
+   CANLI DESTEK — Admin tarafı
+══════════════════════════════════ */
+let supportSocket     = null;
+let activeSessionId   = null;
+let allVisitorsData   = [];
+let adminTypingTimer  = null;
+let supportJoined     = false;
+let visitorTabFilter  = 'all';
+let activityTabMode   = 'activity';
+
+function supportAdminJoin() {
+  if (supportJoined) return;
+  const script = document.createElement('script');
+  script.src = '/socket.io/socket.io.js';
+  script.onload = () => {
+    supportSocket = io({ transports:['websocket','polling'] });
+    supportSocket.emit('admin:join');
+    supportSocket.on('visitors:update', onVisitorsUpdate);
+    supportSocket.on('visitor:joined',  onVisitorJoined);
+    supportSocket.on('visitor:activity', onVisitorActivity);
+    supportSocket.on('chat:sync',        onChatSync);
+    supportSocket.on('chat:visitor_typing', ({sessionId, typing}) => {
+      if (sessionId === activeSessionId) {
+        document.getElementById('adminTypingRow').style.display = typing ? 'block' : 'none';
+      }
+    });
+    supportJoined = true;
+  };
+  document.head.appendChild(script);
+}
+
+function onVisitorsUpdate(list) {
+  allVisitorsData = list;
+  renderVisitorList(list);
+  const online = list.filter(v => v.online).length;
+  const total  = list.length;
+  document.getElementById('onlineCountBadge').textContent   = online + ' online';
+  document.getElementById('supportOnlineText').textContent  = online + ' ziyaretçi çevrimiçi';
+  document.getElementById('supportBadge').textContent       = online;
+  document.getElementById('supportBadge').style.display     = online > 0 ? 'inline-block' : 'none';
+  // Toplam okunmamış
+  const unread = list.reduce((s,v) => s + (v.unread||0), 0);
+  if (unread > 0 && document.getElementById('page-support').classList.contains('active') === false) {
+    // badge'i kırmızı yap
+  }
+}
+
+function onVisitorJoined(data) {
+  if (document.getElementById('page-support').classList.contains('active')) return;
+  // Nav badge güncelle
+}
+
+function setVisitorTab(tab) {
+  visitorTabFilter = tab;
+  ['all','online','history'].forEach(t => {
+    const btn = document.getElementById('vTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if (!btn) return;
+    btn.style.background   = t===tab ? 'rgba(201,168,76,0.08)' : 'transparent';
+    btn.style.color        = t===tab ? 'var(--gold)' : 'var(--muted)';
+    btn.style.borderBottom = t===tab ? '1.5px solid var(--gold)' : 'none';
+  });
+  renderVisitorList(allVisitorsData);
+}
+
+function renderVisitorList(list) {
+  const container = document.getElementById('visitorItems');
+  let filtered = list;
+  if (visitorTabFilter === 'online')  filtered = list.filter(v => v.online);
+  if (visitorTabFilter === 'history') filtered = list.filter(v => !v.online);
+  if (!filtered.length) {
+    container.innerHTML = `<div style="padding:2rem 1rem;text-align:center;color:var(--muted);font-size:0.8rem;">${visitorTabFilter==='online'?'Şu an kimse yok':visitorTabFilter==='history'?'Geçmiş ziyaretçi yok':'Henüz ziyaretçi yok'}</div>`;
+    return;
+  }
+  const sorted = [...filtered].sort((a,b) => {
+    if (b.unread !== a.unread) return (b.unread||0) - (a.unread||0);
+    if (b.online !== a.online) return b.online ? 1 : -1;
+    return new Date(b.lastSeen) - new Date(a.lastSeen);
+  });
+  container.innerHTML = sorted.map(v => {
+    const pagePath = v.page ? v.page.replace(/https?:\/\/[^/]+/, '') || '/' : '/';
+    const since    = timeSince(v.startTime);
+    const unread   = v.unread || 0;
+    const phone    = v.phone
+      ? `<span style="color:var(--gold);font-size:0.68rem;">${escapeHtml(v.phone)}</span>`
+      : `<span style="font-size:0.65rem;color:rgba(255,100,100,0.5);">tel yok</span>`;
+    const pageCount = v.totalPages || 0;
+    return `<div class="visitor-item${activeSessionId===v.sessionId?' active':''}${unread>0?' has-unread':''}"
+      onclick="selectVisitor('${v.sessionId}')">
+      <div class="v-name">
+        <span class="${v.online?'v-online':'v-offline'}"></span>
+        <span>${escapeHtml(v.name)}</span>
+        ${unread > 0 ? `<span class="v-unread">${unread}</span>` : ''}
+      </div>
+      <div style="margin:3px 0;display:flex;gap:0.5rem;align-items:center">${phone}</div>
+      <div class="v-page">${escapeHtml(pagePath)}</div>
+      <div class="v-time">${v.device} · ${since} · ${pageCount} sayfa</div>
+    </div>`;
+  }).join('');
+}
+
+function selectVisitor(sessionId) {
+  activeSessionId = sessionId;
+  const v = allVisitorsData.find(x => x.sessionId === sessionId);
+  if (!v) return;
+
+  // Sidebar seçim güncelle
+  document.querySelectorAll('.visitor-item').forEach(el => el.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+
+  // Chat panel
+  document.getElementById('noChatSelected').style.display    = 'none';
+  document.getElementById('chatPanelContent').style.display  = 'flex';
+  document.getElementById('cpName').innerHTML = escapeHtml(v.name) +
+    (v.phone ? ` <span style="font-family:var(--sans);font-size:0.75rem;color:var(--gold);font-weight:400;"> · ${escapeHtml(v.phone)}</span>` :
+               ` <span style="font-family:var(--sans);font-size:0.7rem;color:rgba(255,100,100,0.6);font-weight:400;"> · telefon yok</span>`);
+  document.getElementById('cpDevice').textContent            = v.device;
+  document.getElementById('cpOnlineStatus').textContent      = v.online ? '🟢 Çevrimiçi' : '⚫ Çevrimdışı';
+  document.getElementById('cpTime').textContent              = 'Giriş: ' + timeSince(v.startTime);
+  const pageEl = document.getElementById('cpPage');
+  pageEl.textContent = v.page ? v.page.replace(/https?:\/\/[^/]+/, '') || '/' : '/';
+  pageEl.href        = v.page || '#';
+
+  // Aktivite logu
+  loadActivityLog(sessionId);
+
+  // Mesaj geçmişini yükle
+  const msgs = document.getElementById('adminMessages');
+  msgs.innerHTML = '';
+  document.getElementById('adminTypingRow').style.display = 'none';
+  if (v.messages && v.messages.length) {
+    v.messages.forEach(m => appendAdminBubble(m.from, m.senderName || (m.from==='admin'?'Yönetici':v.name), m.text, m.time));
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+  supportSocket.emit('admin:read', { sessionId });
+
+  // Sayfa geçmişini yükle
+  renderPageHistory(v);
+  renderActivityItems(v);
+  switchActivityTab(activityTabMode);
+}
+
+function onChatSync({ sessionId, message }) {
+  if (sessionId !== activeSessionId) return;
+  const v = allVisitorsData.find(x => x.sessionId === sessionId);
+  const name = message.senderName || (message.from === 'admin' ? 'Yönetici' : (v?.name || 'Ziyaretçi'));
+  appendAdminBubble(message.from, name, message.text, message.time);
+  if (message.from === 'visitor') {
+    supportSocket.emit('admin:read', { sessionId });
+  }
+}
+
+function appendAdminBubble(from, senderName, text, time) {
+  const msgs = document.getElementById('adminMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg-bubble ' + (from === 'admin' ? 'from-admin' : 'from-visitor');
+  const t    = new Date(time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  const name = senderName || (from === 'admin' ? 'Yönetici' : 'Ziyaretçi');
+  const nameColor = from === 'admin' ? 'var(--gold)' : 'rgba(255,255,255,0.5)';
+  div.innerHTML = `<div style="font-size:0.62rem;color:${nameColor};margin-bottom:3px;font-weight:500;">${escapeHtml(name)}</div>`
+    + escapeHtml(text).replace(/\n/g,'<br>')
+    + `<div class="msg-time">${t}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function adminSendMessage() {
+  const input = document.getElementById('adminChatInput');
+  const text  = input.value.trim();
+  if (!text || !activeSessionId) return;
+  supportSocket.emit('admin:message', { sessionId: activeSessionId, text });
+  appendAdminBubble('admin', 'Yönetici', text, new Date().toISOString());
+  input.value = '';
+  input.style.height = 'auto';
+  stopAdminTyping();
+}
+
+function onAdminTyping() {
+  supportSocket.emit('admin:typing', { sessionId: activeSessionId, typing: true });
+  clearTimeout(adminTypingTimer);
+  adminTypingTimer = setTimeout(stopAdminTyping, 2000);
+  const el = document.getElementById('adminChatInput');
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+function stopAdminTyping() {
+  if (activeSessionId) supportSocket.emit('admin:typing', { sessionId: activeSessionId, typing: false });
+}
+
+function onVisitorActivity({ sessionId, type, action, detail, page, pageTitle, time }) {
+  if (sessionId !== activeSessionId) return;
+  const items = document.getElementById('activityItems');
+  const div   = document.createElement('div');
+  div.className = 'activity-item';
+  const t = new Date(time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  if (type === 'page') {
+    div.innerHTML = `<div class="a-time">${t}</div><div class="a-action">📄 Sayfa</div><div class="a-detail">${escapeHtml(pageTitle||page||'')}</div>`;
+    // Üstteki sayfa linkini de güncelle
+    const v = allVisitorsData.find(x => x.sessionId === sessionId);
+    if (v) {
+      document.getElementById('cpPage').textContent = (page||'').replace(/https?:\/\/[^/]+/, '') || '/';
+      document.getElementById('cpPage').href = page || '#';
+    }
+  } else {
+    div.innerHTML = `<div class="a-time">${t}</div><div class="a-action">▶ ${escapeHtml(action||'')}</div><div class="a-detail">${escapeHtml(detail||'')}</div>`;
+  }
+  items.prepend(div); // En yeni üste
+  if (items.children.length > 30) items.lastChild?.remove();
+}
+
+function switchActivityTab(tab) {
+  activityTabMode = tab;
+  const tabAct  = document.getElementById('tabActivity');
+  const tabPg   = document.getElementById('tabPages');
+  const actDiv  = document.getElementById('activityItems');
+  const pgDiv   = document.getElementById('pageHistItems');
+  if (tab === 'activity') {
+    tabAct.classList.add('active');    tabPg.classList.remove('active');
+    actDiv.style.display = 'block';   pgDiv.style.display = 'none';
+  } else {
+    tabPg.classList.add('active');    tabAct.classList.remove('active');
+    pgDiv.style.display = 'block';    actDiv.style.display = 'none';
+  }
+}
+
+function renderActivityItems(v) {
+  const el = document.getElementById('activityItems');
+  if (!v || !v.activity || !v.activity.length) {
+    el.innerHTML = '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Aktivite yok</div>';
+    return;
+  }
+  const items = [...v.activity].reverse(); // En yeni üste
+  el.innerHTML = items.map(entry => {
+    const t = new Date(entry.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if (entry.type === 'page') {
+      const dur = entry.prevDuration != null ? `<span style="color:var(--gold);margin-left:4px;">${entry.prevDuration}sn</span>` : '';
+      return `<div class="activity-item">
+        <div class="a-time">${t}</div>
+        <div class="a-action">📄 Sayfa</div>
+        <div class="a-detail">${escapeHtml(entry.pageTitle || entry.page || '')}${dur}</div>
+      </div>`;
+    } else {
+      return `<div class="activity-item">
+        <div class="a-time">${t}</div>
+        <div class="a-action">▶ ${escapeHtml(entry.action || '')}</div>
+        <div class="a-detail">${escapeHtml(entry.detail || '')}</div>
+      </div>`;
+    }
+  }).join('');
+}
+
+function renderPageHistory(v) {
+  const el = document.getElementById('pageHistItems');
+  if (!v || !v.pageHistory || !v.pageHistory.length) {
+    el.innerHTML = '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Sayfa geçmişi yok</div>';
+    return;
+  }
+  el.innerHTML = v.pageHistory.map((ph, i) => {
+    const pagePath = (ph.page || '').replace(/https?:\/\/[^/]+/, '') || '/';
+    const enteredAt = new Date(ph.enteredAt).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const durStr = ph.duration != null
+      ? `<span style="background:rgba(201,168,76,0.12);color:var(--gold);padding:1px 6px;border-radius:3px;font-size:0.68rem;">${ph.duration}sn</span>`
+      : (i === v.pageHistory.length - 1
+          ? `<span style="font-size:0.68rem;color:rgba(46,204,113,0.7);">aktif</span>`
+          : '<span style="font-size:0.68rem;color:var(--muted);">-</span>');
+    return `<div style="padding:0.5rem 0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.04);display:grid;grid-template-columns:1fr auto;gap:0.4rem;align-items:center">
+      <div>
+        <div style="font-size:0.75rem;color:var(--text);word-break:break-all;">${escapeHtml(ph.pageTitle || pagePath)}</div>
+        <div style="font-size:0.65rem;color:var(--muted);margin-top:2px;">${enteredAt} · ${escapeHtml(pagePath)}</div>
+      </div>
+      <div>${durStr}</div>
+    </div>`;
+  }).reverse().join(''); // En yeni üste
+}
+
+function loadActivityLog(sessionId) {
+  document.getElementById('activityItems').innerHTML = '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Aktivite bekleniyor...</div>';
+}
+
+function clearSupportBadge() {
+  document.getElementById('supportBadge').style.display = 'none';
+}
+
+function timeSince(isoStr) {
+  if (!isoStr) return '';
+  const secs = Math.floor((Date.now() - new Date(isoStr)) / 1000);
+  if (secs < 60)   return secs + 'sn önce';
+  if (secs < 3600) return Math.floor(secs/60) + 'dk önce';
+  return Math.floor(secs/3600) + 'sa önce';
+}
+
+/* ── NEW BOOKING MODAL ── */
+function openNewBookingModal() {
+  alert('Yeni rezervasyon formu — gerçek sistemde API ile entegre edilir.');
+}
+
+/* ── SETTINGS ── */
+function loadSettings() {
+  document.getElementById('settingsName').value  = currentAdmin?.name  || '';
+  document.getElementById('settingsEmail').value = currentAdmin?.email || '';
+  document.getElementById('currentPass').value      = '';
+  document.getElementById('newPass').value           = '';
+  document.getElementById('newPassConfirm').value    = '';
+  showMsg('profileMsg', '', '');
+  showMsg('passMsg',    '', '');
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+  el.style.color = type === 'error' ? '#f87171' : '#4ade80';
+}
+
+async function saveProfile() {
+  const name  = document.getElementById('settingsName').value.trim();
+  const email = document.getElementById('settingsEmail').value.trim();
+  if (!name || !email) { showMsg('profileMsg','Ad ve e-posta zorunlu','error'); return; }
+
+  if (token === 'demo-token') {
+    currentAdmin.name  = name;
+    currentAdmin.email = email;
+    localStorage.setItem('gt_admin', JSON.stringify(currentAdmin));
+    document.getElementById('adminNameDisplay').textContent  = name;
+    document.getElementById('adminEmailDisplay').textContent = email;
+    showMsg('profileMsg', 'Profil güncellendi (demo mod)', 'ok');
+    return;
+  }
+
+  try {
+    const data = await api('/auth/update-profile', {
+      method: 'PUT',
+      body: JSON.stringify({ name, email })
+    });
+    currentAdmin.name  = data.admin.name;
+    currentAdmin.email = data.admin.email;
+    localStorage.setItem('gt_admin', JSON.stringify(currentAdmin));
+    document.getElementById('adminNameDisplay').textContent  = data.admin.name;
+    document.getElementById('adminEmailDisplay').textContent = data.admin.email;
+    showMsg('profileMsg', data.message, 'ok');
+  } catch(e) { showMsg('profileMsg', e.message, 'error'); }
+}
+
+async function changePassword() {
+  const current = document.getElementById('currentPass').value;
+  const newPw   = document.getElementById('newPass').value;
+  const confirm = document.getElementById('newPassConfirm').value;
+
+  if (!current || !newPw) { showMsg('passMsg','Tüm alanları doldurun','error'); return; }
+  if (newPw.length < 6)   { showMsg('passMsg','Yeni şifre en az 6 karakter olmalı','error'); return; }
+  if (newPw !== confirm)  { showMsg('passMsg','Yeni şifreler eşleşmiyor','error'); return; }
+
+  if (token === 'demo-token') {
+    if (current !== 'Guliz2025!') { showMsg('passMsg','Mevcut şifre hatalı','error'); return; }
+    showMsg('passMsg', 'Şifre güncellendi (demo mod)', 'ok');
+    document.getElementById('currentPass').value   = '';
+    document.getElementById('newPass').value        = '';
+    document.getElementById('newPassConfirm').value = '';
+    return;
+  }
+
+  try {
+    const data = await api('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword: current, newPassword: newPw })
+    });
+    showMsg('passMsg', data.message, 'ok');
+    document.getElementById('currentPass').value   = '';
+    document.getElementById('newPass').value        = '';
+    document.getElementById('newPassConfirm').value = '';
+  } catch(e) { showMsg('passMsg', e.message, 'error'); }
+}
+
+</script>
+</body>
+</html>

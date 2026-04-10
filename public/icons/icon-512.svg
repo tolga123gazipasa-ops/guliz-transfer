@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <rect x="20" y="20" width="472" height="472" fill="none" stroke="#C9A84C" stroke-width="2" opacity="0.35"/>
+  <circle cx="256" cy="230" r="130" fill="none" stroke="#C9A84C" stroke-width="1.5" opacity="0.2"/>
+  <circle cx="256" cy="230" r="100" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.12"/>
+  <text x="256" y="210" font-family="Georgia, serif" font-size="90" font-weight="600"
+        fill="#C9A84C" text-anchor="middle" letter-spacing="8">GT</text>
+  <line x1="136" y1="250" x2="376" y2="250" stroke="#C9A84C" stroke-width="1" opacity="0.5"/>
+  <text x="256" y="292" font-family="Arial, sans-serif" font-size="22" font-weight="300"
+        fill="#C9A84C" text-anchor="middle" letter-spacing="10" opacity="0.8">TRANSFER</text>
+  <text x="256" y="360" font-family="Arial, sans-serif" font-size="14"
+        fill="rgba(255,255,255,0.25)" text-anchor="middle" letter-spacing="4">GÜLIZ SIRKETLER GRUBU</text>
+  <!-- Köşe detayları -->
+  <line x1="20" y1="55" x2="55" y2="20" stroke="#C9A84C" stroke-width="1" opacity="0.3"/>
+  <line x1="457" y1="20" x2="492" y2="55" stroke="#C9A84C" stroke-width="1" opacity="0.3"/>
+  <line x1="20" y1="457" x2="55" y2="492" stroke="#C9A84C" stroke-width="1" opacity="0.3"/>
+  <line x1="457" y1="492" x2="492" y2="457" stroke="#C9A84C" stroke-width="1" opacity="0.3"/>
+</svg>
