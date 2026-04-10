@@ -235,6 +235,6 @@ setInterval(() => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`✅ Güliz Transfer API çalışıyor → http://localhost:${PORT}`);
-  console.log(`🌐 Müşteri sitesi          → http://localhost:${PORT}/guliz-transfer.html`);
+  console.log(`🌐 Müşteri sitesi          → http://localhost:${PORT}/`);
   console.log(`🔧 Admin paneli            → http://localhost:${PORT}/admin.html`);
 });
