@@ -94,23 +94,43 @@ async function handleCommand(update) {
 
   /* ─── Telegram mesajına direkt REPLY ile cevap ─── */
   if (msg.reply_to_message) {
-    const replyToId  = msg.reply_to_message.message_id;
-    const sessionId  = msgSessionMap.get(replyToId);
+    const replyToId = msg.reply_to_message.message_id;
+    let sessionId   = msgSessionMap.get(replyToId);
+
+    // Memory'de yoksa DB'den bak (restart sonrası için)
+    if (!sessionId) {
+      const db = require('../models/db');
+      const { rows } = await db.query(
+        `SELECT session_id FROM telegram_mappings WHERE telegram_msg_id=$1`, [replyToId]
+      ).catch(() => ({ rows: [] }));
+      if (rows.length) sessionId = rows[0].session_id;
+    }
+
     if (sessionId) {
+      const metin    = msg.text.trim();
+      const msgObj   = { from: 'admin', senderName: 'Yönetici', text: metin, time: new Date().toISOString(), id: Date.now() };
       const visitors = _getVisitors ? _getVisitors() : [];
-      const v = visitors.find(v => v.sessionId === sessionId);
+      const v        = visitors.find(v => v.sessionId === sessionId);
+
       if (v) {
-        const metin  = msg.text.trim();
-        const msgObj = { from: 'admin', senderName: 'Yönetici', text: metin, time: new Date().toISOString(), id: Date.now() };
         v.messages.push(msgObj);
         if (_io) {
           if (v.socketId) _io.to(v.socketId).emit('chat:message', msgObj);
           _io.to('admins').emit('chat:sync', { sessionId: v.sessionId, message: msgObj });
         }
-        await sendReply(chatId, `✅ <b>${v.name}</b>'a mesaj gönderildi:\n"${metin}"`);
-      } else {
-        await sendReply(chatId, '⚠️ Ziyaretçi artık çevrimiçi değil. /ziyaretciler ile listeye bakın.');
       }
+
+      // Mesajı DB'ye kaydet
+      const db = require('../models/db');
+      db.query(
+        `INSERT INTO chat_messages (session_id, from_type, sender_name, text, read) VALUES ($1,'admin','Yönetici',$2,true)`,
+        [sessionId, metin]
+      ).catch(() => {});
+
+      await sendReply(chatId, v
+        ? `✅ <b>${v.name}</b>'a mesaj gönderildi:\n"${metin}"`
+        : `✅ Mesaj kaydedildi (ziyaretçi şu an çevrimdışı).`
+      );
       return;
     }
   }
@@ -393,11 +413,15 @@ async function tgChatMessage(name, phone, text, sessionId) {
     `✉️ ${text}\n\n` +
     `<i>↩️ Bu mesaja reply yaparak yanıtlayabilirsiniz.</i>`
   );
-  // Telegram mesaj ID'sini sessionId ile eşleştir (reply yönlendirme için)
   if (result && sessionId) {
     msgSessionMap.set(result.message_id, sessionId);
-    // 2 saat sonra temizle
     setTimeout(() => msgSessionMap.delete(result.message_id), 2 * 60 * 60 * 1000);
+    // DB'ye de kaydet (restart sonrası da çalışsın)
+    const db = require('../models/db');
+    db.query(
+      `INSERT INTO telegram_mappings (telegram_msg_id, session_id) VALUES ($1,$2) ON CONFLICT DO NOTHING`,
+      [result.message_id, sessionId]
+    ).catch(() => {});
   }
 }
 

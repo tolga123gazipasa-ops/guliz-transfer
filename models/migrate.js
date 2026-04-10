@@ -78,6 +78,37 @@ async function migrate() {
       );
       CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
       CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
+
+      CREATE TABLE IF NOT EXISTS chat_sessions (
+        id         SERIAL PRIMARY KEY,
+        session_id VARCHAR(100) UNIQUE NOT NULL,
+        name       VARCHAR(100) DEFAULT 'Ziyaretçi',
+        phone      VARCHAR(20),
+        ip         VARCHAR(50),
+        device     VARCHAR(150),
+        first_page VARCHAR(255),
+        last_page  VARCHAR(255),
+        online     BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_seen  TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS chat_messages (
+        id          SERIAL PRIMARY KEY,
+        session_id  VARCHAR(100) NOT NULL REFERENCES chat_sessions(session_id) ON DELETE CASCADE,
+        from_type   VARCHAR(10)  NOT NULL,
+        sender_name VARCHAR(100),
+        text        TEXT         NOT NULL,
+        read        BOOLEAN      DEFAULT FALSE,
+        created_at  TIMESTAMPTZ  DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id);
+
+      CREATE TABLE IF NOT EXISTS telegram_mappings (
+        telegram_msg_id BIGINT PRIMARY KEY,
+        session_id      VARCHAR(100) NOT NULL,
+        created_at      TIMESTAMPTZ  DEFAULT NOW()
+      );
     `);
 
     await client.query(`

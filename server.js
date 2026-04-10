@@ -13,6 +13,7 @@ const driverRoutes  = require('./routes/drivers');
 const routeRoutes   = require('./routes/routes');
 const statsRoutes   = require('./routes/stats');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
+const db = require('./models/db');
 
 const app    = express();
 const server = http.createServer(app);
@@ -79,9 +80,11 @@ io.on('connection', (socket) => {
     if (!v) return;
     const msg = { from: 'admin', senderName: 'Yönetici', text, time: new Date().toISOString(), id: Date.now() };
     v.messages.push(msg);
-    // Ziyaretçiye gönder
+    db.query(
+      `INSERT INTO chat_messages (session_id, from_type, sender_name, text, read) VALUES ($1,'admin','Yönetici',$2,true)`,
+      [sessionId, text]
+    ).catch(() => {});
     if (v.socketId) io.to(v.socketId).emit('chat:message', msg);
-    // Diğer admin sekmelerine senkronize et
     io.to('admins').emit('chat:sync', { sessionId, message: msg });
     broadcastVisitors();
   });
@@ -101,7 +104,9 @@ io.on('connection', (socket) => {
   });
 
   /* ── Ziyaretçi bağlandı ── */
-  socket.on('visitor:connect', ({ sessionId, name, phone, page, pageTitle, device }) => {
+  socket.on('visitor:connect', async ({ sessionId, name, phone, page, pageTitle, device }) => {
+    const ip = socket.handshake.headers['x-forwarded-for']?.split(',')[0].trim()
+               || socket.handshake.address || '';
     const isNew = !visitors.has(sessionId);
     let v = visitors.get(sessionId);
     const now = new Date().toISOString();
@@ -110,6 +115,7 @@ io.on('connection', (socket) => {
         sessionId,
         name:          name || 'Ziyaretçi',
         phone:         phone || '',
+        ip,
         page,
         pageTitle,
         device:        device || 'Bilinmiyor',
@@ -119,10 +125,9 @@ io.on('connection', (socket) => {
         online:        true,
         socketId:      socket.id,
         activity:      [],
-        pageHistory:   [],          // { page, pageTitle, enteredAt, duration }
-        currentPageStart: now,      // ne zaman bu sayfaya girdi
+        pageHistory:   [],
+        currentPageStart: now,
       };
-      // İlk sayfayı kaydet
       if (page) v.pageHistory.push({ page, pageTitle, enteredAt: now, duration: null });
       visitors.set(sessionId, v);
     } else {
@@ -132,8 +137,36 @@ io.on('connection', (socket) => {
       v.currentPageStart = now;
       if (name && name !== 'Ziyaretçi') v.name = name;
       if (phone) v.phone = phone;
+      if (ip) v.ip = ip;
     }
     socket.sessionId = sessionId;
+
+    // DB'ye kaydet / güncelle
+    db.query(
+      `INSERT INTO chat_sessions (session_id, name, phone, ip, device, first_page, last_page, online, last_seen)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,true,NOW())
+       ON CONFLICT (session_id) DO UPDATE SET
+         name=COALESCE(NULLIF($2,'Ziyaretçi'), chat_sessions.name),
+         phone=COALESCE(NULLIF($3,''), chat_sessions.phone),
+         ip=$4, device=$5, last_page=$7, online=true, last_seen=NOW()`,
+      [sessionId, v.name, v.phone || null, ip || null, device || null, page || null, page || null]
+    ).catch(() => {});
+
+    // DB'den mesaj geçmişini yükle (memory boşsa)
+    if (v.messages.length === 0) {
+      const { rows } = await db.query(
+        `SELECT from_type, sender_name, text, read, created_at FROM chat_messages
+         WHERE session_id=$1 ORDER BY created_at ASC LIMIT 100`, [sessionId]
+      ).catch(() => ({ rows: [] }));
+      if (rows.length > 0) {
+        v.messages = rows.map(r => ({
+          from: r.from_type, senderName: r.sender_name,
+          text: r.text, read: r.read,
+          time: r.created_at, id: r.created_at
+        }));
+      }
+    }
+
     // Admin'e bildir
     broadcastVisitors();
     io.to('admins').emit('visitor:joined', { sessionId: v.sessionId, name: v.name, page: v.page });
@@ -141,7 +174,7 @@ io.on('connection', (socket) => {
     if (isNew) {
       tgVisitorOnline(v.name, v.page || '/').catch(() => {});
     }
-    // Varsa önceki mesaj geçmişini gönder
+    // Mesaj geçmişini gönder
     if (v.messages.length > 0) {
       socket.emit('chat:history', v.messages);
     }
@@ -199,11 +232,16 @@ io.on('connection', (socket) => {
     const msg = { from: 'visitor', senderName: v.name, text, time: new Date().toISOString(), id: Date.now(), read: false };
     v.messages.push(msg);
     v.lastSeen = new Date().toISOString();
+    db.query(
+      `INSERT INTO chat_messages (session_id, from_type, sender_name, text, read) VALUES ($1,'visitor',$2,$3,false)`,
+      [sessionId, v.name, text]
+    ).catch(() => {});
+    db.query(`UPDATE chat_sessions SET name=$2, phone=$3, last_seen=NOW() WHERE session_id=$1`,
+      [sessionId, v.name, v.phone || null]
+    ).catch(() => {});
     io.to('admins').emit('chat:sync', { sessionId, message: msg });
     broadcastVisitors();
-    // Telegram bildirimi — admin paneli açık değilse haberdar et
     tgChatMessage(v.name, v.phone, text, sessionId).catch(() => {});
-    // Onay ziyaretçiye
     socket.emit('chat:delivered', { id: msg.id });
   });
 
@@ -231,6 +269,25 @@ setInterval(() => {
     if (!v.online && new Date(v.lastSeen).getTime() < cutoff) visitors.delete(sid);
   }
 }, 30 * 60 * 1000);
+
+// Yeni tabloları otomatik oluştur
+db.query(`
+  CREATE TABLE IF NOT EXISTS chat_sessions (
+    id SERIAL PRIMARY KEY, session_id VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(100) DEFAULT 'Ziyaretçi', phone VARCHAR(20), ip VARCHAR(50),
+    device VARCHAR(150), first_page VARCHAR(255), last_page VARCHAR(255),
+    online BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW(), last_seen TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE TABLE IF NOT EXISTS chat_messages (
+    id SERIAL PRIMARY KEY, session_id VARCHAR(100) NOT NULL REFERENCES chat_sessions(session_id) ON DELETE CASCADE,
+    from_type VARCHAR(10) NOT NULL, sender_name VARCHAR(100), text TEXT NOT NULL,
+    read BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id);
+  CREATE TABLE IF NOT EXISTS telegram_mappings (
+    telegram_msg_id BIGINT PRIMARY KEY, session_id VARCHAR(100) NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+`).catch(e => console.error('Tablo oluşturma hatası:', e.message));
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
