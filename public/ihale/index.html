@@ -253,8 +253,8 @@
         <div class="stat-lbl">Devam Eden</div>
       </div>
       <div class="stat">
-        <div class="stat-num" id="stat-tutar">0</div>
-        <div class="stat-lbl">Toplam Tutar (₺)</div>
+        <div class="stat-num">🏆</div>
+        <div class="stat-lbl">Başarıyla Teslim</div>
       </div>
     </div>
   </div>
@@ -287,37 +287,51 @@
 // ============================================================
 const ihaleler = {
   tamamlandi: [
-    // {
-    //   kurum: "Kurum Adı",
-    //   baslik: "İhale Başlığı",
-    //   tur: "Mal Alımı / Hizmet / Yapım İşi",
-    //   tarih: "AA.YYYY",
-    //   sure: "X ay",
-    //   tutar: "1.000.000"
-    // },
+    {
+      kurum: "Milli Savunma Bakanlığı – MSB Bağlıları",
+      baslik: "1'inci Deniz İstihkam Tabur K. Lığı",
+      tur: "Nakliye İşi"
+    },
+    {
+      kurum: "Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu",
+      baslik: "Isparta Kapalı Ve Açık Ceza İnfaz Kurumu İşyurdu",
+      tur: "Nakliye İşi"
+    },
+    {
+      kurum: "Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu",
+      baslik: "Devrek Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü",
+      tur: "Nakliye İşi"
+    },
+    {
+      kurum: "Diğer Özel Bütçeli Kuruluşlar",
+      baslik: "Çanakkale Açık Ceza İnfaz Kurumu İşyurdu",
+      tur: "Nakliye İşi"
+    },
+    {
+      kurum: "Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu",
+      baslik: "Adana 2 Nolu Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü",
+      tur: "Nakliye İşi"
+    },
+    {
+      kurum: "Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu",
+      baslik: "Antakya Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü",
+      tur: "Nakliye İşi"
+    },
+    {
+      kurum: "Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu",
+      baslik: "Bafra Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü",
+      tur: "Nakliye İşi"
+    },
   ],
   devam: [
-    // {
-    //   kurum: "Kurum Adı",
-    //   baslik: "İhale Başlığı",
-    //   tur: "Mal Alımı / Hizmet / Yapım İşi",
-    //   tarih: "AA.YYYY",
-    //   sure: "X ay",
-    //   tutar: "1.000.000"
-    // },
+    {
+      kurum: "Milli Eğitim Bakanlığı – Antalya Öğretmenevi",
+      baslik: "Öğretmen Evi Ve Akşam Sanat Okulu Müdürlüğü",
+      tur: "Personel Alım İşi"
+    },
   ]
 };
 // ============================================================
-
-function tutarToNumber(t) {
-  return parseFloat(t.replace(/\./g, '').replace(',', '.')) || 0;
-}
-
-function formatTutar(toplam) {
-  if (toplam >= 1000000) return (toplam / 1000000).toFixed(1).replace('.', ',') + ' M';
-  if (toplam >= 1000) return (toplam / 1000).toFixed(0) + ' K';
-  return toplam.toFixed(0);
-}
 
 function buildCard(item, durum) {
   const statusClass = durum === 'tamamlandi' ? 'status-tamamlandi' : 'status-devam';
@@ -334,19 +348,7 @@ function buildCard(item, durum) {
           <span class="label">Tür</span>
           <span class="value">${item.tur}</span>
         </div>
-        <div class="card-row">
-          <span class="label">Tarih</span>
-          <span class="value">${item.tarih}</span>
-        </div>
-        <div class="card-row">
-          <span class="label">Süre</span>
-          <span class="value">${item.sure}</span>
-        </div>
-        <div class="card-row">
-          <span class="label">Tutar</span>
-          <span class="value tutar">₺ ${item.tutar}</span>
-        </div>
-        <div class="card-row" style="margin-top:4px;">
+        <div class="card-row" style="margin-top:8px;">
           <span class="label">Durum</span>
           <span class="card-status ${statusClass}">
             <span class="status-dot"></span>${statusText}
@@ -377,9 +379,6 @@ function render() {
   document.getElementById('stat-tamamlandi').textContent = tList.length;
   document.getElementById('stat-devam').textContent = dList.length;
   document.getElementById('stat-toplam').textContent = tList.length + dList.length;
-
-  const toplamTutar = [...tList, ...dList].reduce((s, i) => s + tutarToNumber(i.tutar), 0);
-  document.getElementById('stat-tutar').textContent = '₺' + formatTutar(toplamTutar);
 }
 
 function switchTab(tab, btn) {
