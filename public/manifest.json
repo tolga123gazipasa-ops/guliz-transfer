@@ -2,7 +2,7 @@
   "name": "Güliz Transfer",
   "short_name": "Güliz Transfer",
   "description": "VIP ve Shuttle Transfer Hizmeti — Havalimanı, Şehirlerarası",
-  "start_url": "/guliz-transfer.html?pwa=1",
+  "start_url": "/transfer/",
   "display": "standalone",
   "background_color": "#0A0A0A",
   "theme_color": "#C9A84C",
@@ -29,14 +29,14 @@
       "name": "VIP Transfer",
       "short_name": "VIP",
       "description": "Özel VIP transfer rezervasyonu",
-      "url": "/guliz-transfer.html?type=vip#rezervasyon",
+      "url": "/transfer/#rezervasyon",
       "icons": [{ "src": "icons/icon-192.svg", "sizes": "192x192" }]
     },
     {
       "name": "Shuttle",
       "short_name": "Shuttle",
       "description": "Paylaşımlı shuttle rezervasyonu",
-      "url": "/guliz-transfer.html?type=shuttle#rezervasyon",
+      "url": "/transfer/#rezervasyon",
       "icons": [{ "src": "icons/icon-192.svg", "sizes": "192x192" }]
     }
   ]
