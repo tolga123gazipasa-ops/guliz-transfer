@@ -409,27 +409,28 @@ db.query(`
     ).catch(() => {});
     console.log('🗺️  Transfer rotaları oluşturuldu.');
   }
-  // İhale seed — parametrik sorgularla güvenli ekleme
-  const { rows: ihaleSeed } = await db.query('SELECT id FROM ihaleler LIMIT 1').catch(() => ({ rows: [] }));
-  if (!ihaleSeed.length) {
-    const ihaleRows = [
-      ['Milli Savunma Bakanlığı – MSB Bağlıları',                             "1'inci Deniz İstihkam Tabur K. Lığı",                 'Nakliye İşi',       'tamamlandi', 1],
-      ['Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',             'Isparta Kapalı Ve Açık Ceza İnfaz Kurumu İşyurdu',   'Nakliye İşi',       'tamamlandi', 2],
-      ['Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',             'Devrek Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',    'Nakliye İşi',       'tamamlandi', 3],
-      ['Diğer Özel Bütçeli Kuruluşlar',                                       'Çanakkale Açık Ceza İnfaz Kurumu İşyurdu',            'Nakliye İşi',       'tamamlandi', 4],
-      ['Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',             'Adana 2 Nolu Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü','Nakliye İşi',     'tamamlandi', 5],
-      ['Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',             'Antakya Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',   'Nakliye İşi',       'tamamlandi', 6],
-      ['Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',             'Bafra Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',     'Nakliye İşi',       'tamamlandi', 7],
-      ['Milli Eğitim Bakanlığı – Antalya Öğretmenevi',                        'Öğretmen Evi Ve Akşam Sanat Okulu Müdürlüğü',         'Personel Alım İşi', 'devam',      1],
-    ];
-    for (const [kurum, baslik, tur, durum, sira] of ihaleRows) {
-      await db.query(
-        'INSERT INTO ihaleler (kurum, baslik, tur, durum, sira) VALUES ($1,$2,$3,$4,$5)',
-        [kurum, baslik, tur, durum, sira]
-      ).catch(e => console.error('İhale seed hatası:', e.message));
-    }
-    console.log('🏗️  İhale verileri oluşturuldu.');
+  // İhale seed — WHERE NOT EXISTS ile idempotent, her startup'ta çalışır
+  const ihaleRows = [
+    ["1'inci Deniz İstihkam Tabur K. Lığı",                  'Milli Savunma Bakanlığı – MSB Bağlıları',               'Nakliye İşi',       'tamamlandi', 1],
+    ['Isparta Kapalı Ve Açık Ceza İnfaz Kurumu İşyurdu',     'Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu','Nakliye İşi',       'tamamlandi', 2],
+    ['Devrek Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',      'Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu','Nakliye İşi',       'tamamlandi', 3],
+    ['Çanakkale Açık Ceza İnfaz Kurumu İşyurdu',             'Diğer Özel Bütçeli Kuruluşlar',                         'Nakliye İşi',       'tamamlandi', 4],
+    ['Adana 2 Nolu Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü','Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu','Nakliye İşi',       'tamamlandi', 5],
+    ['Antakya Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',     'Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu','Nakliye İşi',       'tamamlandi', 6],
+    ['Bafra Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',       'Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu','Nakliye İşi',       'tamamlandi', 7],
+    ['Öğretmen Evi Ve Akşam Sanat Okulu Müdürlüğü',          'Milli Eğitim Bakanlığı – Antalya Öğretmenevi',          'Personel Alım İşi', 'devam',      1],
+  ];
+  let eklenen = 0;
+  for (const [baslik, kurum, tur, durum, sira] of ihaleRows) {
+    const r = await db.query(
+      `INSERT INTO ihaleler (kurum, baslik, tur, durum, sira)
+       SELECT $1,$2,$3,$4,$5 WHERE NOT EXISTS (SELECT 1 FROM ihaleler WHERE baslik=$2)`,
+      [kurum, baslik, tur, durum, sira]
+    ).catch(e => { console.error('İhale seed hatası:', e.message); return { rowCount: 0 }; });
+    eklenen += r.rowCount || 0;
   }
+  if (eklenen > 0) console.log(`🏗️  ${eklenen} ihale verisi eklendi.`);
+
 }).catch(e => console.error('Tablo oluşturma hatası:', e.message));
 
 const PORT = process.env.PORT || 3001;
