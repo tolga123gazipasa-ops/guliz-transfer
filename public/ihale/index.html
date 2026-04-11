@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamu İhaleleri – Guliz Şirketler Topluluğu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Montserrat', sans-serif; background: #f4f6fb; overflow-x: hidden; color: #1a2d6b; }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 60px;
+    background: #fff;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+  }
+  .logo img { height: 54px; display: block; object-fit: contain; }
+  nav ul { list-style: none; display: flex; gap: 32px; }
+  nav ul li a {
+    text-decoration: none;
+    color: #1a2d6b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav ul li a:hover, nav ul li a.active { color: #e8192c; }
+
+  /* HERO */
+  .page-hero {
+    background: linear-gradient(140deg, #0a1235 0%, #1a2d6b 55%, #0f1d4a 100%);
+    padding: 130px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-hero .bg-circle {
+    position: absolute;
+    right: -100px; top: -100px;
+    width: 480px; height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, #e8192c 0%, #b01020 65%, #8a0c18 100%);
+    opacity: 0.18;
+  }
+  .page-hero-content { position: relative; z-index: 2; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(232,25,44,0.18);
+    border: 1px solid rgba(232,25,44,0.45);
+    border-radius: 30px;
+    padding: 5px 14px;
+    margin-bottom: 18px;
+  }
+  .eyebrow-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #e8192c;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity:1; }
+    50% { transform: scale(1.5); opacity:.6; }
+  }
+  .eyebrow span { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #ff5060; text-transform: uppercase; }
+  .page-hero h1 { font-size: 42px; font-weight: 900; color: #fff; letter-spacing: -1px; margin-bottom: 12px; }
+  .page-hero h1 .red { color: #e8192c; }
+  .page-hero p { font-family: 'Open Sans', sans-serif; font-size: 15px; color: rgba(255,255,255,0.72); max-width: 520px; line-height: 1.7; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    background: rgba(10,18,53,0.85);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 48px;
+  }
+  .stat { flex: 1; text-align: center; padding: 16px; border-right: 1px solid rgba(255,255,255,0.08); }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-size: 22px; font-weight: 900; color: #e8192c; }
+  .stat-lbl { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+
+  /* MAIN CONTENT */
+  .container { max-width: 1200px; margin: 0 auto; padding: 60px 24px 80px; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 40px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(26,45,107,0.12);
+    background: #fff;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 18px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #fff;
+    color: #8898bb;
+  }
+  .tab-btn.active {
+    background: #1a2d6b;
+    color: #fff;
+  }
+  .tab-btn:first-child { border-radius: 12px 0 0 12px; }
+  .tab-btn:last-child { border-radius: 0 12px 12px 0; }
+  .tab-badge {
+    background: #e8192c;
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .tab-btn.active .tab-badge { background: rgba(255,255,255,0.2); }
+
+  /* CARDS GRID */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+
+  .ihale-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(26,45,107,0.08);
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+    border-top: 4px solid #1a2d6b;
+  }
+  .ihale-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(26,45,107,0.14); }
+  .ihale-card.devam { border-top-color: #e8192c; }
+
+  .card-head {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid #f0f3fb;
+  }
+  .card-kurum {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #8898bb;
+    margin-bottom: 8px;
+  }
+  .card-title { font-size: 15px; font-weight: 800; color: #1a2d6b; line-height: 1.4; }
+
+  .card-body { padding: 16px 24px 20px; }
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f4f6fb;
+    font-size: 12px;
+  }
+  .card-row:last-child { border-bottom: none; }
+  .card-row .label { color: #8898bb; font-weight: 600; }
+  .card-row .value { color: #1a2d6b; font-weight: 700; }
+  .card-row .value.tutar { color: #e8192c; font-size: 14px; font-weight: 800; }
+
+  .card-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .status-tamamlandi { background: #e8f5e9; color: #2e7d32; }
+  .status-devam { background: #fff3e0; color: #e65100; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-tamamlandi .status-dot { background: #2e7d32; }
+  .status-devam .status-dot { background: #e65100; animation: pulse 1.4s infinite; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 60px 20px; color: #8898bb; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty p { font-size: 14px; }
+
+  /* TAB PANEL */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 12px 20px; }
+    .logo img { height: 42px; }
+    nav ul { display: none; }
+    .page-hero { padding: 110px 24px 48px; }
+    .page-hero h1 { font-size: 28px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .stats-bar { flex-wrap: wrap; }
+    .stat { min-width: 50%; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <a href="../index.html" style="display:inline-block; line-height:0;">
+      <img src="../slider/logo.png" alt="Guliz Şirketler Topluluğu">
+    </a>
+  </div>
+  <ul>
+    <li><a href="../index.html">Anasayfa</a></li>
+    <li><a href="#" class="active">Kamu İhalesi</a></li>
+    <li><a href="../transfer/index.html">Transfer</a></li>
+  </ul>
+</nav>
+
+<section class="page-hero">
+  <div class="bg-circle"></div>
+  <div class="page-hero-content">
+    <div class="eyebrow">
+      <div class="eyebrow-dot"></div>
+      <span>Kamu İhaleleri</span>
+    </div>
+    <h1>İhale <span class="red">Projelerimiz</span></h1>
+    <p>Guliz Şirketler Topluluğu olarak tamamladığımız ve sürmekte olan kamu ihalelerimiz.</p>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num" id="stat-toplam">0</div>
+        <div class="stat-lbl">Toplam İhale</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-tamamlandi">0</div>
+        <div class="stat-lbl">Tamamlanan</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-devam">0</div>
+        <div class="stat-lbl">Devam Eden</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="stat-tutar">0</div>
+        <div class="stat-lbl">Toplam Tutar (₺)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tamamlandi', this)">
+      ✅ Tamamlananlar
+      <span class="tab-badge" id="badge-tamamlandi">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('devam', this)">
+      🔄 Devam Edenler
+      <span class="tab-badge" id="badge-devam">0</span>
+    </button>
+  </div>
+
+  <div id="panel-tamamlandi" class="tab-panel active">
+    <div class="cards-grid" id="grid-tamamlandi"></div>
+  </div>
+
+  <div id="panel-devam" class="tab-panel">
+    <div class="cards-grid" id="grid-devam"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// İHALE VERİLERİ
+// ============================================================
+const ihaleler = {
+  tamamlandi: [
+    // {
+    //   kurum: "Kurum Adı",
+    //   baslik: "İhale Başlığı",
+    //   tur: "Mal Alımı / Hizmet / Yapım İşi",
+    //   tarih: "AA.YYYY",
+    //   sure: "X ay",
+    //   tutar: "1.000.000"
+    // },
+  ],
+  devam: [
+    // {
+    //   kurum: "Kurum Adı",
+    //   baslik: "İhale Başlığı",
+    //   tur: "Mal Alımı / Hizmet / Yapım İşi",
+    //   tarih: "AA.YYYY",
+    //   sure: "X ay",
+    //   tutar: "1.000.000"
+    // },
+  ]
+};
+// ============================================================
+
+function tutarToNumber(t) {
+  return parseFloat(t.replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+function formatTutar(toplam) {
+  if (toplam >= 1000000) return (toplam / 1000000).toFixed(1).replace('.', ',') + ' M';
+  if (toplam >= 1000) return (toplam / 1000).toFixed(0) + ' K';
+  return toplam.toFixed(0);
+}
+
+function buildCard(item, durum) {
+  const statusClass = durum === 'tamamlandi' ? 'status-tamamlandi' : 'status-devam';
+  const statusText = durum === 'tamamlandi' ? 'Tamamlandı' : 'Devam Ediyor';
+  const cardClass = durum === 'tamamlandi' ? '' : 'devam';
+  return `
+    <div class="ihale-card ${cardClass}">
+      <div class="card-head">
+        <div class="card-kurum">${item.kurum}</div>
+        <div class="card-title">${item.baslik}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-row">
+          <span class="label">Tür</span>
+          <span class="value">${item.tur}</span>
+        </div>
+        <div class="card-row">
+          <span class="label">Tarih</span>
+          <span class="value">${item.tarih}</span>
+        </div>
+        <div class="card-row">
+          <span class="label">Süre</span>
+          <span class="value">${item.sure}</span>
+        </div>
+        <div class="card-row">
+          <span class="label">Tutar</span>
+          <span class="value tutar">₺ ${item.tutar}</span>
+        </div>
+        <div class="card-row" style="margin-top:4px;">
+          <span class="label">Durum</span>
+          <span class="card-status ${statusClass}">
+            <span class="status-dot"></span>${statusText}
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  const gridT = document.getElementById('grid-tamamlandi');
+  const gridD = document.getElementById('grid-devam');
+
+  const tList = ihaleler.tamamlandi;
+  const dList = ihaleler.devam;
+
+  gridT.innerHTML = tList.length
+    ? tList.map(i => buildCard(i, 'tamamlandi')).join('')
+    : '<div class="empty"><div class="empty-icon">📋</div><p>Henüz tamamlanan ihale girilmemiş.</p></div>';
+
+  gridD.innerHTML = dList.length
+    ? dList.map(i => buildCard(i, 'devam')).join('')
+    : '<div class="empty"><div class="empty-icon">📋</div><p>Henüz devam eden ihale girilmemiş.</p></div>';
+
+  document.getElementById('badge-tamamlandi').textContent = tList.length;
+  document.getElementById('badge-devam').textContent = dList.length;
+  document.getElementById('stat-tamamlandi').textContent = tList.length;
+  document.getElementById('stat-devam').textContent = dList.length;
+  document.getElementById('stat-toplam').textContent = tList.length + dList.length;
+
+  const toplamTutar = [...tList, ...dList].reduce((s, i) => s + tutarToNumber(i.tutar), 0);
+  document.getElementById('stat-tutar').textContent = '₺' + formatTutar(toplamTutar);
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+render();
+</script>
+</body>
+</html>
