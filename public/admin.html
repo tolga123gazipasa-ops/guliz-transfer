@@ -214,9 +214,6 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
     <p id="loginErr" style="color:#f87171;font-size:0.78rem;margin-top:0.5rem;display:none"></p>
     <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
-    <p style="font-size:0.68rem;color:var(--muted);margin-top:1.2rem;text-align:center">
-      Demo: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="98f9fcf5f1f6d8ffedf4f1e2eceaf9f6ebfefdeab6fbf7f5">[email&#160;protected]</a> / Guliz2025!
-    </p>
   </div>
 </div>
 
@@ -630,16 +627,6 @@ async function doLogin() {
   const pass  = document.getElementById('loginPass').value;
   document.getElementById('loginErr').style.display = 'none';
 
-  // Demo mode — no backend needed for UI preview
-  if (email === 'admin@guliztransfer.com' && pass === 'Guliz2025!') {
-    token = 'demo-token';
-    currentAdmin = { name:'Süper Admin', email, role:'superadmin' };
-    localStorage.setItem('gt_token', token);
-    localStorage.setItem('gt_admin', JSON.stringify(currentAdmin));
-    enterAdmin();
-    return;
-  }
-
   try {
     const res  = await fetch(API+'/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) });
     const data = await res.json();
@@ -786,7 +773,7 @@ function showPage(name) {
 /* ── API HELPER ── */
 async function api(path, opts={}) {
   const headers = { 'Content-Type':'application/json', ...(opts.headers||{}) };
-  if (token !== 'demo-token') headers['Authorization'] = 'Bearer '+token;
+  if (token) headers['Authorization'] = 'Bearer '+token;
   const res = await fetch(API+path, { ...opts, headers });
   if (!res.ok) throw new Error((await res.json()).error || 'Hata');
   return res.json();
@@ -794,134 +781,92 @@ async function api(path, opts={}) {
 
 /* ── DASHBOARD ── */
 async function loadDashboard() {
-  // Demo data
-  const stats = {
-    totalBookings: 247,
-    todayBookings: 8,
-    totalRevenue:  186400,
-    pendingCount:  5,
-    topRoutes: [
-      { route:'GZP → Alanya Merkez',    count:98,  revenue:63700 },
-      { route:'GZP → Alanya Mahmutlar', count:61,  revenue:45750 },
-      { route:'GZP → Alanya Oba',       count:43,  revenue:30100 },
-      { route:'GZP → Side',             count:28,  revenue:26600 },
-      { route:'GZP → Antalya Merkez',   count:17,  revenue:22950 },
-    ]
-  };
-
-  document.getElementById('st-total').textContent   = stats.totalBookings;
-  document.getElementById('st-today').textContent   = stats.todayBookings;
-  document.getElementById('st-revenue').textContent = '₺' + stats.totalRevenue.toLocaleString('tr-TR');
-  document.getElementById('st-pending').textContent = stats.pendingCount;
-
-  if (stats.pendingCount > 0) {
-    const pb = document.getElementById('pendingBadge');
-    pb.textContent = stats.pendingCount;
-    pb.style.display = 'inline-block';
-  }
-
-  // Top routes
-  const el = document.getElementById('topRoutesEl');
-  el.innerHTML = stats.topRoutes.map(r => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">
-      <span style="font-size:0.8rem;color:rgba(255,255,255,0.6)">${r.route}</span>
-      <span style="font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--gold)">${r.count}</span>
-    </div>`).join('');
+  try {
+    const stats = await api('/api/stats/dashboard');
+    document.getElementById('st-total').textContent   = stats.totalBookings;
+    document.getElementById('st-today').textContent   = stats.todayBookings;
+    document.getElementById('st-revenue').textContent = '₺' + parseFloat(stats.totalRevenue).toLocaleString('tr-TR');
+    document.getElementById('st-pending').textContent = stats.pendingCount;
+    if (stats.pendingCount > 0) {
+      const pb = document.getElementById('pendingBadge');
+      pb.textContent = stats.pendingCount;
+      pb.style.display = 'inline-block';
+    }
+    const el = document.getElementById('topRoutesEl');
+    el.innerHTML = (stats.topRoutes||[]).map(r => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">
+        <span style="font-size:0.8rem;color:rgba(255,255,255,0.6)">${r.route}</span>
+        <span style="font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--gold)">${r.count}</span>
+      </div>`).join('') || '<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem 0">Henüz rezervasyon yok.</div>';
+  } catch(e) { console.error('Dashboard yüklenemedi:', e); }
 
   // Monthly chart
-  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-  const bookData   = [12,18,24,31,28,35,42,38,19,0,0,0];
-  const revenueData= [7800,11700,15600,20150,18200,22750,27300,24700,12350,0,0,0];
-
-  new Chart(document.getElementById('monthlyChart'), {
-    type:'bar',
-    data:{
-      labels:months,
-      datasets:[
-        { label:'Rezervasyon', data:bookData, backgroundColor:'rgba(201,168,76,0.5)', borderColor:'rgba(201,168,76,0.8)', borderWidth:1 },
-        { label:'Gelir (₺100)', data:revenueData.map(v=>Math.round(v/100)), type:'line', borderColor:'rgba(255,255,255,0.3)', backgroundColor:'transparent', pointBackgroundColor:'rgba(255,255,255,0.5)', tension:0.4 }
-      ]
-    },
-    options:{ plugins:{legend:{labels:{color:'rgba(255,255,255,0.4)',font:{size:11}}}}, scales:{ x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}} } }
-  });
+  try {
+    const monthly = await api('/api/stats/monthly');
+    const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+    const bookData    = Array(12).fill(0);
+    const revenueData = Array(12).fill(0);
+    monthly.forEach(r => { const i = parseInt(r.month)-1; bookData[i]=parseInt(r.bookings); revenueData[i]=parseFloat(r.revenue); });
+    new Chart(document.getElementById('monthlyChart'), {
+      type:'bar',
+      data:{
+        labels:months,
+        datasets:[
+          { label:'Rezervasyon', data:bookData, backgroundColor:'rgba(201,168,76,0.5)', borderColor:'rgba(201,168,76,0.8)', borderWidth:1 },
+          { label:'Gelir (₺100)', data:revenueData.map(v=>Math.round(v/100)), type:'line', borderColor:'rgba(255,255,255,0.3)', backgroundColor:'transparent', pointBackgroundColor:'rgba(255,255,255,0.5)', tension:0.4 }
+        ]
+      },
+      options:{ plugins:{legend:{labels:{color:'rgba(255,255,255,0.4)',font:{size:11}}}}, scales:{ x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}} } }
+    });
+  } catch(e) { console.error('Chart yüklenemedi:', e); }
 
   // Recent bookings
-  const recent = getDemoBookings().slice(0,6);
-  document.getElementById('recentBookings').innerHTML = recent.map(b => `
-    <tr>
-      <td style="font-family:monospace;color:var(--gold);font-size:0.78rem">${b.booking_ref}</td>
-      <td>${b.customer_name}</td>
-      <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
-      <td style="font-size:0.78rem">${b.transfer_date}</td>
-      <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
-      <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
-    </tr>`).join('');
+  try {
+    const recent = await api('/api/bookings');
+    document.getElementById('recentBookings').innerHTML = recent.slice(0,6).map(b => `
+      <tr>
+        <td style="font-family:monospace;color:var(--gold);font-size:0.78rem">${b.booking_ref}</td>
+        <td>${escapeHtml(b.customer_name)}</td>
+        <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
+        <td style="font-size:0.78rem">${b.transfer_date}</td>
+        <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
+        <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1rem">Henüz rezervasyon yok.</td></tr>';
+  } catch(e) { console.error('Son rezervasyonlar yüklenemedi:', e); }
 }
 
 /* ── BOOKINGS ── */
-function getDemoBookings() {
-  const statuses = ['pending','confirmed','assigned','completed','completed','cancelled'];
-  const routes   = [
-    ['Gazipaşa Havalimanı (GZP)','Alanya Merkez',650],
-    ['Gazipaşa Havalimanı (GZP)','Alanya Mahmutlar',750],
-    ['Gazipaşa Havalimanı (GZP)','Side',950],
-    ['Gazipaşa Havalimanı (GZP)','Antalya Merkez',1350],
-    ['Gazipaşa Havalimanı (GZP)','Alanya Oba',700],
-  ];
-  const names = ['Ahmet Yılmaz','Fatma Demir','Mehmet Kaya','Ayşe Şahin','Ali Öztürk','Zeynep Arslan','Mustafa Çelik','Elif Güneş'];
-  const drivers = ['Hasan B.','Murat T.','Serkan D.','—'];
-  return Array.from({length:30},(_, i)=>{
-    const r = routes[i % routes.length];
-    const s = statuses[i % statuses.length];
-    return {
-      id: i+1,
-      booking_ref: 'GT-'+(100000+i),
-      customer_name: names[i%names.length],
-      customer_phone: '+90 532 '+(100+i)+' 00 0'+(i%9),
-      from_point: r[0], to_point: r[1], price: r[2],
-      transfer_date: '2025-0'+(8+(i%2))+'-'+(10+i%20),
-      transfer_time: (8+i%12)+':'+(i%2===0?'00':'30'),
-      passenger_count: 1+(i%4),
-      status: s,
-      payment_status: s==='completed'?'paid':'unpaid',
-      driver_name: s==='assigned'||s==='completed'?drivers[i%3]:null,
-    };
-  });
-}
-
-function loadBookings() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
+async function loadBookings() {
+  const search = document.getElementById('searchInput').value;
   const date   = document.getElementById('dateFilter').value;
-  let data = getDemoBookings();
-  if (bookingFilter !== 'all') data = data.filter(b => b.status === bookingFilter);
-  if (date)   data = data.filter(b => b.transfer_date === date);
-  if (search) data = data.filter(b =>
-    b.customer_name.toLowerCase().includes(search) ||
-    b.booking_ref.toLowerCase().includes(search)   ||
-    b.customer_phone.includes(search)
-  );
-
-  document.getElementById('bookingsTable').innerHTML = data.map(b => `
-    <tr>
-      <td style="font-family:monospace;color:var(--gold);font-size:0.75rem">${b.booking_ref}</td>
-      <td>
-        <div style="font-size:0.82rem">${b.customer_name}</div>
-        <div style="font-size:0.7rem;color:var(--muted)">${b.customer_phone}</div>
-      </td>
-      <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
-      <td style="font-size:0.78rem">${b.transfer_date}<br><span style="color:var(--muted)">${b.transfer_time}</span></td>
-      <td style="font-size:0.78rem;color:var(--muted)">${b.passenger_count} kişi</td>
-      <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
-      <td><span class="badge badge-${b.payment_status}">${b.payment_status==='paid'?'Ödendi':'Bekliyor'}</span></td>
-      <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
-      <td style="font-size:0.78rem;color:var(--muted)">${b.driver_name || '—'}</td>
-      <td>
-        <div style="display:flex;gap:0.4rem">
-          <button class="btn btn-outline btn-sm" onclick="openBookingDetail(${b.id})">Detay</button>
-          ${b.status==='pending'?`<button class="btn btn-gold btn-sm" onclick="confirmBooking(${b.id})">Onayla</button>`:''}
-        </div>
-      </td>
-    </tr>`).join('');
+  try {
+    const params = new URLSearchParams();
+    if (bookingFilter !== 'all') params.set('status', bookingFilter);
+    if (date)   params.set('date', date);
+    if (search) params.set('search', search);
+    const data = await api('/api/bookings?' + params.toString());
+    document.getElementById('bookingsTable').innerHTML = data.length ? data.map(b => `
+      <tr>
+        <td style="font-family:monospace;color:var(--gold);font-size:0.75rem">${b.booking_ref}</td>
+        <td>
+          <div style="font-size:0.82rem">${escapeHtml(b.customer_name)}</div>
+          <div style="font-size:0.7rem;color:var(--muted)">${b.customer_phone}</div>
+        </td>
+        <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
+        <td style="font-size:0.78rem">${b.transfer_date}<br><span style="color:var(--muted)">${b.transfer_time}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted)">${b.passenger_count} kişi</td>
+        <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
+        <td><span class="badge badge-${b.payment_status||'unpaid'}">${b.payment_status==='paid'?'Ödendi':'Bekliyor'}</span></td>
+        <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted)">${b.driver_name || '—'}</td>
+        <td>
+          <div style="display:flex;gap:0.4rem">
+            <button class="btn btn-outline btn-sm" onclick="openBookingDetail(${b.id})">Detay</button>
+            ${b.status==='pending'?`<button class="btn btn-gold btn-sm" onclick="confirmBooking(${b.id})">Onayla</button>`:''}
+          </div>
+        </td>
+      </tr>`).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem">Henüz rezervasyon yok.</td></tr>';
+  } catch(e) { console.error('Rezervasyonlar yüklenemedi:', e); }
 }
 
 function filterBookings(status, btn) {
@@ -931,36 +876,37 @@ function filterBookings(status, btn) {
   loadBookings();
 }
 
-function openBookingDetail(id) {
-  const b = getDemoBookings().find(x => x.id === id);
-  if (!b) return;
-  document.getElementById('bookingModalTitle').textContent = 'Rezervasyon — '+b.booking_ref;
-  document.getElementById('bookingModalBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem">
-      ${field('Müşteri',b.customer_name)} ${field('Telefon',b.customer_phone)}
-      ${field('Güzergah',b.from_point+' → '+b.to_point,true)}
-      ${field('Tarih',b.transfer_date)} ${field('Saat',b.transfer_time)}
-      ${field('Yolcu',b.passenger_count+' kişi')} ${field('Tutar','₺'+parseInt(b.price).toLocaleString('tr-TR'))}
-      ${field('Durum','<span class="badge badge-'+b.status+'">'+statusLabel(b.status)+'</span>',false,true)}
-      ${field('Ödeme','<span class="badge badge-'+b.payment_status+'">'+(b.payment_status==='paid'?'Ödendi':'Bekliyor')+'</span>',false,true)}
-    </div>
-    <div style="margin-bottom:1rem">
-      <label style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.5rem">Sürücü Ata</label>
-      <div style="display:flex;gap:0.6rem">
-        <select id="assignDriver" style="flex:1;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.5rem 0.7rem;-webkit-appearance:none;appearance:none;outline:none;">
-          <option value="" style="background:#1e1e1e;color:rgba(255,255,255,0.5);">Sürücü seç...</option>
-          ${allDrivers.map(d=>`<option value="${d.id}" style="background:#1e1e1e;color:#fff;" ${b.driver_name===d.name?'selected':''}>${d.name} — ${d.plate}</option>`).join('')}
-        </select>
-        <button class="btn btn-gold btn-sm" onclick="assignDriver(${b.id})">Ata</button>
+async function openBookingDetail(id) {
+  try {
+    const b = await api('/api/bookings/' + id);
+    document.getElementById('bookingModalTitle').textContent = 'Rezervasyon — '+b.booking_ref;
+    document.getElementById('bookingModalBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.4rem">
+        ${field('Müşteri',b.customer_name)} ${field('Telefon',b.customer_phone)}
+        ${field('Güzergah',b.from_point+' → '+b.to_point,true)}
+        ${field('Tarih',b.transfer_date)} ${field('Saat',b.transfer_time)}
+        ${field('Yolcu',b.passenger_count+' kişi')} ${field('Tutar','₺'+parseInt(b.price).toLocaleString('tr-TR'))}
+        ${field('Durum','<span class="badge badge-'+b.status+'">'+statusLabel(b.status)+'</span>',false,true)}
+        ${field('Ödeme','<span class="badge badge-'+(b.payment_status||'unpaid')+'">'+(b.payment_status==='paid'?'Ödendi':'Bekliyor')+'</span>',false,true)}
       </div>
-    </div>
-    <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
-      ${b.status==='pending'?`<button class="btn btn-gold btn-sm" onclick="updateStatus(${b.id},'confirmed')">✓ Onayla</button>`:''}
-      ${b.status==='confirmed'||b.status==='assigned'?`<button class="btn btn-outline btn-sm" onclick="updateStatus(${b.id},'completed')">Tamamlandı</button>`:''}
-      ${b.status!=='cancelled'&&b.status!=='completed'?`<button class="btn btn-danger btn-sm" onclick="updateStatus(${b.id},'cancelled')">İptal Et</button>`:''}
-    </div>
-  `;
-  openModal('bookingModal');
+      <div style="margin-bottom:1rem">
+        <label style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:0.5rem">Sürücü Ata</label>
+        <div style="display:flex;gap:0.6rem">
+          <select id="assignDriver" style="flex:1;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.5rem 0.7rem;-webkit-appearance:none;appearance:none;outline:none;">
+            <option value="" style="background:#1e1e1e;color:rgba(255,255,255,0.5);">Sürücü seç...</option>
+            ${allDrivers.map(d=>`<option value="${d.id}" style="background:#1e1e1e;color:#fff;" ${b.driver_id==d.id?'selected':''}>${d.name} — ${d.plate}</option>`).join('')}
+          </select>
+          <button class="btn btn-gold btn-sm" onclick="assignDriver(${b.id})">Ata</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+        ${b.status==='pending'?`<button class="btn btn-gold btn-sm" onclick="updateStatus(${b.id},'confirmed')">✓ Onayla</button>`:''}
+        ${b.status==='confirmed'||b.status==='assigned'?`<button class="btn btn-outline btn-sm" onclick="updateStatus(${b.id},'completed')">Tamamlandı</button>`:''}
+        ${b.status!=='cancelled'&&b.status!=='completed'?`<button class="btn btn-danger btn-sm" onclick="updateStatus(${b.id},'cancelled')">İptal Et</button>`:''}
+      </div>
+    `;
+    openModal('bookingModal');
+  } catch(e) { alert('Rezervasyon yüklenemedi: ' + e.message); }
 }
 
 function field(label, val, full=false, raw=false) {
@@ -971,28 +917,30 @@ function field(label, val, full=false, raw=false) {
 }
 
 function confirmBooking(id) { updateStatus(id,'confirmed'); }
-function updateStatus(id, status) {
-  alert(`Rezervasyon #${id} durumu "${statusLabel(status)}" olarak güncellendi.\n(Gerçek sistemde API çağrısı yapılır)`);
-  closeModal('bookingModal');
-  loadBookings();
+async function updateStatus(id, status) {
+  try {
+    await api('/api/bookings/'+id+'/status', { method:'PATCH', body:JSON.stringify({ status }) });
+    closeModal('bookingModal');
+    loadBookings();
+    loadDashboard();
+  } catch(e) { alert('Durum güncellenemedi: ' + e.message); }
 }
-function assignDriver(id) {
+async function assignDriver(id) {
   const d = document.getElementById('assignDriver').value;
   if (!d) { alert('Lütfen sürücü seçin'); return; }
-  const driver = allDrivers.find(x => x.id == d);
-  alert(`${driver?.name || 'Sürücü'} rezervasyon #${id} için atandı.\n(Gerçek sistemde API çağrısı yapılır)`);
-  closeModal('bookingModal');
+  try {
+    await api('/api/bookings/'+id+'/assign', { method:'PATCH', body:JSON.stringify({ driver_id: parseInt(d) }) });
+    closeModal('bookingModal');
+    loadBookings();
+  } catch(e) { alert('Sürücü atanamadı: ' + e.message); }
 }
 
 /* ── DRIVERS ── */
-function loadDrivers() {
-  allDrivers = [
-    { id:1, name:'Hasan Bozkurt',   phone:'+90 532 111 22 33', plate:'07 ABC 001', status:'available' },
-    { id:2, name:'Murat Tekbaş',    phone:'+90 535 444 55 66', plate:'07 DEF 002', status:'busy'      },
-    { id:3, name:'Serkan Duman',    phone:'+90 542 777 88 99', plate:'07 GHI 003', status:'available' },
-    { id:4, name:'Kadir Yıldırım',  phone:'+90 544 222 33 44', plate:'07 JKL 004', status:'offline'   },
-  ];
-  renderDrivers();
+async function loadDrivers() {
+  try {
+    allDrivers = await api('/api/drivers');
+    renderDrivers();
+  } catch(e) { console.error('Sürücüler yüklenemedi:', e); }
 }
 
 function renderDrivers() {
@@ -1028,41 +976,38 @@ function openDriverModal(id) {
   openModal('driverModal');
 }
 
-function saveDriver() {
+async function saveDriver() {
   const name  = document.getElementById('driverName').value;
   const phone = document.getElementById('driverPhone').value;
   const plate = document.getElementById('driverPlate').value;
   if (!name||!phone||!plate) { alert('Tüm alanları doldurun'); return; }
   const editId = parseInt(document.getElementById('driverEditId').value);
-  if (editId) {
-    const d = allDrivers.find(x => x.id===editId);
-    d.name=name; d.phone=phone; d.plate=plate;
-  } else {
-    allDrivers.push({ id: Date.now(), name, phone, plate, status:'available' });
-  }
-  renderDrivers();
-  closeModal('driverModal');
+  try {
+    if (editId) {
+      const d = allDrivers.find(x => x.id===editId);
+      await api('/api/drivers/'+editId, { method:'PUT', body:JSON.stringify({ name, phone, plate, status: d?.status||'available' }) });
+    } else {
+      await api('/api/drivers', { method:'POST', body:JSON.stringify({ name, phone, plate }) });
+    }
+    closeModal('driverModal');
+    loadDrivers();
+  } catch(e) { alert('Kaydedilemedi: ' + e.message); }
 }
 
-function deleteDriver(id) {
+async function deleteDriver(id) {
   if (!confirm('Bu sürücüyü silmek istediğinizden emin misiniz?')) return;
-  allDrivers = allDrivers.filter(d => d.id !== id);
-  renderDrivers();
+  try {
+    await api('/api/drivers/'+id, { method:'DELETE' });
+    loadDrivers();
+  } catch(e) { alert('Silinemedi: ' + e.message); }
 }
 
 /* ── ROUTES ── */
-function loadRoutes() {
-  allRoutes = [
-    { id:1, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Merkez',    price:650,  duration:'25-35 dk', active:true },
-    { id:2, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Mahmutlar', price:750,  duration:'35-45 dk', active:true },
-    { id:3, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Oba',       price:700,  duration:'30-40 dk', active:true },
-    { id:4, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Alanya Avsallar',  price:800,  duration:'40-50 dk', active:true },
-    { id:5, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Gazipaşa Merkez',  price:400,  duration:'10-15 dk', active:true },
-    { id:6, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Side',             price:950,  duration:'60-75 dk', active:true },
-    { id:7, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Manavgat',         price:900,  duration:'55-70 dk', active:true },
-    { id:8, from_point:'Gazipaşa Havalimanı (GZP)', to_point:'Antalya Merkez',   price:1350, duration:'90-110 dk', active:true },
-  ];
-  renderRoutes();
+async function loadRoutes() {
+  try {
+    allRoutes = await api('/api/routes');
+    renderRoutes();
+  } catch(e) { console.error('Rotalar yüklenemedi:', e); }
 }
 
 function renderRoutes() {
@@ -1081,41 +1026,44 @@ function renderRoutes() {
     </div>`).join('');
 }
 
-function saveRoutePrice(id) {
+async function saveRoutePrice(id) {
   const r = allRoutes.find(x => x.id===id);
   const newPrice = parseFloat(document.getElementById('price_'+id).value);
   if (isNaN(newPrice)||newPrice<=0) { alert('Geçerli bir fiyat girin'); return; }
-  r.price = newPrice;
-  alert(`Fiyat güncellendi: ₺${newPrice}\n(Gerçek sistemde API çağrısı yapılır)`);
+  try {
+    await api('/api/routes/'+id, { method:'PUT', body:JSON.stringify({ price:newPrice, duration:r.duration, active:r.active }) });
+    r.price = newPrice;
+    alert('Fiyat güncellendi: ₺'+newPrice);
+  } catch(e) { alert('Güncellenemedi: ' + e.message); }
 }
 
-function toggleRoute(id) {
+async function toggleRoute(id) {
   const r = allRoutes.find(x => x.id===id);
-  r.active = !r.active;
-  renderRoutes();
+  try {
+    await api('/api/routes/'+id, { method:'PUT', body:JSON.stringify({ price:r.price, duration:r.duration, active:!r.active }) });
+    r.active = !r.active;
+    renderRoutes();
+  } catch(e) { alert('Güncellenemedi: ' + e.message); }
 }
 
 function openRouteModal() { openModal('routeModal'); }
-function saveRoute() {
-  const from = document.getElementById('routeFrom').value;
-  const to   = document.getElementById('routeTo').value;
+async function saveRoute() {
+  const from  = document.getElementById('routeFrom').value;
+  const to    = document.getElementById('routeTo').value;
   const price = parseFloat(document.getElementById('routePrice').value);
   const dur   = document.getElementById('routeDuration').value;
   if (!from||!to||!price) { alert('Zorunlu alanları doldurun'); return; }
-  allRoutes.push({ id:Date.now(), from_point:from, to_point:to, price, duration:dur, active:true });
-  renderRoutes();
-  closeModal('routeModal');
+  try {
+    await api('/api/routes', { method:'POST', body:JSON.stringify({ from_point:from, to_point:to, price, duration:dur }) });
+    closeModal('routeModal');
+    loadRoutes();
+  } catch(e) { alert('Kaydedilemedi: ' + e.message); }
 }
 
 /* ── STATS ── */
-function loadStats() {
-  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-  const bookData    = [12,18,24,31,28,35,42,38,19,0,0,0];
-  const revenueData = [7800,11700,15600,20150,18200,22750,27300,24700,12350,0,0,0];
-  const routeLabels = ['GZP → Alanya M.','GZP → Mahmutlar','GZP → Oba','GZP → Side','GZP → Antalya'];
-  const routeData   = [98,61,43,28,17];
-
-  const chartOpts = (color) => ({
+async function loadStats() {
+  const months    = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const chartOpts = () => ({
     plugins:{legend:{display:false}},
     scales:{
       x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
@@ -1123,21 +1071,35 @@ function loadStats() {
     }
   });
 
-  new Chart(document.getElementById('bookingChart'),{
-    type:'bar',
-    data:{labels:months,datasets:[{data:bookData,backgroundColor:'rgba(201,168,76,0.5)',borderColor:'rgba(201,168,76,0.8)',borderWidth:1}]},
-    options:chartOpts()
-  });
-  new Chart(document.getElementById('revenueChart'),{
-    type:'line',
-    data:{labels:months,datasets:[{data:revenueData,borderColor:'rgba(201,168,76,0.8)',backgroundColor:'rgba(201,168,76,0.08)',tension:0.4,fill:true,pointBackgroundColor:'rgba(201,168,76,0.8)'}]},
-    options:chartOpts()
-  });
-  new Chart(document.getElementById('routeChart'),{
-    type:'bar',
-    data:{labels:routeLabels,datasets:[{data:routeData,backgroundColor:['rgba(201,168,76,0.6)','rgba(201,168,76,0.5)','rgba(201,168,76,0.4)','rgba(201,168,76,0.3)','rgba(201,168,76,0.2)'],borderWidth:0}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{display:false}}}}
-  });
+  try {
+    const monthly = await api('/api/stats/monthly');
+    const bookData    = Array(12).fill(0);
+    const revenueData = Array(12).fill(0);
+    monthly.forEach(r => { const i=parseInt(r.month)-1; bookData[i]=parseInt(r.bookings); revenueData[i]=parseFloat(r.revenue); });
+    new Chart(document.getElementById('bookingChart'),{
+      type:'bar',
+      data:{labels:months,datasets:[{data:bookData,backgroundColor:'rgba(201,168,76,0.5)',borderColor:'rgba(201,168,76,0.8)',borderWidth:1}]},
+      options:chartOpts()
+    });
+    new Chart(document.getElementById('revenueChart'),{
+      type:'line',
+      data:{labels:months,datasets:[{data:revenueData,borderColor:'rgba(201,168,76,0.8)',backgroundColor:'rgba(201,168,76,0.08)',tension:0.4,fill:true,pointBackgroundColor:'rgba(201,168,76,0.8)'}]},
+      options:chartOpts()
+    });
+  } catch(e) { console.error('İstatistik yüklenemedi:', e); }
+
+  try {
+    const dash = await api('/api/stats/dashboard');
+    const topRoutes = dash.topRoutes || [];
+    new Chart(document.getElementById('routeChart'),{
+      type:'bar',
+      data:{
+        labels: topRoutes.map(r=>r.route.replace('Gazipaşa Havalimanı (GZP)','GZP')),
+        datasets:[{data:topRoutes.map(r=>parseInt(r.count)),backgroundColor:['rgba(201,168,76,0.6)','rgba(201,168,76,0.5)','rgba(201,168,76,0.4)','rgba(201,168,76,0.3)','rgba(201,168,76,0.2)'],borderWidth:0}]
+      },
+      options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{display:false}}}}
+    });
+  } catch(e) { console.error('Rota istatistikleri yüklenemedi:', e); }
 }
 
 /* ── HELPERS ── */
@@ -1467,16 +1429,6 @@ async function saveProfile() {
   const email = document.getElementById('settingsEmail').value.trim();
   if (!name || !email) { showMsg('profileMsg','Ad ve e-posta zorunlu','error'); return; }
 
-  if (token === 'demo-token') {
-    currentAdmin.name  = name;
-    currentAdmin.email = email;
-    localStorage.setItem('gt_admin', JSON.stringify(currentAdmin));
-    document.getElementById('adminNameDisplay').textContent  = name;
-    document.getElementById('adminEmailDisplay').textContent = email;
-    showMsg('profileMsg', 'Profil güncellendi (demo mod)', 'ok');
-    return;
-  }
-
   try {
     const data = await api('/auth/update-profile', {
       method: 'PUT',
@@ -1499,15 +1451,6 @@ async function changePassword() {
   if (!current || !newPw) { showMsg('passMsg','Tüm alanları doldurun','error'); return; }
   if (newPw.length < 6)   { showMsg('passMsg','Yeni şifre en az 6 karakter olmalı','error'); return; }
   if (newPw !== confirm)  { showMsg('passMsg','Yeni şifreler eşleşmiyor','error'); return; }
-
-  if (token === 'demo-token') {
-    if (current !== 'Guliz2025!') { showMsg('passMsg','Mevcut şifre hatalı','error'); return; }
-    showMsg('passMsg', 'Şifre güncellendi (demo mod)', 'ok');
-    document.getElementById('currentPass').value   = '';
-    document.getElementById('newPass').value        = '';
-    document.getElementById('newPassConfirm').value = '';
-    return;
-  }
 
   try {
     const data = await api('/auth/change-password', {
