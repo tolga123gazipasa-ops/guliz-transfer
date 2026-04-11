@@ -439,8 +439,31 @@ server.listen(PORT, () => {
   console.log(`🔧 Admin paneli            → http://localhost:${PORT}/admin.html`);
 });
 
-process.on('SIGTERM', () => {
-  server.close(() => process.exit(0));
+function gracefulShutdown(signal) {
+  console.log(`${signal} alındı, kapatılıyor...`);
+  // Socket.io bağlantılarını kapat
+  io.close();
+  server.close(() => {
+    console.log('Sunucu kapatıldı.');
+    process.exit(0);
+  });
+  // 8 saniye içinde kapanmazsa zorla çık
+  setTimeout(() => {
+    console.error('Zorla kapatılıyor.');
+    process.exit(1);
+  }, 8000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+
+process.on('uncaughtException', (err) => {
+  console.error('Yakalanmamış hata:', err.message, err.stack);
+  gracefulShutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Yakalanmamış promise reddi:', reason);
 });
 process.on('SIGINT', () => {
   server.close(() => process.exit(0));
