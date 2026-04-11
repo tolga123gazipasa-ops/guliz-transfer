@@ -404,3 +404,10 @@ server.listen(PORT, () => {
   console.log(`🌐 Müşteri sitesi          → http://localhost:${PORT}/`);
   console.log(`🔧 Admin paneli            → http://localhost:${PORT}/admin.html`);
 });
+
+process.on('SIGTERM', () => {
+  server.close(() => process.exit(0));
+});
+process.on('SIGINT', () => {
+  server.close(() => process.exit(0));
+});
