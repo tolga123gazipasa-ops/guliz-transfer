@@ -441,17 +441,12 @@ server.listen(PORT, () => {
 
 function gracefulShutdown(signal) {
   console.log(`${signal} alındı, kapatılıyor...`);
-  // Socket.io bağlantılarını kapat
   io.close();
   server.close(() => {
     console.log('Sunucu kapatıldı.');
     process.exit(0);
   });
-  // 8 saniye içinde kapanmazsa zorla çık
-  setTimeout(() => {
-    console.error('Zorla kapatılıyor.');
-    process.exit(1);
-  }, 8000);
+  setTimeout(() => process.exit(0), 8000);
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
