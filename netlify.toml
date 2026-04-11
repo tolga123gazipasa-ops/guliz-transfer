@@ -1,27 +1,15 @@
 [build]
   publish = "public"
 
-# API ve socket.io isteklerini Railway'e proxy'le
-# Railway URL'nizi buraya girin:
-# [[redirects]]
-#   from = "/api/*"
-#   to = "https://SENIN-RAILWAY-URL.up.railway.app/api/:splat"
-#   status = 200
-#   force = true
-#
-# [[redirects]]
-#   from = "/socket.io/*"
-#   to = "https://SENIN-RAILWAY-URL.up.railway.app/socket.io/:splat"
-#   status = 200
-#   force = true
-
-# Sadece gerçek HTML sayfaları için fallback
+# API isteklerini Railway'e yönlendir
 [[redirects]]
-  from = "/transfer"
-  to = "/transfer/index.html"
+  from = "/api/*"
+  to = "https://guliz-transfer-production.up.railway.app/api/:splat"
   status = 200
+  force = true
 
 [[redirects]]
-  from = "/ihale"
-  to = "/ihale/index.html"
+  from = "/health"
+  to = "https://guliz-transfer-production.up.railway.app/health"
   status = 200
+  force = true
