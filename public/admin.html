@@ -250,6 +250,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <span class="nav-icon">💬</span> Canlı Destek
         <span id="supportBadge" style="margin-left:auto;background:rgba(74,222,128,0.2);color:#4ade80;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
+      <div class="nav-item" onclick="showPage('kurumlar')">
+        <span class="nav-icon">🏛️</span> Kurum Yönetimi
+      </div>
       <div class="nav-item" onclick="showPage('settings')">
         <span class="nav-icon">⚙</span> Ayarlar
       </div>
@@ -424,6 +427,81 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
 
     <!-- SETTINGS -->
+
+    <!-- KURUMLAR -->
+    <div class="page" id="page-kurumlar">
+      <div class="section-head">
+        <h2>Kurum Yönetimi</h2>
+        <button class="btn btn-gold" onclick="openKurumModal()">+ Yeni Kurum Ekle</button>
+      </div>
+
+      <!-- Kurum Formu Modal -->
+      <div id="kurumModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center;">
+        <div style="background:#1a1a2e;border:0.5px solid var(--border);border-radius:12px;padding:2rem;width:480px;max-width:90vw;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)">🏛️ Yeni Kurum Ekle</div>
+            <button onclick="closeKurumModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">×</button>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Kurum Adı *</label>
+            <input type="text" id="kf-kurum-adi" placeholder="Milli Eğitim Bakanlığı...">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group">
+              <label>Kullanıcı Adı *</label>
+              <input type="text" id="kf-username" placeholder="meb_ankara" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Şifre *</label>
+              <input type="password" id="kf-password" placeholder="En az 6 karakter" autocomplete="new-password">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div class="form-group">
+              <label>Yetkili Adı</label>
+              <input type="text" id="kf-yetkili" placeholder="Ahmet Yılmaz">
+            </div>
+            <div class="form-group">
+              <label>Yetkili Telefon</label>
+              <input type="text" id="kf-tel" placeholder="05xx xxx xx xx">
+            </div>
+          </div>
+          <p id="kurumFormMsg" style="font-size:0.78rem;margin-bottom:1rem;display:none"></p>
+          <div style="display:flex;gap:0.8rem">
+            <button class="btn btn-gold" style="flex:1;padding:0.75rem" onclick="saveKurum()">Kaydet</button>
+            <button class="btn btn-outline" style="padding:0.75rem 1.5rem" onclick="closeKurumModal()">İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kurumlar Tablosu -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Tanımlı Kurumlar</h3>
+          <span id="kurumCount" style="font-size:0.78rem;color:var(--muted)"></span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th>Kurum Adı</th>
+            <th>Kullanıcı Adı</th>
+            <th>Yetkili</th>
+            <th>Son Giriş</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr></thead>
+          <tbody id="kurumlarBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Kurum Giriş Linki Bilgisi -->
+      <div style="margin-top:1.5rem;background:rgba(201,168,76,0.05);border:0.5px solid rgba(201,168,76,0.2);border-radius:8px;padding:1rem 1.4rem">
+        <div style="font-size:0.82rem;color:var(--gold);margin-bottom:0.4rem">🔗 Kurum Giriş Adresi</div>
+        <div style="font-size:0.85rem;color:var(--muted)" id="kurumLoginUrl"></div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.4rem">Bu adresi kurumlara iletebilirsiniz.</div>
+      </div>
+    </div>
+
     <div class="page" id="page-settings">
       <div class="section-head"><h2>Ayarlar</h2></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:860px">
@@ -588,6 +666,94 @@ function enterAdmin() {
   loadRoutes();
 }
 
+
+/* ══════════════════════════════════
+   KURUM YÖNETİMİ
+══════════════════════════════════ */
+async function loadKurumlar() {
+  document.getElementById('kurumLoginUrl').textContent = window.location.origin + '/kurum/';
+  try {
+    const list = await api('/api/kurumlar');
+    const tbody = document.getElementById('kurumlarBody');
+    document.getElementById('kurumCount').textContent = list.length + ' kurum';
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Henüz kurum eklenmemiş.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map((k, i) => `
+      <tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td style="font-weight:600">${k.kurum_adi}</td>
+        <td style="font-family:monospace;color:var(--gold);font-size:0.82rem">${k.username}</td>
+        <td style="color:var(--muted);font-size:0.82rem">${k.yetkili_ad || '—'}</td>
+        <td style="color:var(--muted);font-size:0.78rem">${k.last_login ? new Date(k.last_login).toLocaleString('tr-TR') : 'Hiç giriş yok'}</td>
+        <td>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;
+            background:${k.is_active ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.12)'};
+            color:${k.is_active ? '#4ade80' : '#f87171'}">
+            ${k.is_active ? '● Aktif' : '● Pasif'}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn btn-outline btn-sm" onclick="toggleKurum(${k.id}, ${!k.is_active}, '${k.kurum_adi.replace(/'/g,'')}', '${k.yetkili_ad||''}', '${k.yetkili_tel||''}')">${k.is_active ? 'Pasifleştir' : 'Aktifleştir'}</button>
+            <button class="btn btn-sm" style="background:rgba(248,113,113,0.15);color:#f87171;border:0.5px solid rgba(248,113,113,0.3)" onclick="deleteKurum(${k.id}, '${k.kurum_adi.replace(/'/g,'')}')">Sil</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) { console.error(e); }
+}
+
+function openKurumModal() {
+  document.getElementById('kurumModal').style.display = 'flex';
+  document.getElementById('kf-kurum-adi').focus();
+}
+function closeKurumModal() {
+  document.getElementById('kurumModal').style.display = 'none';
+  ['kf-kurum-adi','kf-username','kf-password','kf-yetkili','kf-tel'].forEach(id => document.getElementById(id).value = '');
+  const msg = document.getElementById('kurumFormMsg');
+  msg.style.display = 'none';
+}
+
+async function saveKurum() {
+  const kurum_adi   = document.getElementById('kf-kurum-adi').value.trim();
+  const username    = document.getElementById('kf-username').value.trim();
+  const password    = document.getElementById('kf-password').value;
+  const yetkili_ad  = document.getElementById('kf-yetkili').value.trim();
+  const yetkili_tel = document.getElementById('kf-tel').value.trim();
+  const msg = document.getElementById('kurumFormMsg');
+  if (!kurum_adi || !username || !password) {
+    msg.textContent = '⚠ Kurum adı, kullanıcı adı ve şifre zorunludur.';
+    msg.style.color = '#f87171'; msg.style.display = 'block'; return;
+  }
+  try {
+    await api('/api/kurumlar', { method:'POST', body: JSON.stringify({ kurum_adi, username, password, yetkili_ad, yetkili_tel }) });
+    msg.textContent = '✅ Kurum başarıyla eklendi.';
+    msg.style.color = '#4ade80'; msg.style.display = 'block';
+    setTimeout(() => { closeKurumModal(); loadKurumlar(); }, 1000);
+  } catch(e) {
+    msg.textContent = '❌ ' + (e.message || 'Hata oluştu');
+    msg.style.color = '#f87171'; msg.style.display = 'block';
+  }
+}
+
+async function toggleKurum(id, newStatus, kurum_adi, yetkili_ad, yetkili_tel) {
+  if (!confirm((newStatus ? 'Aktifleştirmek' : 'Pasifleştirmek') + ' istediğinize emin misiniz?')) return;
+  try {
+    await api('/api/kurumlar/' + id, { method:'PUT', body: JSON.stringify({ kurum_adi, yetkili_ad, yetkili_tel, is_active: newStatus }) });
+    loadKurumlar();
+  } catch(e) { alert('Hata: ' + e.message); }
+}
+
+async function deleteKurum(id, ad) {
+  if (!confirm(ad + ' kurumunu silmek istediğinize emin misiniz?')) return;
+  try {
+    await api('/api/kurumlar/' + id, { method:'DELETE' });
+    loadKurumlar();
+  } catch(e) { alert('Hata: ' + e.message); }
+}
+
 function doLogout() {
   localStorage.removeItem('gt_token');
   localStorage.removeItem('gt_admin');
@@ -606,13 +772,14 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','routes','stats','support','settings'];
+  const pages = ['dashboard','bookings','drivers','routes','stats','support','kurumlar','settings'];
   document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
-  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',settings:'Ayarlar'};
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',kurumlar:'Kurum Yönetimi',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
   if (name === 'bookings') loadBookings();
   if (name === 'stats')    loadStats();
   if (name === 'settings') loadSettings();
+  if (name === 'kurumlar')  loadKurumlar();
   if (name === 'support')  { supportAdminJoin(); clearSupportBadge(); }
 }
 

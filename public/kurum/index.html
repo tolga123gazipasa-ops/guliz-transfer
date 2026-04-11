@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kurum Girişi – Guliz Şirketler Topluluğu</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Montserrat',sans-serif;background:linear-gradient(145deg,#050d28 0%,#0a1235 50%,#0f1d4a 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
+
+/* Background grid */
+body::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:50px 50px;}
+
+/* Orbs */
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+.orb1{width:400px;height:400px;background:rgba(232,25,44,0.12);top:-100px;right:-100px;animation:orbf 8s ease-in-out infinite;}
+.orb2{width:300px;height:300px;background:rgba(26,45,107,0.3);bottom:-80px;left:-80px;animation:orbf 10s ease-in-out infinite reverse;}
+@keyframes orbf{0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-20px);}}
+
+.card{position:relative;z-index:10;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:48px 44px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,0.4);}
+
+/* Logo */
+.logo-wrap{text-align:center;margin-bottom:32px;}
+.logo-wrap img{height:56px;object-fit:contain;filter:brightness(1.1);}
+
+/* EKAP Badge */
+.ekap-badge{display:flex;align-items:center;gap:10px;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);border-radius:12px;padding:10px 14px;margin-bottom:28px;}
+.ekap-badge .ekap-logo{font-size:22px;line-height:1;}
+.ekap-badge .ekap-info{flex:1;}
+.ekap-badge .ekap-title{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#ff6070;}
+.ekap-badge .ekap-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;}
+
+h1{font-size:22px;font-weight:800;color:#fff;text-align:center;margin-bottom:6px;letter-spacing:-0.5px;}
+.subtitle{font-size:12px;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:32px;font-family:'Open Sans',sans-serif;}
+
+.form-group{margin-bottom:18px;}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:13px 16px;font-size:14px;color:#fff;font-family:'Montserrat',sans-serif;transition:all 0.2s;outline:none;}
+input:focus{border-color:rgba(232,25,44,0.5);background:rgba(255,255,255,0.09);box-shadow:0 0 0 3px rgba(232,25,44,0.1);}
+input::placeholder{color:rgba(255,255,255,0.2);}
+
+.btn-login{width:100%;background:linear-gradient(135deg,#e8192c,#b01020);color:#fff;border:none;border-radius:10px;padding:15px;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all 0.3s;margin-top:8px;font-family:'Montserrat',sans-serif;box-shadow:0 8px 24px rgba(232,25,44,0.35);}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,25,44,0.45);}
+.btn-login:active{transform:translateY(0);}
+.btn-login:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+.msg{font-size:13px;text-align:center;padding:10px;border-radius:8px;margin-top:14px;display:none;}
+.msg.error{background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.2);}
+.msg.success{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2);}
+
+.back-link{display:block;text-align:center;margin-top:20px;font-size:12px;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.2s;}
+.back-link:hover{color:rgba(255,255,255,0.7);}
+
+/* Kurum paneli (giriş sonrası) */
+#kurumPanel{display:none;}
+.panel-header{text-align:center;margin-bottom:28px;}
+.panel-header .welcome{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;}
+.panel-header .sub{font-size:12px;color:rgba(255,255,255,0.4);font-family:'Open Sans',sans-serif;}
+.info-row{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:12px;}
+.info-row .icon{font-size:18px;width:28px;text-align:center;}
+.info-row .txt{font-size:13px;color:rgba(255,255,255,0.75);}
+.info-row .lbl{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;}
+.coming-soon{text-align:center;padding:24px;background:rgba(201,168,76,0.05);border:1px dashed rgba(201,168,76,0.25);border-radius:12px;margin-top:16px;}
+.coming-soon .cs-icon{font-size:36px;margin-bottom:10px;}
+.coming-soon p{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;}
+.coming-soon strong{color:rgba(201,168,76,0.8);}
+.btn-logout{width:100%;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-top:20px;font-family:'Montserrat',sans-serif;transition:all 0.2s;}
+.btn-logout:hover{background:rgba(248,113,113,0.2);}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="card">
+  <div class="logo-wrap">
+    <a href="../index.html">
+      <img src="../slider/logo.png" alt="Guliz Şirketler Topluluğu">
+    </a>
+  </div>
+
+  <div class="ekap-badge">
+    <div class="ekap-logo">🏛️</div>
+    <div class="ekap-info">
+      <div class="ekap-title">EKAP – Kurum Girişi</div>
+      <div class="ekap-sub">Elektronik Kamu Alımları Platformu</div>
+    </div>
+  </div>
+
+  <!-- GİRİŞ FORMU -->
+  <div id="loginForm">
+    <h1>Kuruma Özel Giriş</h1>
+    <p class="subtitle">Kullanıcı adı ve şifrenizle giriş yapın</p>
+
+    <div class="form-group">
+      <label>Kullanıcı Adı</label>
+      <input type="text" id="username" placeholder="kullanici_adi" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Şifre</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Giriş Yap →</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- KURUM PANELİ -->
+  <div id="kurumPanel">
+    <div class="panel-header">
+      <div class="welcome" id="panelTitle">Hoş Geldiniz</div>
+      <div class="sub" id="panelSub"></div>
+    </div>
+
+    <div class="info-row">
+      <div class="icon">🏛️</div>
+      <div>
+        <div class="txt" id="panelKurum"></div>
+        <div class="lbl">Kurum Adı</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="icon">👤</div>
+      <div>
+        <div class="txt" id="panelYetkili"></div>
+        <div class="lbl">Yetkili</div>
+      </div>
+    </div>
+
+    <div class="coming-soon">
+      <div class="cs-icon">⚙️</div>
+      <p>Kurum paneli hazırlanıyor.<br><strong>Yakında:</strong> Evrak gönderimi, ihale takibi ve bildirimler bu ekrandan yönetilebilecek.</p>
+    </div>
+
+    <button class="btn-logout" onclick="doLogout()">Çıkış Yap</button>
+  </div>
+
+  <a href="../index.html" class="back-link">← Ana Sayfaya Dön</a>
+</div>
+
+<script>
+const TOKEN_KEY = 'kurum_token';
+const KURUM_KEY = 'kurum_data';
+
+async function doLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  const msg = document.getElementById('loginMsg');
+
+  if (!username || !password) {
+    showMsg('Kullanıcı adı ve şifre gerekli.', 'error'); return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Giriş yapılıyor...';
+  try {
+    const res = await fetch('/api/kurumlar/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showMsg(data.error || 'Giriş başarısız', 'error'); return; }
+    localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(KURUM_KEY, JSON.stringify(data.kurum));
+    showPanel(data.kurum);
+  } catch(e) {
+    showMsg('Bağlantı hatası. Lütfen tekrar deneyin.', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Giriş Yap →';
+  }
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('loginMsg');
+  el.textContent = text; el.className = 'msg ' + type; el.style.display = 'block';
+}
+
+function showPanel(kurum) {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('kurumPanel').style.display = 'block';
+  document.getElementById('panelTitle').textContent = 'Hoş Geldiniz' + (kurum.yetkili_ad ? ', ' + kurum.yetkili_ad : '');
+  document.getElementById('panelSub').textContent = 'Başarıyla giriş yapıldı';
+  document.getElementById('panelKurum').textContent = kurum.kurum_adi;
+  document.getElementById('panelYetkili').textContent = kurum.yetkili_ad || '—';
+}
+
+function doLogout() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(KURUM_KEY);
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('kurumPanel').style.display = 'none';
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+}
+
+// Sayfa açılışında token kontrolü
+window.addEventListener('load', () => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const kurum = localStorage.getItem(KURUM_KEY);
+  if (token && kurum) showPanel(JSON.parse(kurum));
+});
+</script>
+</body>
+</html>

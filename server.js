@@ -12,6 +12,7 @@ const bookingRoutes = require('./routes/bookings');
 const driverRoutes  = require('./routes/drivers');
 const routeRoutes   = require('./routes/routes');
 const statsRoutes   = require('./routes/stats');
+const kurumRoutes   = require('./routes/kurumlar');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
 const db = require('./models/db');
 
@@ -30,6 +31,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/drivers',  driverRoutes);
 app.use('/api/routes',   routeRoutes);
 app.use('/api/stats',    statsRoutes);
+app.use('/api/kurumlar', kurumRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
@@ -287,6 +289,13 @@ db.query(`
   CREATE TABLE IF NOT EXISTS telegram_mappings (
     telegram_msg_id BIGINT PRIMARY KEY, session_id VARCHAR(100) NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW()
   );
+  CREATE TABLE IF NOT EXISTS kurumlar (
+    id SERIAL PRIMARY KEY, kurum_adi VARCHAR(200) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL,
+    yetkili_ad VARCHAR(100), yetkili_tel VARCHAR(20),
+    is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW(), last_login TIMESTAMPTZ
+  );
+  CREATE INDEX IF NOT EXISTS idx_kurumlar_username ON kurumlar(username);
 `).catch(e => console.error('Tablo oluşturma hatası:', e.message));
 
 const PORT = process.env.PORT || 3001;

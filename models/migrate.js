@@ -109,6 +109,19 @@ async function migrate() {
         session_id      VARCHAR(100) NOT NULL,
         created_at      TIMESTAMPTZ  DEFAULT NOW()
       );
+
+      CREATE TABLE IF NOT EXISTS kurumlar (
+        id           SERIAL PRIMARY KEY,
+        kurum_adi    VARCHAR(200) NOT NULL,
+        username     VARCHAR(100) UNIQUE NOT NULL,
+        password     VARCHAR(255) NOT NULL,
+        yetkili_ad   VARCHAR(100),
+        yetkili_tel  VARCHAR(20),
+        is_active    BOOLEAN DEFAULT TRUE,
+        created_at   TIMESTAMPTZ DEFAULT NOW(),
+        last_login   TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS idx_kurumlar_username ON kurumlar(username);
     `);
 
     await client.query(`
