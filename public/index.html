@@ -529,6 +529,7 @@ chatSocket.on('connect', () => {
     page:      location.href,
     pageTitle: document.title,
     device:    getDevice(),
+    referrer:  document.referrer || '',
   });
 });
 
@@ -594,6 +595,7 @@ function startChat() {
     page:      location.href,
     pageTitle: document.title,
     device:    getDevice(),
+    referrer:  document.referrer || '',
   });
   document.getElementById('chatNameBar').style.display  = 'none';
   document.getElementById('chatInputRow').style.display = 'flex';

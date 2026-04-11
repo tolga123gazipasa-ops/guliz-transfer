@@ -406,10 +406,14 @@ function tgAdminLogin(u, ip) {
 }
 
 /* ── Canlı Destek Mesajı ── */
-async function tgChatMessage(name, phone, text, sessionId) {
+async function tgChatMessage(name, phone, text, sessionId, extra) {
+  const loc = (extra && (extra.country || extra.city))
+    ? `\n📍 ${[extra.city, extra.country].filter(Boolean).join(', ')}`
+    : '';
+  const ip  = (extra && extra.ip) ? `\n🌐 IP: <code>${extra.ip}</code>` : '';
   const result = await tg(
     `💬 <b>CANLI DESTEK MESAJI</b>\n` +
-    `👤 ${name}${phone ? '\n📞 ' + phone : ''}\n` +
+    `👤 ${name}${phone ? '\n📞 ' + phone : ''}${loc}${ip}\n` +
     `✉️ ${text}\n\n` +
     `<i>↩️ Bu mesaja reply yaparak yanıtlayabilirsiniz.</i>`
   );
@@ -426,11 +430,16 @@ async function tgChatMessage(name, phone, text, sessionId) {
 }
 
 /* ── Ziyaretçi Bağlandı ── */
-function tgVisitorOnline(name, page) {
+function tgVisitorOnline(name, page, extra) {
+  const ip       = (extra && extra.ip)       ? `\n🌐 IP: <code>${extra.ip}</code>`       : '';
+  const country  = (extra && extra.country)  ? `\n🏳️ ${extra.country}${extra.city ? ', ' + extra.city : ''}` : '';
+  const referrer = (extra && extra.referrer) ? `\n↩️ Kaynak: ${extra.referrer}`           : '';
+  const device   = (extra && extra.device)   ? `\n📱 ${extra.device}`                     : '';
   return tg(
     `👁️ <b>ZİYARETÇİ BAĞLANDI</b>\n` +
     `👤 ${name}\n` +
-    `🌐 ${page}`
+    `📄 ${page}` +
+    device + country + ip + referrer
   );
 }
 

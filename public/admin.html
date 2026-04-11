@@ -392,6 +392,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
                     <span id="cpDevice"></span> ·
                     <a id="cpPage" class="chat-panel-page" href="#" target="_blank"></a>
                   </div>
+                  <div class="chat-panel-meta" id="cpGeoRow" style="display:none;font-size:0.68rem;gap:0.4rem;flex-wrap:wrap">
+                    <span id="cpIP" style="color:var(--muted)"></span>
+                    <span id="cpCountry" style="color:var(--gold)"></span>
+                    <span id="cpReferrer" style="color:var(--muted);max-width:18rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+                  </div>
                 </div>
                 <div style="font-size:0.68rem;color:var(--muted);text-align:right">
                   <div id="cpOnlineStatus"></div>
@@ -1408,6 +1413,17 @@ function selectVisitor(sessionId) {
   document.getElementById('cpDevice').textContent            = v.device;
   document.getElementById('cpOnlineStatus').textContent      = v.online ? '🟢 Çevrimiçi' : '⚫ Çevrimdışı';
   document.getElementById('cpTime').textContent              = 'Giriş: ' + timeSince(v.startTime);
+  // IP / Konum / Referrer satırı
+  const geoRow = document.getElementById('cpGeoRow');
+  const ipParts = [];
+  if (v.ip)       document.getElementById('cpIP').textContent       = '🌐 ' + v.ip;
+  else            document.getElementById('cpIP').textContent       = '';
+  if (v.country || v.city)
+                  document.getElementById('cpCountry').textContent  = '📍 ' + [v.city, v.country].filter(Boolean).join(', ');
+  else            document.getElementById('cpCountry').textContent  = '';
+  if (v.referrer) document.getElementById('cpReferrer').textContent = '↩️ ' + v.referrer;
+  else            document.getElementById('cpReferrer').textContent = '';
+  geoRow.style.display = (v.ip || v.country || v.referrer) ? 'flex' : 'none';
   const pageEl = document.getElementById('cpPage');
   pageEl.textContent = v.page ? v.page.replace(/https?:\/\/[^/]+/, '') || '/' : '/';
   pageEl.href        = v.page || '#';

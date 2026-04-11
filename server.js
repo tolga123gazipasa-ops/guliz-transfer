@@ -6,6 +6,21 @@ const http      = require('http');
 const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
 
+/* ── GeoIP yardımcısı ── */
+async function geoIP(ip) {
+  if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+    return { country: null, city: null };
+  }
+  try {
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,isp&lang=tr`);
+    if (!res.ok) return { country: null, city: null };
+    const data = await res.json();
+    return { country: data.country || null, city: data.city || null };
+  } catch {
+    return { country: null, city: null };
+  }
+}
+
 const authRoutes    = require('./routes/auth');
 const userRoutes    = require('./routes/users');
 const bookingRoutes = require('./routes/bookings');
@@ -109,7 +124,7 @@ io.on('connection', (socket) => {
   });
 
   /* ── Ziyaretçi bağlandı ── */
-  socket.on('visitor:connect', async ({ sessionId, name, phone, page, pageTitle, device }) => {
+  socket.on('visitor:connect', async ({ sessionId, name, phone, page, pageTitle, device, referrer }) => {
     const ip = socket.handshake.headers['x-forwarded-for']?.split(',')[0].trim()
                || socket.handshake.address || '';
     const isNew = !visitors.has(sessionId);
@@ -124,6 +139,9 @@ io.on('connection', (socket) => {
         page,
         pageTitle,
         device:        device || 'Bilinmiyor',
+        referrer:      referrer || '',
+        country:       null,
+        city:          null,
         startTime:     now,
         lastSeen:      now,
         messages:      [],
@@ -143,8 +161,18 @@ io.on('connection', (socket) => {
       if (name && name !== 'Ziyaretçi') v.name = name;
       if (phone) v.phone = phone;
       if (ip) v.ip = ip;
+      if (referrer) v.referrer = referrer;
     }
     socket.sessionId = sessionId;
+
+    // GeoIP — sadece yeni ziyaretçiler veya konum bilinmiyorsa
+    if (isNew || !v.country) {
+      geoIP(ip).then(geo => {
+        v.country = geo.country;
+        v.city    = geo.city;
+        broadcastVisitors();
+      }).catch(() => {});
+    }
 
     // DB'ye kaydet / güncelle
     db.query(
@@ -175,9 +203,17 @@ io.on('connection', (socket) => {
     // Admin'e bildir
     broadcastVisitors();
     io.to('admins').emit('visitor:joined', { sessionId: v.sessionId, name: v.name, page: v.page });
-    // Telegram — sadece yeni ziyaretçileri bildir
+    // Telegram — sadece yeni ziyaretçileri bildir (geo sonuçlanınca gönder)
     if (isNew) {
-      tgVisitorOnline(v.name, v.page || '/').catch(() => {});
+      setTimeout(() => {
+        tgVisitorOnline(v.name, v.page || '/', {
+          ip:       v.ip,
+          country:  v.country,
+          city:     v.city,
+          referrer: v.referrer,
+          device:   v.device,
+        }).catch(() => {});
+      }, 2000); // ip-api.com'un yanıt vermesi için kısa bekleme
     }
     // Mesaj geçmişini gönder
     if (v.messages.length > 0) {
@@ -246,7 +282,7 @@ io.on('connection', (socket) => {
     ).catch(() => {});
     io.to('admins').emit('chat:sync', { sessionId, message: msg });
     broadcastVisitors();
-    tgChatMessage(v.name, v.phone, text, sessionId).catch(() => {});
+    tgChatMessage(v.name, v.phone, text, sessionId, { ip: v.ip, country: v.country, city: v.city }).catch(() => {});
     socket.emit('chat:delivered', { id: msg.id });
   });
 
