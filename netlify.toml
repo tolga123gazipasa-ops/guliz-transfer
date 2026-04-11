@@ -1,15 +1,2 @@
 [build]
   publish = "public"
-
-# API isteklerini Railway'e yönlendir
-[[redirects]]
-  from = "/api/*"
-  to = "https://guliz-transfer-production.up.railway.app/api/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/health"
-  to = "https://guliz-transfer-production.up.railway.app/health"
-  status = 200
-  force = true

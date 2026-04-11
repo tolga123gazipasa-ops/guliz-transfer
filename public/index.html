@@ -497,7 +497,7 @@
   </div>
 </div>
 
-<script src="https://guliz-transfer-production.up.railway.app/socket.io/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
 /* ══════════════════════════════════
    CANLI DESTEK — Ziyaretçi tarafı
@@ -509,8 +509,7 @@ if (!chatSessionId) {
   localStorage.setItem(CHAT_SESSION_KEY, chatSessionId);
 }
 
-const RAILWAY_URL = 'https://guliz-transfer-production.up.railway.app';
-const chatSocket = io(RAILWAY_URL, { transports: ['websocket','polling'] });
+const chatSocket = io({ transports: ['websocket','polling'] });
 let chatOpen = false;
 let chatTypingTimer = null;
 let isTyping = false;

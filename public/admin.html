@@ -673,7 +673,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-const API = 'https://guliz-transfer-production.up.railway.app/api';
+const API = window.location.origin + '/api';
 let token = localStorage.getItem('gt_token');
 let currentAdmin = JSON.parse(localStorage.getItem('gt_admin') || 'null');
 let bookingFilter = 'all';
@@ -1305,7 +1305,7 @@ function supportAdminJoin() {
   const script = document.createElement('script');
   script.src = '/socket.io/socket.io.js';
   script.onload = () => {
-    supportSocket = io('https://guliz-transfer-production.up.railway.app', { transports:['websocket','polling'] });
+    supportSocket = io({ transports:['websocket','polling'] });
     supportSocket.emit('admin:join');
     supportSocket.on('visitors:update', onVisitorsUpdate);
     supportSocket.on('visitor:joined',  onVisitorJoined);
