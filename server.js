@@ -12,7 +12,8 @@ const bookingRoutes = require('./routes/bookings');
 const driverRoutes  = require('./routes/drivers');
 const routeRoutes   = require('./routes/routes');
 const statsRoutes   = require('./routes/stats');
-const kurumRoutes   = require('./routes/kurumlar');
+const kurumRoutes    = require('./routes/kurumlar');
+const ihalelerRoutes = require('./routes/ihaleler');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
 const db = require('./models/db');
 
@@ -33,6 +34,7 @@ app.use('/api/drivers',  driverRoutes);
 app.use('/api/routes',   routeRoutes);
 app.use('/api/stats',    statsRoutes);
 app.use('/api/kurumlar', kurumRoutes);
+app.use('/api/ihaleler', ihalelerRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
@@ -367,6 +369,17 @@ db.query(`
     is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW(), last_login TIMESTAMPTZ
   );
   CREATE INDEX IF NOT EXISTS idx_kurumlar_username ON kurumlar(username);
+  CREATE TABLE IF NOT EXISTS ihaleler (
+    id         SERIAL PRIMARY KEY,
+    kurum      TEXT NOT NULL,
+    baslik     TEXT NOT NULL,
+    tur        VARCHAR(100) NOT NULL,
+    durum      VARCHAR(20)  NOT NULL CHECK (durum IN ('tamamlandi','devam')),
+    sira       INTEGER      DEFAULT 0,
+    created_at TIMESTAMPTZ  DEFAULT NOW(),
+    updated_at TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_ihaleler_durum ON ihaleler(durum);
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');
@@ -395,6 +408,22 @@ db.query(`
       ON CONFLICT DO NOTHING`
     ).catch(() => {});
     console.log('🗺️  Transfer rotaları oluşturuldu.');
+  }
+  // İhale seed — tablo boşsa mevcut verileri ekle
+  const { rows: ihaleSeed } = await db.query('SELECT id FROM ihaleler LIMIT 1').catch(() => ({ rows: [] }));
+  if (!ihaleSeed.length) {
+    await db.query(`
+      INSERT INTO ihaleler (kurum, baslik, tur, durum, sira) VALUES
+        ('Milli Savunma Bakanlığı – MSB Bağlıları',                               '1''inci Deniz İstihkam Tabur K. Lığı',               'Nakliye İşi', 'tamamlandi', 1),
+        ('Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',               'Isparta Kapalı Ve Açık Ceza İnfaz Kurumu İşyurdu',  'Nakliye İşi', 'tamamlandi', 2),
+        ('Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',               'Devrek Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',   'Nakliye İşi', 'tamamlandi', 3),
+        ('Diğer Özel Bütçeli Kuruluşlar',                                         'Çanakkale Açık Ceza İnfaz Kurumu İşyurdu',          'Nakliye İşi', 'tamamlandi', 4),
+        ('Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',               'Adana 2 Nolu Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü', 'Nakliye İşi', 'tamamlandi', 5),
+        ('Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',               'Antakya Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',  'Nakliye İşi', 'tamamlandi', 6),
+        ('Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu',               'Bafra Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü',    'Nakliye İşi', 'tamamlandi', 7),
+        ('Milli Eğitim Bakanlığı – Antalya Öğretmenevi',                          'Öğretmen Evi Ve Akşam Sanat Okulu Müdürlüğü',       'Personel Alım İşi', 'devam', 1)
+    `).catch(() => {});
+    console.log('🏗️  İhale verileri oluşturuldu.');
   }
 }).catch(e => console.error('Tablo oluşturma hatası:', e.message));
 

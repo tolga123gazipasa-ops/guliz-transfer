@@ -2174,8 +2174,7 @@
 
   <!-- Kimlik formu — telefon zorunlu -->
   <div class="chat-name-bar" id="chatNameBar">
-    <p>Sohbet başlatmak için bilgilerinizi girin:</p>
-    <input class="chat-name-input" id="chatNameInput" type="text" placeholder="Adınız Soyadınız" maxlength="50">
+    <p>Telefon numaranızı girerek sohbet başlatın:</p>
     <input class="chat-name-input" id="chatPhoneInput" type="tel" placeholder="Telefon Numarası (+90 5XX...)" maxlength="20"
       onkeydown="if(event.key==='Enter')startChat()">
     <button class="chat-start-btn" onclick="startChat()">Sohbeti Başlat →</button>
@@ -2631,14 +2630,13 @@ function getDevice() {
   return /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'Mobil' : 'Masaüstü';
 }
 
-const savedChatName  = localStorage.getItem('gt_chat_name')  || '';
 const savedChatPhone = localStorage.getItem('gt_chat_phone') || '';
-let chatIdentified   = !!(savedChatName && savedChatPhone);
+let chatIdentified   = !!savedChatPhone;
 
 chatSocket.on('connect', () => {
   chatSocket.emit('visitor:connect', {
     sessionId: chatSessionId,
-    name:      savedChatName  || 'Ziyaretçi',
+    name:      'Ziyaretçi',
     phone:     savedChatPhone || '',
     page:      location.href,
     pageTitle: document.title,
@@ -2646,12 +2644,11 @@ chatSocket.on('connect', () => {
   });
 });
 
-// Daha önce kimlik bilgisi verilmişse formu gizle, input'u göster
+// Daha önce telefon verilmişse formu gizle, input'u göster
 if (chatIdentified) {
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chatNameBar').style.display  = 'none';
     document.getElementById('chatInputRow').style.display = 'flex';
-    if (savedChatName)  document.getElementById('chatNameInput').value  = savedChatName;
     if (savedChatPhone) document.getElementById('chatPhoneInput').value = savedChatPhone;
   });
 }
@@ -2701,7 +2698,6 @@ function toggleChat() {
 }
 
 function startChat() {
-  const name  = document.getElementById('chatNameInput').value.trim();
   const phone = document.getElementById('chatPhoneInput').value.trim();
 
   if (!phone) {
@@ -2712,15 +2708,13 @@ function startChat() {
   }
   document.getElementById('chatPhoneInput').classList.remove('required');
 
-  const displayName = name || 'Ziyaretçi';
-  localStorage.setItem('gt_chat_name',  displayName);
   localStorage.setItem('gt_chat_phone', phone);
   chatIdentified = true;
 
   // Sunucuya kimliği güncelle
   chatSocket.emit('visitor:connect', {
     sessionId: chatSessionId,
-    name:      displayName,
+    name:      'Ziyaretçi',
     phone,
     page:      location.href,
     pageTitle: document.title,
@@ -2740,7 +2734,7 @@ function sendChatMessage() {
   chatSocket.emit('visitor:message', {
     sessionId: chatSessionId,
     text,
-    name:  localStorage.getItem('gt_chat_name')  || 'Ziyaretçi',
+    name:  'Ziyaretçi',
     phone: localStorage.getItem('gt_chat_phone') || '',
   });
   appendChatBubble('visitor', text, new Date().toISOString());

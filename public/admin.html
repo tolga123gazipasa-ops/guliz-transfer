@@ -248,6 +248,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
         <span class="nav-icon">💬</span> Canlı Destek
         <span id="supportBadge" style="margin-left:auto;background:rgba(74,222,128,0.2);color:#4ade80;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
+      <div class="nav-item" onclick="showPage('ihaleler')">
+        <span class="nav-icon">🏗️</span> İhale Yönetimi
+      </div>
       <div class="nav-item" onclick="showPage('kurumlar')">
         <span class="nav-icon">🏛️</span> Kurum Yönetimi
       </div>
@@ -425,6 +428,61 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     </div>
 
     <!-- SETTINGS -->
+
+    <!-- İHALE YÖNETİMİ -->
+    <div class="page" id="page-ihaleler">
+      <div class="section-head">
+        <h2>İhale Yönetimi</h2>
+        <button class="btn btn-gold btn-sm" onclick="openIhaleModal()">+ Yeni İhale Ekle</button>
+      </div>
+
+      <!-- İhale Modal -->
+      <div id="ihaleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#1a1a2e;border:0.5px solid var(--border);border-radius:12px;padding:2rem;width:560px;max-width:92vw;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)" id="ihaleModalTitle">🏗️ Yeni İhale Ekle</div>
+            <button onclick="closeIhaleModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">×</button>
+          </div>
+          <input type="hidden" id="if-id">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Kurum Adı *</label>
+            <input type="text" id="if-kurum" placeholder="Milli Eğitim Bakanlığı...">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>İhale Başlığı *</label>
+            <input type="text" id="if-baslik" placeholder="Okul Müdürlüğü Nakliye İşi...">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group">
+              <label>İhale Türü *</label>
+              <input type="text" id="if-tur" placeholder="Nakliye İşi, Personel Alım...">
+            </div>
+            <div class="form-group">
+              <label>Durum *</label>
+              <select id="if-durum" style="width:100%;background:var(--dark2);border:0.5px solid var(--border);color:var(--text);padding:0.55rem 0.75rem;font-size:0.85rem;border-radius:4px;outline:none;">
+                <option value="devam">Devam Ediyor</option>
+                <option value="tamamlandi">Tamamlandı</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.5rem">
+            <button class="btn btn-outline btn-sm" onclick="closeIhaleModal()">İptal</button>
+            <button class="btn btn-gold btn-sm" onclick="saveIhale()">Kaydet</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtre tabs -->
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;">
+        <button id="ihaleTabAll"    onclick="setIhaleTab('all')"        class="btn btn-gold   btn-sm">Tümü</button>
+        <button id="ihaleTabDevam"  onclick="setIhaleTab('devam')"      class="btn btn-outline btn-sm">Devam Ediyor</button>
+        <button id="ihaleTabDone"   onclick="setIhaleTab('tamamlandi')" class="btn btn-outline btn-sm">Tamamlandı</button>
+      </div>
+
+      <div id="ihaleListWrap">
+        <div style="padding:2rem;text-align:center;color:var(--muted)">Yükleniyor...</div>
+      </div>
+    </div>
 
     <!-- KURUMLAR -->
     <div class="page" id="page-kurumlar">
@@ -656,6 +714,125 @@ function enterAdmin() {
 
 
 /* ══════════════════════════════════
+   İHALE YÖNETİMİ
+══════════════════════════════════ */
+let ihaleData = [];
+let ihaleTab  = 'all';
+
+async function loadIhaleler() {
+  try {
+    ihaleData = await api('/api/ihaleler');
+    renderIhaleler();
+  } catch(e) {
+    document.getElementById('ihaleListWrap').innerHTML =
+      `<div style="padding:2rem;color:#f87171;">Yükleme hatası: ${e.message}</div>`;
+  }
+}
+
+function setIhaleTab(tab) {
+  ihaleTab = tab;
+  ['all','devam','tamamlandi'].forEach(t => {
+    const btn = document.getElementById('ihaleTab' + (t === 'all' ? 'All' : t === 'devam' ? 'Devam' : 'Done'));
+    if (btn) {
+      btn.className = t === tab ? 'btn btn-gold btn-sm' : 'btn btn-outline btn-sm';
+    }
+  });
+  renderIhaleler();
+}
+
+function renderIhaleler() {
+  const filtered = ihaleTab === 'all' ? ihaleData : ihaleData.filter(i => i.durum === ihaleTab);
+  const wrap = document.getElementById('ihaleListWrap');
+  if (!filtered.length) {
+    wrap.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);font-size:0.85rem;">Kayıt bulunamadı.</div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>#</th>
+        <th>Kurum</th>
+        <th>Başlık</th>
+        <th>Tür</th>
+        <th>Durum</th>
+        <th style="text-align:right">İşlem</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map((ih, idx) => `
+          <tr>
+            <td style="color:var(--muted);font-size:0.75rem">${idx+1}</td>
+            <td style="max-width:220px;word-break:break-word">${escapeHtml(ih.kurum)}</td>
+            <td style="max-width:240px;word-break:break-word">${escapeHtml(ih.baslik)}</td>
+            <td><span style="font-size:0.75rem;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:20px">${escapeHtml(ih.tur)}</span></td>
+            <td>${ih.durum === 'tamamlandi'
+              ? '<span style="color:#4ade80;font-size:0.75rem;font-weight:600">✅ Tamamlandı</span>'
+              : '<span style="color:#fbbf24;font-size:0.75rem;font-weight:600">🔄 Devam Ediyor</span>'}</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn btn-outline btn-sm" onclick="editIhale(${ih.id})" style="margin-right:4px">Düzenle</button>
+              <button class="btn btn-sm" style="background:rgba(239,68,68,0.15);color:#f87171;border:0.5px solid rgba(239,68,68,0.3)" onclick="deleteIhale(${ih.id}, '${escapeHtml(ih.baslik).replace(/'/g,"\\'")}')">Sil</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openIhaleModal(id) {
+  document.getElementById('if-id').value    = '';
+  document.getElementById('if-kurum').value = '';
+  document.getElementById('if-baslik').value = '';
+  document.getElementById('if-tur').value   = '';
+  document.getElementById('if-durum').value = 'devam';
+  document.getElementById('ihaleModalTitle').textContent = '🏗️ Yeni İhale Ekle';
+  const m = document.getElementById('ihaleModal');
+  m.style.display = 'flex';
+}
+
+function editIhale(id) {
+  const ih = ihaleData.find(i => i.id === id);
+  if (!ih) return;
+  document.getElementById('if-id').value     = ih.id;
+  document.getElementById('if-kurum').value  = ih.kurum;
+  document.getElementById('if-baslik').value = ih.baslik;
+  document.getElementById('if-tur').value    = ih.tur;
+  document.getElementById('if-durum').value  = ih.durum;
+  document.getElementById('ihaleModalTitle').textContent = '✏️ İhale Düzenle';
+  document.getElementById('ihaleModal').style.display = 'flex';
+}
+
+function closeIhaleModal() {
+  document.getElementById('ihaleModal').style.display = 'none';
+}
+
+async function saveIhale() {
+  const id     = document.getElementById('if-id').value;
+  const kurum  = document.getElementById('if-kurum').value.trim();
+  const baslik = document.getElementById('if-baslik').value.trim();
+  const tur    = document.getElementById('if-tur').value.trim();
+  const durum  = document.getElementById('if-durum').value;
+  if (!kurum || !baslik || !tur) {
+    alert('Kurum, başlık ve tür alanları zorunludur.');
+    return;
+  }
+  try {
+    if (id) {
+      await api('/api/ihaleler/'+id, { method:'PUT', body: JSON.stringify({ kurum, baslik, tur, durum }) });
+    } else {
+      await api('/api/ihaleler', { method:'POST', body: JSON.stringify({ kurum, baslik, tur, durum }) });
+    }
+    closeIhaleModal();
+    loadIhaleler();
+  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+}
+
+async function deleteIhale(id, baslik) {
+  if (!confirm(`"${baslik}" ihalesi silinecek. Emin misiniz?`)) return;
+  try {
+    await api('/api/ihaleler/'+id, { method:'DELETE' });
+    loadIhaleler();
+  } catch(e) { alert('Silme hatası: ' + e.message); }
+}
+
+/* ══════════════════════════════════
    KURUM YÖNETİMİ
 ══════════════════════════════════ */
 async function loadKurumlar() {
@@ -760,14 +937,15 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','routes','stats','support','kurumlar','settings'];
+  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','kurumlar','settings'];
   document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
-  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',kurumlar:'Kurum Yönetimi',settings:'Ayarlar'};
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',kurumlar:'Kurum Yönetimi',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
   if (name === 'bookings') loadBookings();
   if (name === 'stats')    loadStats();
   if (name === 'settings') loadSettings();
-  if (name === 'kurumlar')  loadKurumlar();
+  if (name === 'kurumlar') loadKurumlar();
+  if (name === 'ihaleler') loadIhaleler();
   if (name === 'support')  { supportAdminJoin(); clearSupportBadge(); }
 }
 
