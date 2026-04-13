@@ -140,19 +140,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .login-logo-wrap{
   display:flex;flex-direction:column;align-items:center;margin-bottom:2rem;
 }
-.login-logo-svg{
-  width:80px;height:80px;margin-bottom:1rem;
-  filter:drop-shadow(0 4px 20px rgba(227,7,19,0.4));
-}
-.login-brand{
-  font-family:var(--serif);font-size:1.6rem;font-weight:700;
-  color:#ffffff;letter-spacing:0.05em;margin-bottom:0.2rem;
-  text-shadow:0 2px 12px rgba(0,0,0,0.5);
-}
-.login-brand span{color:#e30713;}
-.login-tagline{
-  font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;
-  color:rgba(255,255,255,0.45);
+.login-logo-img{
+  width:160px;height:auto;
+  filter:drop-shadow(0 4px 24px rgba(0,0,0,0.5));
 }
 .login-box{
   width:100%;
@@ -292,32 +282,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
     <!-- Logo & Marka -->
     <div class="login-logo-wrap">
-      <svg class="login-logo-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Dış çerçeve -->
-        <rect x="4" y="4" width="112" height="112" rx="8" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-        <!-- Kırmızı şerit alt -->
-        <rect x="4" y="88" width="112" height="28" rx="0" fill="#e30713" opacity="0.9"/>
-        <rect x="4" y="88" width="112" height="28" rx="8" fill="#e30713" opacity="0.9"/>
-        <!-- Ana arka plan -->
-        <rect x="4" y="4" width="112" height="87" rx="8" fill="#0d2370"/>
-        <!-- Beyaz yıldız/vurgu -->
-        <circle cx="60" cy="46" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-        <!-- GT Harfleri -->
-        <text x="60" y="38" font-family="Georgia,serif" font-size="22" font-weight="700"
-              fill="#ffffff" text-anchor="middle" letter-spacing="3">GT</text>
-        <!-- Ayırıcı çizgi -->
-        <line x1="30" y1="52" x2="90" y2="52" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-        <!-- TRANSFER yazısı -->
-        <text x="60" y="66" font-family="Arial,sans-serif" font-size="7" font-weight="400"
-              fill="rgba(255,255,255,0.6)" text-anchor="middle" letter-spacing="3.5">TRANSFER</text>
-        <!-- Alt kırmızı bant içi yazı -->
-        <text x="60" y="107" font-family="Arial,sans-serif" font-size="6.5"
-              fill="rgba(255,255,255,0.85)" text-anchor="middle" letter-spacing="1.5">GÜLIZ ŞİRKETLER GRUBU</text>
-        <!-- Köşe detayları -->
-        <line x1="4" y1="16" x2="14" y2="4" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-        <line x1="106" y1="4" x2="116" y2="16" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-      </svg>
-      <div class="login-brand">Güliz <span>Şirketler Grubu</span></div>
+      <img src="/slider/logo.png" class="login-logo-img" alt="Güliz Şirketler Grubu">
     </div>
 
     <!-- Form Kutusu -->
