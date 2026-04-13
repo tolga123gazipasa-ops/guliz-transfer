@@ -114,11 +114,97 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .chart-title{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
 
 /* LOGIN */
-#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--black)}
-.login-box{background:var(--dark2);border:0.5px solid var(--border);padding:2.5rem;width:100%;max-width:400px}
-.login-logo{font-family:var(--serif);font-size:1.3rem;color:var(--gold);margin-bottom:0.3rem}
-.login-sub{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem}
-.login-btn{width:100%;padding:0.9rem;background:var(--gold);color:var(--black);font-family:var(--sans);font-size:0.85rem;font-weight:500;border:none;cursor:pointer;margin-top:1rem}
+#loginPage{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;width:100%;
+  background:linear-gradient(135deg,#0a1a4e 0%,#0d2370 40%,#1a0a2e 100%);
+  position:relative;overflow:hidden;
+}
+#loginPage::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 50%,rgba(227,7,19,0.12) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(255,255,255,0.05) 0%,transparent 50%);
+  pointer-events:none;
+}
+#loginPage::after{
+  content:'';position:absolute;bottom:-120px;right:-120px;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(227,7,19,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.login-wrap{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:440px;padding:1rem;
+}
+.login-logo-wrap{
+  display:flex;flex-direction:column;align-items:center;margin-bottom:2rem;
+}
+.login-logo-svg{
+  width:80px;height:80px;margin-bottom:1rem;
+  filter:drop-shadow(0 4px 20px rgba(227,7,19,0.4));
+}
+.login-brand{
+  font-family:var(--serif);font-size:1.6rem;font-weight:700;
+  color:#ffffff;letter-spacing:0.05em;margin-bottom:0.2rem;
+  text-shadow:0 2px 12px rgba(0,0,0,0.5);
+}
+.login-brand span{color:#e30713;}
+.login-tagline{
+  font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+}
+.login-box{
+  width:100%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-radius:4px;
+  padding:2.5rem 2.2rem 2.2rem;
+  box-shadow:0 24px 60px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05) inset;
+}
+.login-box-title{
+  font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);margin-bottom:1.8rem;
+  display:flex;align-items:center;gap:0.6rem;
+}
+.login-box-title::before,.login-box-title::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);
+}
+.login-box .form-group label{
+  color:rgba(255,255,255,0.55);font-size:0.7rem;letter-spacing:0.1em;
+}
+.login-box .form-group input{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  color:#fff;border-radius:3px;padding:0.75rem 0.9rem;
+  transition:border-color 0.2s,background 0.2s;
+}
+.login-box .form-group input:focus{
+  outline:none;border-color:rgba(227,7,19,0.6);
+  background:rgba(255,255,255,0.09);
+}
+.login-box .form-group input::placeholder{color:rgba(255,255,255,0.2);}
+.login-btn{
+  width:100%;padding:0.95rem;margin-top:1.2rem;
+  background:linear-gradient(135deg,#e30713 0%,#b50510 100%);
+  color:#fff;font-family:var(--sans);font-size:0.82rem;font-weight:600;
+  letter-spacing:0.12em;text-transform:uppercase;
+  border:none;border-radius:3px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(227,7,19,0.35);
+  transition:all 0.2s;
+}
+.login-btn:hover{
+  background:linear-gradient(135deg,#f01020 0%,#c8060f 100%);
+  box-shadow:0 6px 28px rgba(227,7,19,0.5);
+  transform:translateY(-1px);
+}
+.login-btn:active{transform:translateY(0);}
+.login-footer{
+  margin-top:1.4rem;text-align:center;
+  font-size:0.65rem;color:rgba(255,255,255,0.2);letter-spacing:0.08em;
+}
 
 /* SECTION TITLE */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
@@ -202,19 +288,54 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <!-- LOGIN PAGE -->
 <div id="loginPage">
-  <div class="login-box">
-    <div class="login-logo">Güliz Transfer</div>
-    <div class="login-sub">Yönetim Paneli</div>
-    <div class="form-group" style="margin-bottom:0.9rem">
-      <label>E-posta</label>
-      <input type="email" id="loginEmail" placeholder="admin@guliztransfer.com">
+  <div class="login-wrap">
+
+    <!-- Logo & Marka -->
+    <div class="login-logo-wrap">
+      <svg class="login-logo-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Dış çerçeve -->
+        <rect x="4" y="4" width="112" height="112" rx="8" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+        <!-- Kırmızı şerit alt -->
+        <rect x="4" y="88" width="112" height="28" rx="0" fill="#e30713" opacity="0.9"/>
+        <rect x="4" y="88" width="112" height="28" rx="8" fill="#e30713" opacity="0.9"/>
+        <!-- Ana arka plan -->
+        <rect x="4" y="4" width="112" height="87" rx="8" fill="#0d2370"/>
+        <!-- Beyaz yıldız/vurgu -->
+        <circle cx="60" cy="46" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <!-- GT Harfleri -->
+        <text x="60" y="38" font-family="Georgia,serif" font-size="22" font-weight="700"
+              fill="#ffffff" text-anchor="middle" letter-spacing="3">GT</text>
+        <!-- Ayırıcı çizgi -->
+        <line x1="30" y1="52" x2="90" y2="52" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+        <!-- TRANSFER yazısı -->
+        <text x="60" y="66" font-family="Arial,sans-serif" font-size="7" font-weight="400"
+              fill="rgba(255,255,255,0.6)" text-anchor="middle" letter-spacing="3.5">TRANSFER</text>
+        <!-- Alt kırmızı bant içi yazı -->
+        <text x="60" y="107" font-family="Arial,sans-serif" font-size="6.5"
+              fill="rgba(255,255,255,0.85)" text-anchor="middle" letter-spacing="1.5">GÜLIZ ŞİRKETLER GRUBU</text>
+        <!-- Köşe detayları -->
+        <line x1="4" y1="16" x2="14" y2="4" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        <line x1="106" y1="4" x2="116" y2="16" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+      </svg>
+      <div class="login-brand">Güliz <span>Şirketler Grubu</span></div>
     </div>
-    <div class="form-group">
-      <label>Şifre</label>
-      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+
+    <!-- Form Kutusu -->
+    <div class="login-box">
+      <div class="login-box-title">Yönetim Paneli</div>
+      <div class="form-group" style="margin-bottom:0.9rem">
+        <label>E-POSTA</label>
+        <input type="email" id="loginEmail" placeholder="admin@guliztransfer.com">
+      </div>
+      <div class="form-group">
+        <label>ŞİFRE</label>
+        <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <p id="loginErr" style="color:#ff6b6b;font-size:0.78rem;margin-top:0.7rem;display:none;background:rgba(227,7,19,0.1);padding:0.5rem 0.7rem;border-left:2px solid #e30713;border-radius:2px"></p>
+      <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
+      <div class="login-footer">© 2025 Güliz Transfer · Tüm hakları saklıdır</div>
     </div>
-    <p id="loginErr" style="color:#f87171;font-size:0.78rem;margin-top:0.5rem;display:none"></p>
-    <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
+
   </div>
 </div>
 
@@ -959,6 +1080,13 @@ async function api(path, opts={}) {
   const headers = { 'Content-Type':'application/json', ...(opts.headers||{}) };
   if (token) headers['Authorization'] = 'Bearer '+token;
   const res = await fetch(API+path, { ...opts, headers });
+  if (res.status === 401) {
+    localStorage.removeItem('gt_token');
+    localStorage.removeItem('gt_admin');
+    alert('Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.');
+    location.reload();
+    return;
+  }
   if (!res.ok) throw new Error((await res.json()).error || 'Hata');
   return res.json();
 }
