@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Güliz Transfer — Admin Panel</title>
+<title>Güliz Şirketler Grubu — Admin Panel</title>
 <meta name="robots" content="noindex,nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -305,7 +305,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
       <p id="loginErr" style="color:#ff6b6b;font-size:0.78rem;margin-top:0.7rem;display:none;background:rgba(227,7,19,0.1);padding:0.5rem 0.7rem;border-left:2px solid #e30713;border-radius:2px"></p>
       <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
-      <div class="login-footer">© 2025 Güliz Transfer · Tüm hakları saklıdır</div>
+      <div class="login-footer">© 2025 Güliz Şirketler Grubu · Tüm hakları saklıdır</div>
     </div>
 
   </div>
@@ -785,9 +785,11 @@ async function doLogin() {
   document.getElementById('loginErr').style.display = 'none';
 
   try {
-    const res  = await fetch(API+'/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) });
+    const res  = await fetch(API+'/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) });
+    const ct   = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) throw new Error('Sunucu yanıt vermedi (' + res.status + '). Lütfen tekrar deneyin.');
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+    if (!res.ok) throw new Error(data.error || 'Giriş başarısız');
     token = data.token;
     currentAdmin = data.admin;
     localStorage.setItem('gt_token', token);
