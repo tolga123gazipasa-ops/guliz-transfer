@@ -1052,8 +1052,13 @@ async function api(path, opts={}) {
     location.reload();
     return;
   }
-  if (!res.ok) throw new Error((await res.json()).error || 'Hata');
-  return res.json();
+  const ct = res.headers.get('content-type') || '';
+  const isJson = ct.includes('application/json');
+  if (!res.ok) {
+    const msg = isJson ? ((await res.json()).error || 'Hata') : `Sunucu hatası (${res.status})`;
+    throw new Error(msg);
+  }
+  return isJson ? res.json() : {};
 }
 
 /* ── DASHBOARD ── */
