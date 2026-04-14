@@ -2180,7 +2180,7 @@ const DURUM_BADGE = {
 
 async function loadSevkiyatlar() {
   try {
-    const rows = await api('/takip');
+    const rows = await api('/api/takip');
     const tbody = document.getElementById('sevkBody');
     document.getElementById('sevkCount').textContent = rows.length + ' sevkiyat';
     tbody.innerHTML = rows.map(s => `
@@ -2259,9 +2259,9 @@ async function saveSevk() {
 
   try {
     if (id) {
-      await api('/takip/' + id, { method:'PUT', body: JSON.stringify(body) });
+      await api('/api/takip/' + id, { method:'PUT', body: JSON.stringify(body) });
     } else {
-      const res = await api('/takip', { method:'POST', body: JSON.stringify(body) });
+      const res = await api('/api/takip', { method:'POST', body: JSON.stringify(body) });
       msg.textContent = '✅ Oluşturuldu — Takip Kodu: ' + res.takip_kodu;
       msg.style.cssText = 'display:block;color:#4ade80;font-weight:700';
       setTimeout(() => { closeSevkModal(); loadSevkiyatlar(); }, 2000);
@@ -2277,7 +2277,7 @@ async function saveSevk() {
 async function deleteSevk(id, kod) {
   if (!confirm(`"${kod}" kodlu sevkiyatı silmek istediğinizden emin misiniz?`)) return;
   try {
-    await api('/takip/' + id, { method:'DELETE' });
+    await api('/api/takip/' + id, { method:'DELETE' });
     loadSevkiyatlar();
   } catch(e) { alert(e.message); }
 }
