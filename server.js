@@ -30,6 +30,7 @@ const statsRoutes   = require('./routes/stats');
 const kurumRoutes    = require('./routes/kurumlar');
 const ihalelerRoutes = require('./routes/ihaleler');
 const insaatRoutes   = require('./routes/insaat');
+const takipRoutes    = require('./routes/takip');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
 const db = require('./models/db');
 
@@ -52,8 +53,52 @@ app.use('/api/stats',    statsRoutes);
 app.use('/api/kurumlar', kurumRoutes);
 app.use('/api/ihaleler', ihalelerRoutes);
 app.use('/api/insaat',   insaatRoutes);
+app.use('/api/takip',   takipRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
+
+/* ── YÜK BİLDİRİMİ ── */
+app.post('/api/yuk-bildirimi', async (req, res) => {
+  try {
+    const { ad_soyad, telefon, yuk_tanimi, kaynak } = req.body;
+    if (!ad_soyad || !telefon || !yuk_tanimi)
+      return res.status(400).json({ error: 'Ad soyad, telefon ve yük tanımı zorunludur.' });
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const { rows } = await db.query(
+      `INSERT INTO yuk_bildirimleri (ad_soyad, telefon, yuk_tanimi, kaynak, ip)
+       VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at`,
+      [ad_soyad.trim(), telefon.trim(), yuk_tanimi.trim(), kaynak || 'anasayfa', ip]
+    );
+    const { tg } = require('./services/telegram');
+    await tg(
+      `📦 <b>YENİ YÜK BİLDİRİMİ</b>\n` +
+      `👤 <b>${ad_soyad.trim()}</b>\n` +
+      `📞 ${telefon.trim()}\n` +
+      `🚚 ${yuk_tanimi.trim()}\n` +
+      `📍 Kaynak: ${kaynak || 'anasayfa'}\n` +
+      `🕐 ${new Date().toLocaleString('tr-TR')}`
+    );
+    res.json({ ok: true, id: rows[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/yuk-bildirimleri', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    const { rows } = await db.query(
+      `SELECT * FROM yuk_bildirimleri ORDER BY created_at DESC LIMIT 200`
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
+  try {
+    await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
 /* ══════════════════════════════════════════
    CANLI DESTEK — Socket.io
@@ -438,6 +483,36 @@ db.query(`
     created_at    TIMESTAMPTZ  DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS idx_insaat_foto_insaat ON insaat_fotograflar(insaat_id);
+  CREATE TABLE IF NOT EXISTS sevkiyatlar (
+    id                SERIAL PRIMARY KEY,
+    takip_kodu        VARCHAR(20)  UNIQUE NOT NULL,
+    musteri_adi       VARCHAR(100) NOT NULL,
+    musteri_tel       VARCHAR(20),
+    kalkis            TEXT         NOT NULL,
+    varis             TEXT         NOT NULL,
+    durum             VARCHAR(20)  NOT NULL DEFAULT 'beklemede'
+                        CHECK (durum IN ('beklemede','yolda','teslim_edildi','iptal')),
+    arac_plaka        VARCHAR(20),
+    surucu_adi        VARCHAR(100),
+    mevcut_konum      VARCHAR(50),
+    mevcut_konum_adi  TEXT,
+    tahmini_teslim    TIMESTAMPTZ,
+    notlar            TEXT,
+    created_at        TIMESTAMPTZ  DEFAULT NOW(),
+    updated_at        TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_sevkiyatlar_kod ON sevkiyatlar(takip_kodu);
+  CREATE TABLE IF NOT EXISTS yuk_bildirimleri (
+    id         SERIAL PRIMARY KEY,
+    ad_soyad   VARCHAR(100) NOT NULL,
+    telefon    VARCHAR(30)  NOT NULL,
+    yuk_tanimi TEXT         NOT NULL,
+    kaynak     VARCHAR(50)  DEFAULT 'anasayfa',
+    ip         VARCHAR(50),
+    okundu     BOOLEAN      DEFAULT FALSE,
+    created_at TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_yuk_bildirimleri_tarih ON yuk_bildirimleri(created_at DESC);
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');

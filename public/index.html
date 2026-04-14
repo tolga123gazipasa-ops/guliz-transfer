@@ -391,12 +391,12 @@
       </a>
     </div>
     <ul>
-      <li><a href="#">Anasayfa</a></li>
-      <li><a href="#">Hakkımızda</a></li>
-      <li><a href="#">Hizmetler</a></li>
+      <li><a href="index.html">Anasayfa</a></li>
+      <li><a href="lojistik/index.html">Lojistik</a></li>
       <li><a href="ihale/index.html">Kamu İhalesi</a></li>
       <li><a href="insaat/index.html">İnşaat</a></li>
-      <li><a href="transfer/index.html">İletişim</a></li>
+      <li><a href="kurum/index.html">Kurum Girişi</a></li>
+      <li><a href="transfer/index.html">Transfer</a></li>
     </ul>
   </nav>
 
@@ -421,9 +421,9 @@
       <a class="badge" href="ihale/index.html">
         <span class="icon">🏗️</span><span>Kamu İhalesi</span>
       </a>
-      <div class="badge">
+      <a class="badge" href="lojistik/index.html">
         <span class="icon">🚚</span><span>Lojistik</span>
-      </div>
+      </a>
       <a class="badge" href="transfer/index.html">
         <span class="icon">🚐</span><span>VIP Transfer</span>
       </a>
@@ -434,7 +434,7 @@
 
     <div class="cta">
       <a class="btn-red" href="transfer/index.html">Transfer Rezervasyon</a>
-      <a class="btn-ghost" href="#">Bize Ulaşın →</a>
+      <a class="btn-ghost" href="#" onclick="openYukModal();return false;">📦 Yük Bildirimi →</a>
     </div>
   </div>
 
@@ -453,6 +453,38 @@
   </div>
 
 </section>
+
+<!-- YÜK BİLDİRİMİ MODAL -->
+<div id="yukModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(5,13,40,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#0a1235;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:36px 32px;width:100%;max-width:440px;margin:16px;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <button onclick="closeYukModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+      <div style="width:44px;height:44px;background:rgba(232,25,44,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📦</div>
+      <div>
+        <div style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Yük Bildirimi</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Taşıma teklifinizi hemen iletin</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;">Ad Soyad</label>
+        <input id="yukAd" type="text" placeholder="Adınız Soyadınız" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+      </div>
+      <div>
+        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;">Telefon Numarası</label>
+        <input id="yukTel" type="tel" placeholder="+90 5XX XXX XX XX" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+      </div>
+      <div>
+        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;">Yük Tanımı</label>
+        <textarea id="yukTanim" rows="3" placeholder="Taşınacak yükü kısaca anlatın (cins, ağırlık, nereden-nereye vb.)" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;resize:vertical;min-height:80px;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
+      </div>
+      <div id="yukErr" style="display:none;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#ff6b6b;"></div>
+      <button onclick="submitYukBildirimi()" id="yukBtn" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;margin-top:4px;">
+        Bildirimi Gönder →
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- CANLI DESTEK WIDGET -->
 <button class="chat-btn" onclick="toggleChat()" title="Canlı Destek">
@@ -500,6 +532,51 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+/* ── YÜK BİLDİRİMİ MODAL ── */
+function openYukModal() {
+  document.getElementById('yukModal').style.display = 'flex';
+  document.getElementById('yukErr').style.display = 'none';
+  setTimeout(() => document.getElementById('yukAd').focus(), 80);
+}
+function closeYukModal() {
+  document.getElementById('yukModal').style.display = 'none';
+}
+document.getElementById('yukModal').addEventListener('click', function(e) {
+  if (e.target === this) closeYukModal();
+});
+async function submitYukBildirimi() {
+  const ad      = document.getElementById('yukAd').value.trim();
+  const tel     = document.getElementById('yukTel').value.trim();
+  const tanim   = document.getElementById('yukTanim').value.trim();
+  const errEl   = document.getElementById('yukErr');
+  const btn     = document.getElementById('yukBtn');
+  errEl.style.display = 'none';
+  if (!ad || !tel || !tanim) {
+    errEl.textContent = '⚠ Lütfen tüm alanları doldurun.';
+    errEl.style.display = 'block';
+    return;
+  }
+  btn.textContent = 'Gönderiliyor...';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/yuk-bildirimi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad_soyad: ad, telefon: tel, yuk_tanimi: tanim, kaynak: 'anasayfa' })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Hata');
+    btn.textContent = '✅ Bildirim Alındı!';
+    btn.style.background = '#16a34a';
+    setTimeout(() => { closeYukModal(); btn.textContent = 'Bildirimi Gönder →'; btn.style.background = '#e8192c'; btn.disabled = false; document.getElementById('yukAd').value=''; document.getElementById('yukTel').value=''; document.getElementById('yukTanim').value=''; }, 2200);
+  } catch(e) {
+    errEl.textContent = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    btn.textContent = 'Bildirimi Gönder →';
+    btn.disabled = false;
+  }
+}
+
 /* ══════════════════════════════════
    CANLI DESTEK — Ziyaretçi tarafı
 ══════════════════════════════════ */

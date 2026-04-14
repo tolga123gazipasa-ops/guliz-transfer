@@ -386,6 +386,13 @@ tr:hover td{background:rgba(26,45,107,0.02)}
       <div class="nav-item" onclick="showPage('kurumlar')">
         <span class="nav-icon">🏛️</span> Kurum Yönetimi
       </div>
+      <div class="nav-item" onclick="showPage('sevkiyatlar')">
+        <span class="nav-icon">🚚</span> Sevkiyat Takip
+      </div>
+      <div class="nav-item" onclick="showPage('yukbildirim')">
+        <span class="nav-icon">📦</span> Yük Bildirimleri
+        <span id="yukBadge" style="margin-left:auto;background:rgba(251,191,36,0.2);color:#fbbf24;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
+      </div>
       <div class="nav-item" onclick="showPage('settings')">
         <span class="nav-icon">⚙</span> Ayarlar
       </div>
@@ -767,6 +774,98 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         <div style="font-size:0.82rem;color:var(--gold);margin-bottom:0.4rem">🔗 Kurum Giriş Adresi</div>
         <div style="font-size:0.85rem;color:var(--muted)" id="kurumLoginUrl"></div>
         <div style="font-size:0.72rem;color:var(--muted);margin-top:0.4rem">Bu adresi kurumlara iletebilirsiniz.</div>
+      </div>
+    </div>
+
+    <!-- SEVKİYAT TAKİP -->
+    <div class="page" id="page-sevkiyatlar">
+      <div class="section-head">
+        <h2>Sevkiyat Takip Yönetimi</h2>
+        <button class="btn btn-gold" onclick="openSevkModal()">+ Yeni Sevkiyat</button>
+      </div>
+
+      <!-- Modal -->
+      <div id="sevkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#1a1a2e;border:0.5px solid var(--border);border-radius:12px;padding:2rem;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)" id="sevkModalTitle">🚚 Yeni Sevkiyat</div>
+            <button onclick="closeSevkModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">×</button>
+          </div>
+          <input type="hidden" id="sevk-edit-id">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Müşteri Adı *</label><input type="text" id="sevk-musteri" placeholder="Ad Soyad"></div>
+            <div class="form-group"><label>Telefon</label><input type="text" id="sevk-tel" placeholder="05xx xxx xx xx"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Kalkış *</label><input type="text" id="sevk-kalkis" placeholder="İstanbul, Türkiye"></div>
+            <div class="form-group"><label>Varış *</label><input type="text" id="sevk-varis" placeholder="Ankara, Türkiye"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Araç Plakası</label><input type="text" id="sevk-plaka" placeholder="01 ABC 123"></div>
+            <div class="form-group"><label>Sürücü Adı</label><input type="text" id="sevk-surucu" placeholder="Mehmet Yılmaz"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Durum</label>
+              <select id="sevk-durum" style="width:100%;background:var(--card);border:0.5px solid var(--border);color:var(--text);padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+                <option value="beklemede">Beklemede</option>
+                <option value="yolda">Yolda</option>
+                <option value="teslim_edildi">Teslim Edildi</option>
+                <option value="iptal">İptal</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Tahmini Teslim</label><input type="datetime-local" id="sevk-teslim"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Konum (lat,lng)</label><input type="text" id="sevk-konum" placeholder="37.0, 35.3"></div>
+            <div class="form-group"><label>Konum Adı</label><input type="text" id="sevk-konum-adi" placeholder="Konya, Türkiye"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:1.5rem"><label>Notlar</label><textarea id="sevk-notlar" rows="2" style="width:100%;background:var(--card);border:0.5px solid var(--border);color:var(--text);padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans);resize:vertical" placeholder="İç notlar..."></textarea></div>
+          <p id="sevkFormMsg" style="font-size:0.78rem;margin-bottom:1rem;display:none"></p>
+          <div style="display:flex;gap:0.8rem">
+            <button class="btn btn-gold" style="flex:1;padding:0.75rem" onclick="saveSevk()">Kaydet</button>
+            <button class="btn btn-outline" style="padding:0.75rem 1.5rem" onclick="closeSevkModal()">İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tablo -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Sevkiyatlar</h3>
+          <span id="sevkCount" style="font-size:0.78rem;color:var(--muted)"></span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Takip Kodu</th>
+            <th>Müşteri</th>
+            <th>Kalkış → Varış</th>
+            <th>Araç</th>
+            <th>Durum</th>
+            <th>Konum</th>
+            <th>İşlem</th>
+          </tr></thead>
+          <tbody id="sevkBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- YÜK BİLDİRİMLERİ SAYFASI -->
+    <div class="page" id="page-yukbildirim">
+      <div class="section-head"><h2>Yük Bildirimleri</h2><div style="display:flex;gap:8px;align-items:center;"><span id="yukSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn-sm" onclick="loadYukBildirimleri()">↻ Yenile</button></div></div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <div class="table-header"><h3>Gelen Yük Bildirimleri</h3></div>
+        <table>
+          <thead><tr>
+            <th style="width:36px;">#</th>
+            <th>Ad Soyad</th>
+            <th>Telefon</th>
+            <th>Yük Tanımı</th>
+            <th>Kaynak</th>
+            <th>Tarih</th>
+            <th>Durum</th>
+          </tr></thead>
+          <tbody id="yukBildirimleriTable"></tbody>
+        </table>
       </div>
     </div>
 
@@ -1337,17 +1436,19 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','insaat','kurumlar','settings'];
+  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','insaat','kurumlar','sevkiyatlar','yukbildirim','settings'];
   document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
-  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',settings:'Ayarlar'};
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',sevkiyatlar:'Sevkiyat Takip',yukbildirim:'Yük Bildirimleri',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
-  if (name === 'bookings') loadBookings();
-  if (name === 'stats')    loadStats();
-  if (name === 'settings') loadSettings();
-  if (name === 'kurumlar') loadKurumlar();
-  if (name === 'ihaleler') loadIhaleler();
-  if (name === 'insaat')   loadInsaat();
-  if (name === 'support')  { supportAdminJoin(); clearSupportBadge(); }
+  if (name === 'bookings')    loadBookings();
+  if (name === 'stats')       loadStats();
+  if (name === 'settings')    loadSettings();
+  if (name === 'kurumlar')    loadKurumlar();
+  if (name === 'ihaleler')    loadIhaleler();
+  if (name === 'insaat')      loadInsaat();
+  if (name === 'sevkiyatlar') loadSevkiyatlar();
+  if (name === 'yukbildirim') loadYukBildirimleri();
+  if (name === 'support')     { supportAdminJoin(); clearSupportBadge(); }
 }
 
 /* ── API HELPER ── */
@@ -2065,6 +2166,163 @@ async function changePassword() {
     document.getElementById('newPass').value        = '';
     document.getElementById('newPassConfirm').value = '';
   } catch(e) { showMsg('passMsg', e.message, 'error'); }
+}
+
+/* ══════════════════════════════════
+   SEVKİYAT TAKİP YÖNETİMİ
+══════════════════════════════════ */
+const DURUM_BADGE = {
+  beklemede:     '<span style="background:rgba(251,191,36,.15);color:#fbbf24;padding:2px 8px;border-radius:12px;font-size:0.72rem">⏳ Beklemede</span>',
+  yolda:         '<span style="background:rgba(74,222,128,.15);color:#4ade80;padding:2px 8px;border-radius:12px;font-size:0.72rem">🚛 Yolda</span>',
+  teslim_edildi: '<span style="background:rgba(96,165,250,.15);color:#60a5fa;padding:2px 8px;border-radius:12px;font-size:0.72rem">✅ Teslim Edildi</span>',
+  iptal:         '<span style="background:rgba(248,113,113,.15);color:#f87171;padding:2px 8px;border-radius:12px;font-size:0.72rem">❌ İptal</span>',
+};
+
+async function loadSevkiyatlar() {
+  try {
+    const rows = await api('/takip');
+    const tbody = document.getElementById('sevkBody');
+    document.getElementById('sevkCount').textContent = rows.length + ' sevkiyat';
+    tbody.innerHTML = rows.map(s => `
+      <tr>
+        <td><code style="font-size:0.78rem;color:var(--gold)">${s.takip_kodu}</code></td>
+        <td>${s.musteri_adi}<br><span style="font-size:0.72rem;color:var(--muted)">${s.musteri_tel||''}</span></td>
+        <td style="font-size:0.82rem">${s.kalkis}<br><span style="color:var(--muted)">→ ${s.varis}</span></td>
+        <td style="font-size:0.82rem">${s.arac_plaka||'—'}<br><span style="color:var(--muted)">${s.surucu_adi||''}</span></td>
+        <td>${DURUM_BADGE[s.durum]||s.durum}</td>
+        <td style="font-size:0.82rem">${s.mevcut_konum_adi||'—'}</td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="editSevk(${JSON.stringify(s).replace(/"/g,'&quot;')})">Güncelle</button>
+          <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:0.5px solid rgba(248,113,113,.3);margin-left:4px" onclick="deleteSevk(${s.id},'${s.takip_kodu}')">Sil</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Henüz sevkiyat yok.</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+function openSevkModal() {
+  document.getElementById('sevk-edit-id').value = '';
+  document.getElementById('sevkModalTitle').textContent = '🚚 Yeni Sevkiyat';
+  ['sevk-musteri','sevk-tel','sevk-kalkis','sevk-varis','sevk-plaka','sevk-surucu','sevk-konum','sevk-konum-adi','sevk-teslim','sevk-notlar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('sevk-durum').value = 'beklemede';
+  document.getElementById('sevkFormMsg').style.display = 'none';
+  const m = document.getElementById('sevkModal'); m.style.display = 'flex';
+}
+
+function editSevk(s) {
+  document.getElementById('sevk-edit-id').value        = s.id;
+  document.getElementById('sevkModalTitle').textContent = '✏️ Sevkiyat Güncelle';
+  document.getElementById('sevk-musteri').value        = s.musteri_adi || '';
+  document.getElementById('sevk-tel').value            = s.musteri_tel || '';
+  document.getElementById('sevk-kalkis').value         = s.kalkis || '';
+  document.getElementById('sevk-varis').value          = s.varis || '';
+  document.getElementById('sevk-plaka').value          = s.arac_plaka || '';
+  document.getElementById('sevk-surucu').value         = s.surucu_adi || '';
+  document.getElementById('sevk-durum').value          = s.durum || 'beklemede';
+  document.getElementById('sevk-konum').value          = s.mevcut_konum || '';
+  document.getElementById('sevk-konum-adi').value      = s.mevcut_konum_adi || '';
+  document.getElementById('sevk-teslim').value         = s.tahmini_teslim ? s.tahmini_teslim.substring(0,16) : '';
+  document.getElementById('sevk-notlar').value         = s.notlar || '';
+  document.getElementById('sevkFormMsg').style.display = 'none';
+  document.getElementById('sevkModal').style.display   = 'flex';
+}
+
+function closeSevkModal() {
+  document.getElementById('sevkModal').style.display = 'none';
+}
+
+async function saveSevk() {
+  const id      = document.getElementById('sevk-edit-id').value;
+  const musteri = document.getElementById('sevk-musteri').value.trim();
+  const kalkis  = document.getElementById('sevk-kalkis').value.trim();
+  const varis   = document.getElementById('sevk-varis').value.trim();
+  const msg     = document.getElementById('sevkFormMsg');
+
+  if (!musteri || !kalkis || !varis) {
+    msg.textContent = 'Müşteri, kalkış ve varış zorunludur.';
+    msg.style.cssText = 'display:block;color:#f87171'; return;
+  }
+
+  const body = {
+    musteri_adi:      musteri,
+    musteri_tel:      document.getElementById('sevk-tel').value.trim(),
+    kalkis, varis,
+    arac_plaka:       document.getElementById('sevk-plaka').value.trim(),
+    surucu_adi:       document.getElementById('sevk-surucu').value.trim(),
+    durum:            document.getElementById('sevk-durum').value,
+    mevcut_konum:     document.getElementById('sevk-konum').value.trim(),
+    mevcut_konum_adi: document.getElementById('sevk-konum-adi').value.trim(),
+    tahmini_teslim:   document.getElementById('sevk-teslim').value || null,
+    notlar:           document.getElementById('sevk-notlar').value.trim(),
+  };
+
+  try {
+    if (id) {
+      await api('/takip/' + id, { method:'PUT', body: JSON.stringify(body) });
+    } else {
+      const res = await api('/takip', { method:'POST', body: JSON.stringify(body) });
+      msg.textContent = '✅ Oluşturuldu — Takip Kodu: ' + res.takip_kodu;
+      msg.style.cssText = 'display:block;color:#4ade80;font-weight:700';
+      setTimeout(() => { closeSevkModal(); loadSevkiyatlar(); }, 2000);
+      return;
+    }
+    closeSevkModal(); loadSevkiyatlar();
+  } catch(e) {
+    msg.textContent = e.message;
+    msg.style.cssText = 'display:block;color:#f87171';
+  }
+}
+
+async function deleteSevk(id, kod) {
+  if (!confirm(`"${kod}" kodlu sevkiyatı silmek istediğinizden emin misiniz?`)) return;
+  try {
+    await api('/takip/' + id, { method:'DELETE' });
+    loadSevkiyatlar();
+  } catch(e) { alert(e.message); }
+}
+
+/* ── YÜK BİLDİRİMLERİ ── */
+async function loadYukBildirimleri() {
+  try {
+    const rows = await api('/yuk-bildirimleri');
+    const tb   = document.getElementById('yukBildirimleriTable');
+    const okunmamis = rows.filter(r => !r.okundu).length;
+    document.getElementById('yukSayac').textContent = `${rows.length} kayıt, ${okunmamis} okunmamış`;
+    const badge = document.getElementById('yukBadge');
+    if (okunmamis > 0) { badge.textContent = okunmamis; badge.style.display = 'inline-block'; }
+    else badge.style.display = 'none';
+
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">Henüz yük bildirimi yok</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(r => {
+      const tarih = new Date(r.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const durum = r.okundu
+        ? '<span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Okundu</span>'
+        : '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Yeni</span>';
+      const oku = r.okundu ? '' : `<button class="btn-sm" onclick="yukOkundu(${r.id})" style="margin-top:4px;font-size:10px;">Okundu İşaretle</button>`;
+      return `<tr style="${r.okundu ? '' : 'background:rgba(251,191,36,0.04);'}">
+        <td style="color:var(--muted);font-size:12px;">${r.id}</td>
+        <td style="font-weight:600;">${r.ad_soyad}</td>
+        <td><a href="tel:${r.telefon}" style="color:var(--red);text-decoration:none;font-weight:600;">${r.telefon}</a></td>
+        <td style="max-width:280px;white-space:pre-wrap;word-break:break-word;font-size:12.5px;">${r.yuk_tanimi}</td>
+        <td style="font-size:11px;color:var(--muted);">${r.kaynak || '-'}</td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
+        <td>${durum}${oku}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) { alert(e.message); }
+}
+
+async function yukOkundu(id) {
+  try {
+    await fetch(API + '/yuk-bildirimleri/' + id + '/okundu', {
+      method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    loadYukBildirimleri();
+  } catch(e) { alert(e.message); }
 }
 
 </script>

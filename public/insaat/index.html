@@ -603,5 +603,190 @@ function escHtml(s) {
 
 loadProjects();
 </script>
+
+<!-- CANLI DESTEK WIDGET -->
+<style>
+.chat-btn{position:fixed;bottom:2rem;left:2rem;z-index:200;width:52px;height:52px;border-radius:50%;background:#1D4ED8;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(29,78,216,0.4);cursor:pointer;border:none;transition:transform 0.3s;}
+.chat-btn:hover{transform:scale(1.08);}
+.chat-btn svg{width:24px;height:24px;fill:#fff;}
+.chat-unread{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;}
+.chat-box{position:fixed;bottom:5.5rem;left:2rem;z-index:200;width:320px;background:#0D2B55;border:0.5px solid rgba(29,78,216,0.25);display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.6);border-radius:4px;overflow:hidden;animation:chatFadeUp 0.25s ease;}
+@keyframes chatFadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.chat-box.open{display:flex;}
+.chat-head{background:#122F62;padding:0.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid rgba(29,78,216,0.15);}
+.chat-head-info{display:flex;align-items:center;gap:0.7rem;}
+.chat-online-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;}
+.chat-head-title{font-size:0.82rem;font-weight:500;color:#fff;font-family:'Montserrat',sans-serif;}
+.chat-head-sub{font-size:0.65rem;color:rgba(255,255,255,0.35);font-family:'Montserrat',sans-serif;}
+.chat-close{background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:1rem;line-height:1;padding:0;}
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.6rem;max-height:280px;min-height:180px;background:#0D2B55;}
+.chat-messages::-webkit-scrollbar{width:3px;}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(29,78,216,0.2);}
+.chat-bubble{max-width:80%;padding:0.55rem 0.85rem;font-size:0.8rem;line-height:1.5;border-radius:2px;font-family:'Montserrat',sans-serif;}
+.chat-bubble.admin{background:rgba(29,78,216,0.1);border:0.5px solid rgba(29,78,216,0.2);color:rgba(255,255,255,0.85);align-self:flex-start;}
+.chat-bubble.visitor{background:#1D4ED8;color:#fff;align-self:flex-end;}
+.chat-bubble-time{font-size:0.6rem;color:rgba(255,255,255,0.3);margin-top:2px;}
+.chat-bubble.visitor .chat-bubble-time{color:rgba(255,255,255,0.5);}
+.chat-typing{font-size:0.72rem;color:rgba(255,255,255,0.3);padding:0 1rem 0.5rem;display:none;background:#0D2B55;font-family:'Montserrat',sans-serif;}
+.chat-name-bar{padding:0.9rem 1rem;border-top:0.5px solid rgba(255,255,255,0.08);background:#122F62;display:flex;flex-direction:column;gap:0.5rem;}
+.chat-name-bar p{font-size:0.72rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;font-family:'Montserrat',sans-serif;}
+.chat-name-input{width:100%;background:#122F62;border:0.5px solid rgba(255,255,255,0.1);color:#fff;font-family:'Montserrat',sans-serif;font-size:0.8rem;padding:0.5rem 0.75rem;outline:none;border-radius:2px;}
+.chat-name-input:focus{border-color:#1D4ED8;}
+.chat-name-input.required{border-color:rgba(239,68,68,0.5);}
+.chat-start-btn{width:100%;padding:0.6rem;background:#e8192c;color:#fff;font-family:'Montserrat',sans-serif;font-size:0.78rem;font-weight:500;letter-spacing:0.06em;border:none;cursor:pointer;transition:background 0.2s;border-radius:2px;}
+.chat-start-btn:hover{background:#b01020;}
+.chat-input-row{display:flex;gap:0;border-top:0.5px solid rgba(255,255,255,0.06);}
+.chat-input{flex:1;background:#122F62;border:none;color:#fff;font-family:'Montserrat',sans-serif;font-size:0.82rem;padding:0.75rem 1rem;outline:none;resize:none;}
+.chat-send{width:44px;background:#e8192c;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;flex-shrink:0;}
+.chat-send:hover{background:#b01020;}
+.chat-send svg{width:16px;height:16px;fill:#fff;}
+</style>
+
+<button class="chat-btn" onclick="toggleChat()" title="Canlı Destek">
+  <span class="chat-unread" id="chatUnread">0</span>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+</button>
+
+<div class="chat-box" id="chatBox">
+  <div class="chat-head">
+    <div class="chat-head-info">
+      <div class="chat-online-dot"></div>
+      <div>
+        <div class="chat-head-title">Güliz Destek</div>
+        <div class="chat-head-sub">Genellikle birkaç dakika içinde yanıt veririz</div>
+      </div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-bubble admin">
+      Merhaba! 👋 İnşaat hizmetlerimiz hakkında size nasıl yardımcı olabiliriz?
+      <div class="chat-bubble-time">Güliz</div>
+    </div>
+  </div>
+  <div class="chat-typing" id="chatTypingIndicator">Yanıt yazılıyor...</div>
+  <div class="chat-name-bar" id="chatNameBar">
+    <p>Telefon numaranızı girerek sohbet başlatın:</p>
+    <input class="chat-name-input" id="chatPhoneInput" type="tel" placeholder="Telefon Numarası (+90 5XX...)" maxlength="20" onkeydown="if(event.key==='Enter')startChat()">
+    <button class="chat-start-btn" onclick="startChat()">Sohbeti Başlat →</button>
+  </div>
+  <div class="chat-input-row" id="chatInputRow" style="display:none;">
+    <textarea class="chat-input" id="chatInput" placeholder="Mesajınızı yazın..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"
+      oninput="onChatTyping()"></textarea>
+    <button class="chat-send" onclick="sendChatMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const CHAT_SESSION_KEY = 'gt_chat_session';
+  let chatSessionId = localStorage.getItem(CHAT_SESSION_KEY);
+  if (!chatSessionId) {
+    chatSessionId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2,8);
+    localStorage.setItem(CHAT_SESSION_KEY, chatSessionId);
+  }
+  let chatOpen = false, chatIdentified = false, isTyping = false, chatTypingTimer = null;
+  const savedChatPhone = localStorage.getItem('gt_chat_phone');
+
+  const chatScript = document.createElement('script');
+  chatScript.src = '/socket.io/socket.io.js';
+  chatScript.onload = () => {
+    const chatSocket = io();
+    window._chatSocket = chatSocket;
+
+    chatSocket.on('connect', () => {
+      if (savedChatPhone) {
+        chatIdentified = true;
+        chatSocket.emit('visitor:connect', { sessionId: chatSessionId, name: 'Ziyaretçi', phone: savedChatPhone, page: location.href, pageTitle: document.title, device: /Mobile|Android|iPhone/i.test(navigator.userAgent)?'Mobil':'Masaüstü', referrer: document.referrer || '' });
+        document.getElementById('chatNameBar').style.display = 'none';
+        document.getElementById('chatInputRow').style.display = 'flex';
+      }
+    });
+
+    chatSocket.on('chat:message', (msg) => {
+      appendChatBubble('admin', msg.text, msg.time);
+      if (!chatOpen) {
+        const badge = document.getElementById('chatUnread');
+        badge.style.display = 'flex';
+        badge.textContent = parseInt(badge.textContent||0) + 1;
+      }
+    });
+
+    chatSocket.on('chat:history', (messages) => {
+      messages.forEach(m => appendChatBubble(m.from === 'admin' ? 'admin' : 'visitor', m.text, m.time));
+    });
+
+    chatSocket.on('chat:admin_typing', (typing) => {
+      document.getElementById('chatTypingIndicator').style.display = typing ? 'block' : 'none';
+      if (typing) scrollChatToBottom();
+    });
+
+    window._startChat = function() {
+      const phone = document.getElementById('chatPhoneInput').value.trim();
+      if (!phone) {
+        const inp = document.getElementById('chatPhoneInput');
+        inp.classList.add('required'); inp.placeholder = '⚠ Telefon zorunludur!'; inp.focus(); return;
+      }
+      document.getElementById('chatPhoneInput').classList.remove('required');
+      localStorage.setItem('gt_chat_phone', phone);
+      chatIdentified = true;
+      chatSocket.emit('visitor:connect', { sessionId: chatSessionId, name: 'Ziyaretçi', phone, page: location.href, pageTitle: document.title, device: /Mobile|Android|iPhone/i.test(navigator.userAgent)?'Mobil':'Masaüstü', referrer: document.referrer || '' });
+      document.getElementById('chatNameBar').style.display = 'none';
+      document.getElementById('chatInputRow').style.display = 'flex';
+      document.getElementById('chatInput').focus();
+    };
+
+    window._sendChatMessage = function() {
+      if (!chatIdentified) { window._startChat(); return; }
+      const input = document.getElementById('chatInput');
+      const text  = input.value.trim();
+      if (!text) return;
+      chatSocket.emit('visitor:message', { sessionId: chatSessionId, text, name: 'Ziyaretçi', phone: localStorage.getItem('gt_chat_phone') || '' });
+      appendChatBubble('visitor', text, new Date().toISOString());
+      input.value = ''; input.style.height = 'auto';
+      isTyping = false; chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false });
+    };
+
+    window._onChatTyping = function() {
+      if (!isTyping) { isTyping = true; chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: true }); }
+      clearTimeout(chatTypingTimer);
+      chatTypingTimer = setTimeout(() => { isTyping = false; chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false }); }, 2000);
+      const el = document.getElementById('chatInput');
+      el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+    };
+  };
+  document.head.appendChild(chatScript);
+
+  window.toggleChat = function() {
+    chatOpen = !chatOpen;
+    document.getElementById('chatBox').classList.toggle('open', chatOpen);
+    if (chatOpen) {
+      const badge = document.getElementById('chatUnread');
+      badge.style.display = 'none'; badge.textContent = '0';
+      scrollChatToBottom();
+      if (chatIdentified) document.getElementById('chatInput').focus();
+    }
+  };
+  window.startChat       = () => window._startChat && window._startChat();
+  window.sendChatMessage = () => window._sendChatMessage && window._sendChatMessage();
+  window.onChatTyping    = () => window._onChatTyping && window._onChatTyping();
+
+  function appendChatBubble(from, text, time) {
+    const msgs = document.getElementById('chatMessages');
+    const div  = document.createElement('div');
+    div.className = 'chat-bubble ' + (from === 'admin' ? 'admin' : 'visitor');
+    const t = new Date(time).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+    div.innerHTML = String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + `<div class="chat-bubble-time">${t}</div>`;
+    msgs.appendChild(div); scrollChatToBottom();
+  }
+  function scrollChatToBottom() {
+    const msgs = document.getElementById('chatMessages');
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+})();
+</script>
 </body>
 </html>
