@@ -2523,16 +2523,30 @@ async function deleteChatSession() {
   if (!confirm('Bu konuşmayı ve tüm mesajları kalıcı olarak silmek istediğinizden emin misiniz?\n\nZiyaretçi tekrar mesaj gönderdiğinde yeni oturum açılacak.')) return;
   try {
     await api('/api/chat/' + currentChatSessionId, { method: 'DELETE' });
-    // Memory'den de temizle
+    // Listedeki kaydı sil
     const idx = allVisitorsData.findIndex(v => v.sessionId === currentChatSessionId);
     if (idx > -1) allVisitorsData.splice(idx, 1);
+    // Tüm UI'ı sıfırla
     currentChatSessionId = null;
     activeSessionId = null;
+    document.getElementById('adminMessages').innerHTML = '';
+    document.getElementById('cpName').textContent    = '—';
+    document.getElementById('cpDevice').textContent  = '';
+    document.getElementById('cpTime').textContent    = '';
+    document.getElementById('cpOnlineStatus').textContent = '';
+    document.getElementById('cpGeoRow').style.display = 'none';
+    const inp = document.getElementById('adminChatInput');
+    if (inp) inp.value = '';
+    const typing = document.getElementById('liveTypingPreview');
+    if (typing) typing.style.display = 'none';
+    const typRow = document.getElementById('adminTypingRow');
+    if (typRow) typRow.style.display = 'none';
+    document.getElementById('activityItems').innerHTML =
+      '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Ziyaretçi seçin</div>';
     document.getElementById('chatPanelContent').style.display = 'none';
     document.getElementById('noChatSelected').style.display   = 'flex';
     renderVisitorList(allVisitorsData);
-    alert('Konuşma silindi.');
-  } catch(e) { alert(e.message); }
+  } catch(e) { alert('Silinemedi: ' + e.message); }
 }
 
 /* ── YENİ REZERVASYON ── */

@@ -209,8 +209,21 @@ app.delete('/api/chat/:sessionId', async (req, res) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const sid = req.params.sessionId;
-    // ON DELETE CASCADE chat_messages'ı da siler
+    // Önce mesajları sil (CASCADE yoksa bile çalışsın)
+    await db.query(`DELETE FROM chat_messages WHERE session_id=$1`, [sid]).catch(() => {});
+    await db.query(`DELETE FROM telegram_mappings WHERE session_id=$1`, [sid]).catch(() => {});
     await db.query(`DELETE FROM chat_sessions WHERE session_id=$1`, [sid]);
+    // Memory'den sil ve admin'lere güncel listeyi gönder
+    if (visitors.has(sid)) {
+      const v = visitors.get(sid);
+      v.messages = [];
+      // Ziyaretçi hâlâ bağlıysa socket'ını bildir
+      if (v.socketId) {
+        io.to(v.socketId).emit('chat:reset');
+      }
+      visitors.delete(sid);
+    }
+    broadcastVisitors();
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
