@@ -307,10 +307,74 @@
   .nav-toggle.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
   .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
+  /* ── Dil Değiştirici ── */
+  .lang-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  #currentLangFlag {
+    font-size: 20px;
+    line-height: 1;
+    cursor: default;
+    user-select: none;
+  }
+  .lang-dots-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #1a2d6b;
+    font-weight: 900;
+    border-radius: 4px;
+    transition: background 0.2s;
+    line-height: 1;
+  }
+  .lang-dots-btn:hover { background: rgba(26,45,107,0.08); }
+  .lang-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    overflow: hidden;
+    z-index: 200;
+    min-width: 130px;
+    border: 1px solid rgba(0,0,0,0.07);
+  }
+  .lang-dropdown.open { display: block; }
+  .lang-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a2d6b;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.15s;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .lang-dropdown button:last-child { border-bottom: none; }
+  .lang-dropdown button:hover { background: rgba(26,45,107,0.05); }
+  .lang-dropdown button .lf { font-size: 20px; }
+
   @media (max-width: 768px) {
     nav { padding: 14px 20px; position: fixed; }
     .logo img { height: 44px; object-fit: contain; }
     .nav-toggle { display: flex; }
+    #currentLangFlag { font-size: 18px; }
+    .lang-dots-btn { font-size: 10px; padding: 2px 4px; }
     nav ul {
       display: none;
       position: absolute;
@@ -440,14 +504,23 @@
       </a>
     </div>
     <ul id="navMenu">
-      <li><a href="index.html">Anasayfa</a></li>
-      <li><a href="lojistik/index.html">Lojistik</a></li>
-      <li><a href="ihale/index.html">Kamu İhalesi</a></li>
-      <li><a href="insaat/index.html">İnşaat</a></li>
-      <li><a href="kurum/index.html">Kurum Girişi</a></li>
-      <li><a href="ik/index.html">İnsan Kaynakları</a></li>
-      <li><a href="iletisim/index.html">İletişim</a></li>
+      <li><a href="index.html"          data-i18n="nav.home">Anasayfa</a></li>
+      <li><a href="lojistik/index.html" data-i18n="nav.logistics">Lojistik</a></li>
+      <li><a href="ihale/index.html"    data-i18n="nav.tender">Kamu İhalesi</a></li>
+      <li><a href="insaat/index.html"   data-i18n="nav.construction">İnşaat</a></li>
+      <li><a href="kurum/index.html"    data-i18n="nav.login">Kurum Girişi</a></li>
+      <li><a href="ik/index.html"       data-i18n="nav.hr">İnsan Kaynakları</a></li>
+      <li><a href="iletisim/index.html" data-i18n="nav.contact">İletişim</a></li>
     </ul>
+    <div class="lang-switcher" id="langSwitcher">
+      <span id="currentLangFlag">🇹🇷</span>
+      <button class="lang-dots-btn" id="langDotsBtn" onclick="toggleLangMenu()" aria-label="Dil seç">•••</button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button onclick="setLang('tr')"><span class="lf">🇹🇷</span> Türkçe</button>
+        <button onclick="setLang('en')"><span class="lf">🇬🇧</span> English</button>
+        <button onclick="setLang('ru')"><span class="lf">🇷🇺</span> Русский</button>
+      </div>
+    </div>
     <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç/kapat">
       <span></span><span></span><span></span>
     </button>
@@ -456,15 +529,15 @@
   <div class="hero-content">
     <div class="eyebrow">
       <div class="eyebrow-dot"></div>
-      <span>Gazipaşa / Antalya · Türkiye</span>
+      <span data-i18n="hero.eyebrow">Gazipaşa / Antalya · Türkiye</span>
     </div>
 
     <h1>
-      Güvenilir İş,
-      <span class="red">Kesintisiz Hizmet</span>
+      <span data-i18n="hero.h1">Güvenilir İş,</span>
+      <span class="red" data-i18n="hero.h1red">Kesintisiz Hizmet</span>
     </h1>
 
-    <p class="desc">
+    <p class="desc" data-i18n="hero.desc">
       Kamu ihalelerinden lojistiğe, VIP transferden inşaata kadar
       geniş yelpazede profesyonel çözümler sunuyoruz.
       Projelerinizde güçlü bir ortak arıyorsanız doğru adrestesiniz.
@@ -472,37 +545,37 @@
 
     <div class="badges">
       <a class="badge" href="ihale/index.html">
-        <span class="icon">🏗️</span><span>Kamu İhalesi</span>
+        <span class="icon">🏗️</span><span data-i18n="badge.tender">Kamu İhalesi</span>
       </a>
       <a class="badge" href="lojistik/index.html">
-        <span class="icon">🚚</span><span>Lojistik</span>
+        <span class="icon">🚚</span><span data-i18n="badge.logistics">Lojistik</span>
       </a>
       <a class="badge" href="transfer/index.html">
         <span class="icon">🚐</span><span>VIP Transfer</span>
       </a>
       <a class="badge" href="insaat/index.html">
-        <span class="icon">🏛️</span><span>İnşaat</span>
+        <span class="icon">🏛️</span><span data-i18n="badge.construction">İnşaat</span>
       </a>
     </div>
 
     <div class="cta">
-      <a class="btn-red" href="transfer/index.html">Transfer Rezervasyon</a>
-      <a class="btn-ghost" href="#" onclick="openYukModal();return false;">📦 Yük Bildirimi →</a>
+      <a class="btn-red" href="transfer/index.html" data-i18n="cta.booking">Transfer Rezervasyon</a>
+      <a class="btn-ghost" href="#" onclick="openYukModal();return false;" data-i18n="cta.cargo">📦 Yük Bildirimi →</a>
     </div>
   </div>
 
-  <div class="tagline">Geleceğe adım adım..!</div>
+  <div class="tagline" data-i18n="hero.tagline">Geleceğe adım adım..!</div>
 
   <div class="scroll-hint">
-    <span>Keşfet</span>
+    <span data-i18n="hero.discover">Keşfet</span>
     <div class="scroll-arrow"></div>
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl">Tamamlanan Proje</div></div>
-    <div class="stat"><div class="stat-num">15+</div><div class="stat-lbl">Yıllık Deneyim</div></div>
-    <div class="stat"><div class="stat-num">4</div><div class="stat-lbl">Faaliyet Alanı</div></div>
-    <div class="stat"><div class="stat-num">7/24</div><div class="stat-lbl">Destek & Hizmet</div></div>
+    <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl" data-i18n="stat.projects">Tamamlanan Proje</div></div>
+    <div class="stat"><div class="stat-num">15+</div><div class="stat-lbl" data-i18n="stat.experience">Yıllık Deneyim</div></div>
+    <div class="stat"><div class="stat-num">4</div><div class="stat-lbl" data-i18n="stat.areas">Faaliyet Alanı</div></div>
+    <div class="stat"><div class="stat-num">7/24</div><div class="stat-lbl" data-i18n="stat.support">Destek & Hizmet</div></div>
   </div>
 
 </section>
@@ -514,25 +587,25 @@
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
       <div style="width:44px;height:44px;background:rgba(232,25,44,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">📦</div>
       <div>
-        <div style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.3px;">Yük Bildirimi</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Taşıma teklifinizi hemen iletin</div>
+        <div style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-0.3px;" data-i18n="yuk.title">Yük Bildirimi</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;" data-i18n="yuk.subtitle">Taşıma teklifinizi hemen iletin</div>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div>
-        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;">Ad Soyad</label>
-        <input id="yukAd" type="text" placeholder="Adınız Soyadınız" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;" data-i18n="yuk.name">Ad Soyad</label>
+        <input id="yukAd" type="text" placeholder="Adınız Soyadınız" data-i18n-ph="yuk.namePh" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
       </div>
       <div>
-        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;">Telefon Numarası</label>
+        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;" data-i18n="yuk.phone">Telefon Numarası</label>
         <input id="yukTel" type="tel" placeholder="+90 5XX XXX XX XX" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
       </div>
       <div>
-        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;">Yük Tanımı</label>
-        <textarea id="yukTanim" rows="3" placeholder="Taşınacak yükü kısaca anlatın (cins, ağırlık, nereden-nereye vb.)" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;resize:vertical;min-height:80px;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
+        <label style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.5);text-transform:uppercase;display:block;margin-bottom:6px;" data-i18n="yuk.cargo">Yük Tanımı</label>
+        <textarea id="yukTanim" rows="3" placeholder="Taşınacak yükü kısaca anlatın (cins, ağırlık, nereden-nereye vb.)" data-i18n-ph="yuk.cargoPh" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 14px;font-size:13px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;resize:vertical;min-height:80px;" onfocus="this.style.borderColor='rgba(232,25,44,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
       </div>
       <div id="yukErr" style="display:none;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#ff6b6b;"></div>
-      <button onclick="submitYukBildirimi()" id="yukBtn" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;margin-top:4px;">
+      <button onclick="submitYukBildirimi()" id="yukBtn" data-i18n="yuk.submit" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;margin-top:4px;">
         Bildirimi Gönder →
       </button>
     </div>
@@ -550,31 +623,31 @@
     <div class="chat-head-info">
       <div class="chat-online-dot"></div>
       <div>
-        <div class="chat-head-title">Güliz Destek</div>
-        <div class="chat-head-sub">Genellikle birkaç dakika içinde yanıt veririz</div>
+        <div class="chat-head-title" data-i18n="chat.title">Güliz Destek</div>
+        <div class="chat-head-sub" data-i18n="chat.sub">Genellikle birkaç dakika içinde yanıt veririz</div>
       </div>
     </div>
     <button class="chat-close" onclick="toggleChat()">✕</button>
   </div>
   <div class="chat-messages" id="chatMessages">
     <div class="chat-bubble admin">
-      Merhaba! 👋 Size nasıl yardımcı olabiliriz?
+      <span data-i18n="chat.greeting">Merhaba! 👋 Size nasıl yardımcı olabiliriz?</span>
       <div class="chat-bubble-time">Güliz</div>
     </div>
   </div>
-  <div class="chat-typing" id="chatTypingIndicator">Yanıt yazılıyor...</div>
+  <div class="chat-typing" id="chatTypingIndicator" data-i18n="chat.typing">Yanıt yazılıyor...</div>
 
   <!-- Kimlik formu — telefon zorunlu -->
   <div class="chat-name-bar" id="chatNameBar">
-    <p>Telefon numaranızı girerek sohbet başlatın:</p>
-    <input class="chat-name-input" id="chatPhoneInput" type="tel" placeholder="Telefon Numarası (+90 5XX...)" maxlength="20"
+    <p data-i18n="chat.phoneLabel">Telefon numaranızı girerek sohbet başlatın:</p>
+    <input class="chat-name-input" id="chatPhoneInput" type="tel" placeholder="Telefon Numarası (+90 5XX...)" data-i18n-ph="chat.phonePh" maxlength="20"
       onkeydown="if(event.key==='Enter')startChat()">
-    <button class="chat-start-btn" onclick="startChat()">Sohbeti Başlat →</button>
+    <button class="chat-start-btn" onclick="startChat()" data-i18n="chat.start">Sohbeti Başlat →</button>
   </div>
 
   <!-- Mesaj giriş alanı — başlangıçta gizli -->
   <div class="chat-input-row" id="chatInputRow" style="display:none;">
-    <textarea class="chat-input" id="chatInput" placeholder="Mesajınızı yazın..." rows="1"
+    <textarea class="chat-input" id="chatInput" placeholder="Mesajınızı yazın..." data-i18n-ph="chat.msgPh" rows="1"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"
       oninput="onChatTyping()"></textarea>
     <button class="chat-send" onclick="sendChatMessage()">
@@ -605,11 +678,11 @@ async function submitYukBildirimi() {
   const btn     = document.getElementById('yukBtn');
   errEl.style.display = 'none';
   if (!ad || !tel || !tanim) {
-    errEl.textContent = '⚠ Lütfen tüm alanları doldurun.';
+    errEl.textContent = t('yuk.err');
     errEl.style.display = 'block';
     return;
   }
-  btn.textContent = 'Gönderiliyor...';
+  btn.textContent = t('yuk.sending');
   btn.disabled = true;
   try {
     const r = await fetch('/api/yuk-bildirimi', {
@@ -619,13 +692,13 @@ async function submitYukBildirimi() {
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Hata');
-    btn.textContent = '✅ Bildirim Alındı!';
+    btn.textContent = t('yuk.sent');
     btn.style.background = '#16a34a';
-    setTimeout(() => { closeYukModal(); btn.textContent = 'Bildirimi Gönder →'; btn.style.background = '#e8192c'; btn.disabled = false; document.getElementById('yukAd').value=''; document.getElementById('yukTel').value=''; document.getElementById('yukTanim').value=''; }, 2200);
+    setTimeout(() => { closeYukModal(); btn.textContent = t('yuk.submit'); btn.style.background = '#e8192c'; btn.disabled = false; document.getElementById('yukAd').value=''; document.getElementById('yukTel').value=''; document.getElementById('yukTanim').value=''; }, 2200);
   } catch(e) {
     errEl.textContent = '❌ ' + e.message;
     errEl.style.display = 'block';
-    btn.textContent = 'Bildirimi Gönder →';
+    btn.textContent = t('yuk.submit');
     btn.disabled = false;
   }
 }
@@ -780,6 +853,192 @@ function stopTyping() {
   const el = document.getElementById('chatInput');
   chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false, text: el ? el.value : '' });
 }
+
+/* ══════════════════════════════════════
+   DİL DEĞİŞTİRİCİ
+══════════════════════════════════════ */
+const LANGS = {
+  tr: {
+    flag: '🇹🇷',
+    'nav.home':         'Anasayfa',
+    'nav.logistics':    'Lojistik',
+    'nav.tender':       'Kamu İhalesi',
+    'nav.construction': 'İnşaat',
+    'nav.login':        'Kurum Girişi',
+    'nav.hr':           'İnsan Kaynakları',
+    'nav.contact':      'İletişim',
+    'hero.eyebrow':     'Gazipaşa / Antalya · Türkiye',
+    'hero.h1':          'Güvenilir İş,',
+    'hero.h1red':       'Kesintisiz Hizmet',
+    'hero.desc':        'Kamu ihalelerinden lojistiğe, VIP transferden inşaata kadar geniş yelpazede profesyonel çözümler sunuyoruz. Projelerinizde güçlü bir ortak arıyorsanız doğru adrestesiniz.',
+    'badge.tender':     'Kamu İhalesi',
+    'badge.logistics':  'Lojistik',
+    'badge.construction':'İnşaat',
+    'cta.booking':      'Transfer Rezervasyon',
+    'cta.cargo':        '📦 Yük Bildirimi →',
+    'hero.tagline':     'Geleceğe adım adım..!',
+    'hero.discover':    'Keşfet',
+    'stat.projects':    'Tamamlanan Proje',
+    'stat.experience':  'Yıllık Deneyim',
+    'stat.areas':       'Faaliyet Alanı',
+    'stat.support':     'Destek & Hizmet',
+    'yuk.title':        'Yük Bildirimi',
+    'yuk.subtitle':     'Taşıma teklifinizi hemen iletin',
+    'yuk.name':         'Ad Soyad',
+    'yuk.namePh':       'Adınız Soyadınız',
+    'yuk.phone':        'Telefon Numarası',
+    'yuk.cargo':        'Yük Tanımı',
+    'yuk.cargoPh':      'Taşınacak yükü kısaca anlatın (cins, ağırlık, nereden-nereye vb.)',
+    'yuk.submit':       'Bildirimi Gönder →',
+    'yuk.err':          '⚠ Lütfen tüm alanları doldurun.',
+    'yuk.sending':      'Gönderiliyor...',
+    'yuk.sent':         '✅ Bildirim Alındı!',
+    'chat.title':       'Güliz Destek',
+    'chat.sub':         'Genellikle birkaç dakika içinde yanıt veririz',
+    'chat.greeting':    'Merhaba! 👋 Size nasıl yardımcı olabiliriz?',
+    'chat.typing':      'Yanıt yazılıyor...',
+    'chat.phoneLabel':  'Telefon numaranızı girerek sohbet başlatın:',
+    'chat.phonePh':     'Telefon Numarası (+90 5XX...)',
+    'chat.start':       'Sohbeti Başlat →',
+    'chat.msgPh':       'Mesajınızı yazın...',
+  },
+  en: {
+    flag: '🇬🇧',
+    'nav.home':         'Home',
+    'nav.logistics':    'Logistics',
+    'nav.tender':       'Public Tender',
+    'nav.construction': 'Construction',
+    'nav.login':        'Login',
+    'nav.hr':           'Human Resources',
+    'nav.contact':      'Contact',
+    'hero.eyebrow':     'Gazipasha / Antalya · Turkey',
+    'hero.h1':          'Reliable Work,',
+    'hero.h1red':       'Uninterrupted Service',
+    'hero.desc':        'From public tenders to logistics, from VIP transfers to construction — we offer professional solutions across a wide range. If you\'re looking for a strong partner for your projects, you\'ve come to the right place.',
+    'badge.tender':     'Public Tender',
+    'badge.logistics':  'Logistics',
+    'badge.construction':'Construction',
+    'cta.booking':      'Book a Transfer',
+    'cta.cargo':        '📦 Cargo Request →',
+    'hero.tagline':     'Step by step into the future..!',
+    'hero.discover':    'Discover',
+    'stat.projects':    'Completed Projects',
+    'stat.experience':  'Years of Experience',
+    'stat.areas':       'Service Areas',
+    'stat.support':     'Support & Service',
+    'yuk.title':        'Cargo Request',
+    'yuk.subtitle':     'Submit your transport request now',
+    'yuk.name':         'Full Name',
+    'yuk.namePh':       'Your Full Name',
+    'yuk.phone':        'Phone Number',
+    'yuk.cargo':        'Cargo Description',
+    'yuk.cargoPh':      'Briefly describe the cargo (type, weight, from–to, etc.)',
+    'yuk.submit':       'Send Request →',
+    'yuk.err':          '⚠ Please fill in all fields.',
+    'yuk.sending':      'Sending...',
+    'yuk.sent':         '✅ Request Received!',
+    'chat.title':       'Güliz Support',
+    'chat.sub':         'We usually reply within a few minutes',
+    'chat.greeting':    'Hello! 👋 How can we help you?',
+    'chat.typing':      'Typing...',
+    'chat.phoneLabel':  'Enter your phone number to start chatting:',
+    'chat.phonePh':     'Phone Number (+90 5XX...)',
+    'chat.start':       'Start Chat →',
+    'chat.msgPh':       'Type your message...',
+  },
+  ru: {
+    flag: '🇷🇺',
+    'nav.home':         'Главная',
+    'nav.logistics':    'Логистика',
+    'nav.tender':       'Госзакупки',
+    'nav.construction': 'Строительство',
+    'nav.login':        'Вход',
+    'nav.hr':           'Персонал',
+    'nav.contact':      'Контакты',
+    'hero.eyebrow':     'Газипаша / Анталья · Турция',
+    'hero.h1':          'Надёжная работа,',
+    'hero.h1red':       'Непрерывный сервис',
+    'hero.desc':        'От государственных тендеров до логистики, от VIP-трансферов до строительства — мы предлагаем профессиональные решения в широком спектре. Ищете надёжного партнёра? Вы по адресу.',
+    'badge.tender':     'Госзакупки',
+    'badge.logistics':  'Логистика',
+    'badge.construction':'Строительство',
+    'cta.booking':      'Забронировать трансфер',
+    'cta.cargo':        '📦 Заявка на груз →',
+    'hero.tagline':     'Шаг за шагом в будущее..!',
+    'hero.discover':    'Узнать',
+    'stat.projects':    'Завершённых проектов',
+    'stat.experience':  'Лет опыта',
+    'stat.areas':       'Направлений работы',
+    'stat.support':     'Поддержка 24/7',
+    'yuk.title':        'Заявка на груз',
+    'yuk.subtitle':     'Отправьте запрос на перевозку прямо сейчас',
+    'yuk.name':         'Имя и фамилия',
+    'yuk.namePh':       'Ваше имя и фамилия',
+    'yuk.phone':        'Номер телефона',
+    'yuk.cargo':        'Описание груза',
+    'yuk.cargoPh':      'Кратко опишите груз (вид, вес, откуда–куда и т.д.)',
+    'yuk.submit':       'Отправить →',
+    'yuk.err':          '⚠ Пожалуйста, заполните все поля.',
+    'yuk.sending':      'Отправка...',
+    'yuk.sent':         '✅ Заявка принята!',
+    'chat.title':       'Поддержка Güliz',
+    'chat.sub':         'Обычно отвечаем в течение нескольких минут',
+    'chat.greeting':    'Здравствуйте! 👋 Чем мы можем помочь?',
+    'chat.typing':      'Печатает...',
+    'chat.phoneLabel':  'Введите номер телефона для начала чата:',
+    'chat.phonePh':     'Номер телефона (+90 5XX...)',
+    'chat.start':       'Начать чат →',
+    'chat.msgPh':       'Введите сообщение...',
+  }
+};
+
+let currentLang = localStorage.getItem('gt_lang') || 'tr';
+
+function t(key) {
+  return (LANGS[currentLang] && LANGS[currentLang][key]) || (LANGS.tr[key]) || key;
+}
+
+function setLang(lang) {
+  if (!LANGS[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('gt_lang', lang);
+
+  // Bayrak güncelle
+  document.getElementById('currentLangFlag').textContent = LANGS[lang].flag;
+
+  // Tüm data-i18n elementlerini güncelle
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (LANGS[lang][key] !== undefined) el.textContent = LANGS[lang][key];
+  });
+
+  // Placeholder'lar
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (LANGS[lang][key] !== undefined) el.placeholder = LANGS[lang][key];
+  });
+
+  // Dropdown'u kapat
+  document.getElementById('langDropdown').classList.remove('open');
+
+  // html lang attribute
+  document.documentElement.lang = lang;
+}
+
+function toggleLangMenu() {
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+
+// Dışarı tıklayınca dropdown'u kapat
+document.addEventListener('click', function(e) {
+  const sw = document.getElementById('langSwitcher');
+  if (sw && !sw.contains(e.target)) {
+    document.getElementById('langDropdown').classList.remove('open');
+  }
+});
+
+// Sayfa yüklendiğinde kayıtlı dili uygula
+if (currentLang !== 'tr') setLang(currentLang);
 
 // ── Hamburger menü (sadece mobil) ──
 (function() {
