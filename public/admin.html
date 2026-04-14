@@ -2285,7 +2285,7 @@ async function deleteSevk(id, kod) {
 /* ── YÜK BİLDİRİMLERİ ── */
 async function loadYukBildirimleri() {
   try {
-    const rows = await api('/yuk-bildirimleri');
+    const rows = await api('/api/yuk-bildirimleri');
     const tb   = document.getElementById('yukBildirimleriTable');
     const okunmamis = rows.filter(r => !r.okundu).length;
     document.getElementById('yukSayac').textContent = `${rows.length} kayıt, ${okunmamis} okunmamış`;
@@ -2318,7 +2318,7 @@ async function loadYukBildirimleri() {
 
 async function yukOkundu(id) {
   try {
-    await fetch(API + '/yuk-bildirimleri/' + id + '/okundu', {
+    await fetch(API + '/api/yuk-bildirimleri/' + id + '/okundu', {
       method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token }
     });
     loadYukBildirimleri();
