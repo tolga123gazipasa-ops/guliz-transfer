@@ -310,6 +310,9 @@ function broadcastVisitors() {
     unread:      v.messages.filter(m => m.from === 'visitor' && !m.read).length,
     online:      v.online,
     totalPages:  v.pageHistory.length,
+    clickCount:  v.clickCount  || 0,
+    formFills:   v.formFills   || 0,
+    scrollDepth: v.scrollDepth || 0,
     pageHistory: v.pageHistory,
     activity:    v.activity,
     messages:    v.messages,
@@ -490,10 +493,51 @@ io.on('connection', (socket) => {
     const v = visitors.get(sessionId);
     if (!v) return;
     v.lastSeen = new Date().toISOString();
+
+    // İstatistikler
+    if (!v.clickCount)   v.clickCount   = 0;
+    if (!v.formFills)    v.formFills    = 0;
+    if (!v.scrollDepth)  v.scrollDepth  = 0;
+    if (action === 'click' || action === 'nav_click') v.clickCount++;
+    if (action === 'form_fill')  v.formFills++;
+    if (action === 'scroll') {
+      const pct = parseInt(detail) || 0;
+      if (pct > v.scrollDepth) v.scrollDepth = pct;
+    }
+
     const entry = { type: 'action', action, detail, time: new Date().toISOString() };
     v.activity.push(entry);
-    if (v.activity.length > 50) v.activity.shift();
+    if (v.activity.length > 100) v.activity.shift();
     io.to('admins').emit('visitor:activity', { sessionId, ...entry });
+
+    // ── Telegram bildirimleri (önemli olaylar) ──
+    const { tg } = require('./services/telegram');
+    const who = `${v.name}${v.phone ? ' · ' + v.phone : ''}${v.city ? ' · ' + v.city : ''}`;
+
+    if (action === 'booking_attempt') {
+      tg(`🚀 <b>REZERVASYON GİRİŞİMİ</b>\n👤 ${who}\n📄 ${v.page || '/'}\n📋 ${detail || ''}`).catch(() => {});
+    } else if (action === 'form_fill') {
+      // Telefon veya isim girildiğinde bildir (kişisel veri içerdiğinden değerli)
+      const low = (detail || '').toLowerCase();
+      if (low.includes('telefon') || low.includes('tel') || low.includes('phone') ||
+          low.includes('ad ') || low.includes('isim') || low.includes('pozisyon')) {
+        if (!v._formTgTimer) {
+          v._formTgTimer = setTimeout(() => {
+            v._formTgTimer = null;
+            tg(`✍️ <b>FORM DOLDURUYOR</b>\n👤 ${who}\n📄 ${(v.page||'/').replace(/https?:\/\/[^/]+/,'')}\n📝 ${detail || ''}`).catch(() => {});
+          }, 3000);
+        }
+      }
+    } else if (action === 'scroll') {
+      const pct = parseInt(detail) || 0;
+      if (pct === 100) {
+        // Sayfayı tamamen okudu — sadece bir kez bildir
+        if (!v._scroll100Notified) {
+          v._scroll100Notified = true;
+          tg(`📜 <b>SAYFA TAMAMEN OKUNDU</b>\n👤 ${who}\n📄 ${(v.page||'/').replace(/https?:\/\/[^/]+/,'')}`).catch(() => {});
+        }
+      }
+    }
   });
 
   /* ── Ziyaretçi mesaj gönderdi ── */

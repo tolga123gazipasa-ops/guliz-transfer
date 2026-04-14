@@ -1894,6 +1894,18 @@ function statusLabel(s) {
   return {pending:'Bekliyor',confirmed:'Onaylandı',assigned:'Sürücü Atandı',completed:'Tamamlandı',cancelled:'İptal'}[s] || s;
 }
 function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function actionIcon(action) {
+  const map = {
+    click:            '🖱',
+    nav_click:        '🧭',
+    scroll:           '📜',
+    form_fill:        '✍️',
+    booking_attempt:  '🚀',
+    chat_opened:      '💬',
+    leave:            '🚪',
+  };
+  return map[action] || '▶';
+}
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -1991,7 +2003,10 @@ function renderVisitorList(list) {
     const phone    = v.phone
       ? `<span style="color:var(--gold);font-size:0.68rem;">${escapeHtml(v.phone)}</span>`
       : `<span style="font-size:0.65rem;color:rgba(255,100,100,0.5);">tel yok</span>`;
-    const pageCount = v.totalPages || 0;
+    const pageCount  = v.totalPages  || 0;
+    const clicks     = v.clickCount  || 0;
+    const forms      = v.formFills   || 0;
+    const scrollPct  = v.scrollDepth || 0;
     return `<div class="visitor-item${activeSessionId===v.sessionId?' active':''}${unread>0?' has-unread':''}"
       onclick="selectVisitor('${v.sessionId}')">
       <div class="v-name">
@@ -2002,6 +2017,11 @@ function renderVisitorList(list) {
       <div style="margin:3px 0;display:flex;gap:0.5rem;align-items:center">${phone}</div>
       <div class="v-page">${escapeHtml(pagePath)}</div>
       <div class="v-time">${v.device} · ${since} · ${pageCount} sayfa</div>
+      <div style="display:flex;gap:0.4rem;margin-top:4px;flex-wrap:wrap;">
+        ${clicks  > 0 ? `<span style="font-size:0.61rem;background:rgba(26,45,107,0.15);color:#8fa8d8;padding:1px 5px;border-radius:3px;">🖱 ${clicks}</span>` : ''}
+        ${forms   > 0 ? `<span style="font-size:0.61rem;background:rgba(5,150,105,0.12);color:#34d399;padding:1px 5px;border-radius:3px;">✍️ ${forms}</span>` : ''}
+        ${scrollPct>0 ? `<span style="font-size:0.61rem;background:rgba(201,168,76,0.1);color:var(--gold);padding:1px 5px;border-radius:3px;">📜%${scrollPct}</span>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -2123,7 +2143,8 @@ function onVisitorActivity({ sessionId, type, action, detail, page, pageTitle, t
       document.getElementById('cpPage').href = page || '#';
     }
   } else {
-    div.innerHTML = `<div class="a-time">${t}</div><div class="a-action">▶ ${escapeHtml(action||'')}</div><div class="a-detail">${escapeHtml(detail||'')}</div>`;
+    const icon = actionIcon(action);
+    div.innerHTML = `<div class="a-time">${t}</div><div class="a-action">${icon} ${escapeHtml(action||'')}</div><div class="a-detail">${escapeHtml(detail||'')}</div>`;
   }
   items.prepend(div); // En yeni üste
   if (items.children.length > 30) items.lastChild?.remove();
@@ -2161,9 +2182,10 @@ function renderActivityItems(v) {
         <div class="a-detail">${escapeHtml(entry.pageTitle || entry.page || '')}${dur}</div>
       </div>`;
     } else {
+      const icon = actionIcon(entry.action);
       return `<div class="activity-item">
         <div class="a-time">${t}</div>
-        <div class="a-action">▶ ${escapeHtml(entry.action || '')}</div>
+        <div class="a-action">${icon} ${escapeHtml(entry.action || '')}</div>
         <div class="a-detail">${escapeHtml(entry.detail || '')}</div>
       </div>`;
     }
