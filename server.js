@@ -2,9 +2,11 @@ require('dotenv').config();
 const express   = require('express');
 const cors      = require('cors');
 const path      = require('path');
+const fs        = require('fs');
 const http      = require('http');
 const { Server } = require('socket.io');
 const rateLimit = require('express-rate-limit');
+const multer    = require('multer');
 
 /* ── GeoIP yardımcısı ── */
 async function geoIP(ip) {
@@ -43,6 +45,26 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+/* ── CV Upload (multer) ── */
+const CV_DIR = path.join(__dirname, 'uploads', 'cv');
+if (!fs.existsSync(CV_DIR)) fs.mkdirSync(CV_DIR, { recursive: true });
+const cvStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, CV_DIR),
+  filename: (req, file, cb) => {
+    const ts  = Date.now();
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `cv_${ts}${ext}`);
+  }
+});
+const cvUpload = multer({
+  storage: cvStorage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') cb(null, true);
+    else cb(new Error('Yalnızca PDF dosyası yükleyebilirsiniz.'));
+  }
+});
 
 app.use('/api/auth',     authRoutes);
 app.use('/api/users',    userRoutes);
@@ -156,16 +178,23 @@ app.delete('/api/iletisim/:id', async (req, res) => {
 });
 
 /* ── İK BAŞVURULARI ── */
-app.post('/api/ik', async (req, res) => {
+app.post('/api/ik', (req, res, next) => {
+  cvUpload.single('cv')(req, res, err => {
+    if (err) return res.status(400).json({ error: err.message });
+    next();
+  });
+}, async (req, res) => {
   try {
     const { ad_soyad, telefon, email, pozisyon, deneyim, mesaj, kaynak } = req.body;
     if (!ad_soyad || !telefon || !pozisyon)
       return res.status(400).json({ error: 'Ad soyad, telefon ve pozisyon zorunludur.' });
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const cv_path          = req.file ? req.file.filename : null;
+    const cv_original_name = req.file ? req.file.originalname : null;
     const { rows } = await db.query(
-      `INSERT INTO is_basvurulari (ad_soyad, telefon, email, pozisyon, deneyim, mesaj, kaynak, ip)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, created_at`,
-      [ad_soyad.trim(), telefon.trim(), email||null, pozisyon.trim(), deneyim||null, mesaj||null, kaynak||'ik', ip]
+      `INSERT INTO is_basvurulari (ad_soyad, telefon, email, pozisyon, deneyim, mesaj, kaynak, ip, cv_path, cv_original_name)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, created_at`,
+      [ad_soyad.trim(), telefon.trim(), email||null, pozisyon.trim(), deneyim||null, mesaj||null, kaynak||'ik', ip, cv_path, cv_original_name]
     );
     const { tg } = require('./services/telegram');
     await tg(
@@ -176,11 +205,15 @@ app.post('/api/ik', async (req, res) => {
       `💼 Pozisyon: ${pozisyon.trim()}\n` +
       (deneyim ? `🏅 Deneyim: ${deneyim}\n` : '') +
       (mesaj ? `💬 Not: ${mesaj.trim()}\n` : '') +
+      (cv_path ? `📎 CV eklendi: ${cv_original_name}\n` : '') +
       `🌐 IP: <code>${ip}</code>\n` +
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) {
+    if (req.file) fs.unlink(path.join(CV_DIR, req.file.filename), () => {});
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/ik', async (req, res) => {
@@ -194,10 +227,34 @@ app.get('/api/ik', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* ── CV İNDİR ── */
+app.get('/api/ik/:id/cv', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    const { rows } = await db.query(
+      `SELECT cv_path, cv_original_name FROM is_basvurulari WHERE id=$1`, [req.params.id]
+    );
+    if (!rows.length || !rows[0].cv_path)
+      return res.status(404).json({ error: 'CV bulunamadı.' });
+    const filePath = path.join(CV_DIR, rows[0].cv_path);
+    if (!fs.existsSync(filePath))
+      return res.status(404).json({ error: 'Dosya sunucuda bulunamadı.' });
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(rows[0].cv_original_name || 'cv.pdf')}"`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.sendFile(filePath);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.delete('/api/ik/:id', async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    // CV dosyasını da sil
+    const { rows } = await db.query(`SELECT cv_path FROM is_basvurulari WHERE id=$1`, [req.params.id]);
+    if (rows.length && rows[0].cv_path) {
+      fs.unlink(path.join(CV_DIR, rows[0].cv_path), () => {});
+    }
     await db.query(`DELETE FROM is_basvurulari WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -670,19 +727,24 @@ db.query(`
   );
   CREATE INDEX IF NOT EXISTS idx_iletisim_tarih ON iletisim_mesajlari(created_at DESC);
   CREATE TABLE IF NOT EXISTS is_basvurulari (
-    id         SERIAL PRIMARY KEY,
-    ad_soyad   VARCHAR(100) NOT NULL,
-    telefon    VARCHAR(30)  NOT NULL,
-    email      VARCHAR(150),
-    pozisyon   VARCHAR(150) NOT NULL,
-    deneyim    VARCHAR(100),
-    mesaj      TEXT,
-    kaynak     VARCHAR(50)  DEFAULT 'ik',
-    ip         VARCHAR(50),
-    okundu     BOOLEAN      DEFAULT FALSE,
-    created_at TIMESTAMPTZ  DEFAULT NOW()
+    id               SERIAL PRIMARY KEY,
+    ad_soyad         VARCHAR(100) NOT NULL,
+    telefon          VARCHAR(30)  NOT NULL,
+    email            VARCHAR(150),
+    pozisyon         VARCHAR(150) NOT NULL,
+    deneyim          VARCHAR(100),
+    mesaj            TEXT,
+    kaynak           VARCHAR(50)  DEFAULT 'ik',
+    ip               VARCHAR(50),
+    okundu           BOOLEAN      DEFAULT FALSE,
+    cv_path          VARCHAR(255),
+    cv_original_name VARCHAR(255),
+    created_at       TIMESTAMPTZ  DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS idx_is_basvuru_tarih ON is_basvurulari(created_at DESC);
+  -- Mevcut tabloya CV kolonlarını ekle (zaten varsa hata vermez)
+  ALTER TABLE is_basvurulari ADD COLUMN IF NOT EXISTS cv_path VARCHAR(255);
+  ALTER TABLE is_basvurulari ADD COLUMN IF NOT EXISTS cv_original_name VARCHAR(255);
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');
@@ -757,13 +819,10 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
 
 process.on('uncaughtException', (err) => {
+  // Sadece logla, uygulamayı kapatma — Railway tekrar başlatır gereksiz yere
   console.error('Yakalanmamış hata:', err.message, err.stack);
-  gracefulShutdown('uncaughtException');
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error('Yakalanmamış promise reddi:', reason);
-});
-process.on('SIGINT', () => {
-  server.close(() => process.exit(0));
 });

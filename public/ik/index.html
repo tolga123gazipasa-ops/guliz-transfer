@@ -92,6 +92,19 @@ nav ul li a:hover,nav ul li a.active{color:var(--red);}
 }
 .btn-submit:hover{background:var(--red2);}
 .form-msg{font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:none;}
+.cv-upload-label{
+  display:flex;align-items:center;gap:10px;
+  background:#f4f6fb;border:1.5px dashed #c9d0e8;border-radius:8px;
+  padding:12px 14px;cursor:pointer;transition:all .2s;
+}
+.cv-upload-label:hover{border-color:var(--red);background:#fff;}
+.cv-upload-label input[type=file]{display:none;}
+.cv-upload-icon{font-size:22px;}
+.cv-upload-text{font-size:12.5px;color:#6b7280;line-height:1.4;}
+.cv-upload-text strong{color:var(--navy);display:block;font-size:13px;margin-bottom:2px;}
+.cv-file-chosen{display:none;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#059669;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:6px 10px;}
+.cv-progress{display:none;height:3px;background:#eaecf4;border-radius:2px;overflow:hidden;margin-top:6px;}
+.cv-progress-bar{height:100%;background:var(--red);width:0%;transition:width .3s;}
 
 /* ── FOOTER ── */
 footer{background:#0a1235;padding:32px 60px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
@@ -210,6 +223,24 @@ footer a:hover{color:#fff;}
           <textarea id="ikMesaj" rows="4" placeholder="Neden bu pozisyon için uygun olduğunuzu kısaca belirtin..."></textarea>
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>CV / Özgeçmiş <span style="font-size:10px;color:#9ca3af;font-weight:400;text-transform:none;">(Opsiyonel · Yalnızca PDF · Maks. 10 MB)</span></label>
+          <label class="cv-upload-label" id="cvLabel">
+            <input type="file" id="ikCV" accept=".pdf,application/pdf" onchange="onCVSelect(this)">
+            <span class="cv-upload-icon">📎</span>
+            <span class="cv-upload-text">
+              <strong>PDF dosyası seçin</strong>
+              Sürükleyip bırakın veya tıklayın
+            </span>
+          </label>
+          <div class="cv-file-chosen" id="cvChosen">
+            <span>✅</span><span id="cvChosenName"></span>
+            <span style="margin-left:auto;cursor:pointer;color:#dc2626" onclick="clearCV()">✕ Kaldır</span>
+          </div>
+          <div class="cv-progress" id="cvProgress"><div class="cv-progress-bar" id="cvProgressBar"></div></div>
+        </div>
+      </div>
       <button type="submit" class="btn-submit">Başvuruyu Gönder →</button>
     </form>
   </div>
@@ -226,6 +257,30 @@ footer a:hover{color:#fff;}
 </footer>
 
 <script>
+function onCVSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.type !== 'application/pdf') {
+    alert('Yalnızca PDF dosyası yükleyebilirsiniz.');
+    input.value = ''; return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    alert('Dosya boyutu 10 MB\'ı aşamaz.');
+    input.value = ''; return;
+  }
+  document.getElementById('cvChosenName').textContent = file.name;
+  document.getElementById('cvChosen').style.display = 'flex';
+  document.getElementById('cvLabel').style.display  = 'none';
+}
+
+function clearCV() {
+  document.getElementById('ikCV').value = '';
+  document.getElementById('cvChosen').style.display = 'none';
+  document.getElementById('cvLabel').style.display  = 'flex';
+  document.getElementById('cvProgress').style.display = 'none';
+  document.getElementById('cvProgressBar').style.width = '0%';
+}
+
 async function handleIKForm(e) {
   e.preventDefault();
   const ad_soyad = document.getElementById('ikAd').value.trim();
@@ -234,6 +289,7 @@ async function handleIKForm(e) {
   const pozisyon = document.getElementById('ikPozisyon').value;
   const deneyim  = document.getElementById('ikDeneyim').value;
   const mesaj    = document.getElementById('ikMesaj').value.trim();
+  const cvFile   = document.getElementById('ikCV').files[0];
   const msgEl    = document.getElementById('ikMsg');
 
   if (!ad_soyad || !telefon || !pozisyon) {
@@ -241,22 +297,43 @@ async function handleIKForm(e) {
     msgEl.style.cssText = 'display:block;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;';
     return;
   }
+
   const btn = e.target.querySelector('.btn-submit');
   btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+
+  // CV varsa progress göster
+  const progressEl    = document.getElementById('cvProgress');
+  const progressBarEl = document.getElementById('cvProgressBar');
+  if (cvFile) { progressEl.style.display = 'block'; progressBarEl.style.width = '30%'; }
+
   try {
-    const res = await fetch('/api/ik', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ad_soyad, telefon, email: email||undefined, pozisyon, deneyim: deneyim||undefined, mesaj: mesaj||undefined, kaynak: 'ik' })
-    });
+    const fd = new FormData();
+    fd.append('ad_soyad', ad_soyad);
+    fd.append('telefon',  telefon);
+    if (email)   fd.append('email',   email);
+    fd.append('pozisyon', pozisyon);
+    if (deneyim) fd.append('deneyim', deneyim);
+    if (mesaj)   fd.append('mesaj',   mesaj);
+    fd.append('kaynak', 'ik');
+    if (cvFile)  fd.append('cv', cvFile);
+
+    if (cvFile) progressBarEl.style.width = '60%';
+
+    const res  = await fetch('/api/ik', { method: 'POST', body: fd });
+
+    if (cvFile) progressBarEl.style.width = '100%';
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Hata');
+
     msgEl.textContent = '✅ Başvurunuz alındı! Sizinle en kısa sürede iletişime geçeceğiz.';
     msgEl.style.cssText = 'display:block;color:#059669;background:#f0fdf4;border:1px solid #bbf7d0;';
     e.target.reset();
+    clearCV();
   } catch(err) {
     msgEl.textContent = 'Hata: ' + err.message;
     msgEl.style.cssText = 'display:block;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;';
+    if (cvFile) { progressEl.style.display = 'none'; progressBarEl.style.width = '0%'; }
   } finally {
     btn.disabled = false; btn.textContent = 'Başvuruyu Gönder →';
   }

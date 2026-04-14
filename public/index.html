@@ -283,10 +283,53 @@
     50%      { transform: rotate(45deg) translateY(5px); }
   }
 
+  /* ── Hamburger butonu (masaüstünde gizli) ── */
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px;
+    z-index: 110;
+  }
+  .nav-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #1a2d6b;
+    border-radius: 2px;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+  .nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
   @media (max-width: 768px) {
-    nav { padding: 14px 20px; }
+    nav { padding: 14px 20px; position: fixed; }
     .logo img { height: 44px; object-fit: contain; }
-    nav ul { display: none; }
+    .nav-toggle { display: flex; }
+    nav ul {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: #fff;
+      flex-direction: column;
+      gap: 0;
+      padding: 8px 0 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    nav ul.open { display: flex; }
+    nav ul li a {
+      display: block;
+      padding: 12px 24px;
+      border-bottom: 1px solid #f0f4ff;
+      font-size: 13px;
+    }
+    nav ul li:last-child a { border-bottom: none; }
     .hero-content { padding-left: 24px; padding-right: 24px; max-width: 100%; }
     h1 { font-size: 34px; }
     .bg-circle { width: 400px; height: 400px; right: -180px; }
@@ -396,7 +439,7 @@
       <img src="slider/logo.png" alt="Guliz Şirketler Topluluğu">
       </a>
     </div>
-    <ul>
+    <ul id="navMenu">
       <li><a href="index.html">Anasayfa</a></li>
       <li><a href="lojistik/index.html">Lojistik</a></li>
       <li><a href="ihale/index.html">Kamu İhalesi</a></li>
@@ -405,6 +448,9 @@
       <li><a href="ik/index.html">İnsan Kaynakları</a></li>
       <li><a href="iletisim/index.html">İletişim</a></li>
     </ul>
+    <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç/kapat">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
   <div class="hero-content">
@@ -734,6 +780,26 @@ function stopTyping() {
   const el = document.getElementById('chatInput');
   chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false, text: el ? el.value : '' });
 }
+
+// ── Hamburger menü (sadece mobil) ──
+(function() {
+  const toggle = document.getElementById('navToggle');
+  const menu   = document.getElementById('navMenu');
+  if (!toggle || !menu) return;
+  toggle.addEventListener('click', function() {
+    const open = menu.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open);
+  });
+  // Menü dışına tıklanınca kapat
+  document.addEventListener('click', function(e) {
+    if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+      menu.classList.remove('open');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+})();
 
 </script>
 </body>
