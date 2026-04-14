@@ -1,48 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Arka plan -->
-  <rect width="512" height="512" rx="80" fill="#1A2D6B"/>
-  <!-- İç degrade efekt -->
-  <rect width="512" height="512" rx="80" fill="url(#grad)" opacity="0.15"/>
-  <defs>
-    <radialGradient id="grad" cx="30%" cy="25%" r="70%">
-      <stop offset="0%" stop-color="#C9A84C"/>
-      <stop offset="100%" stop-color="#1A2D6B"/>
-    </radialGradient>
-  </defs>
-  <!-- Köşe çizgileri -->
-  <line x1="40" y1="80" x2="80" y2="40" stroke="#C9A84C" stroke-width="2" opacity="0.4"/>
-  <line x1="432" y1="40" x2="472" y2="80" stroke="#C9A84C" stroke-width="2" opacity="0.4"/>
-  <line x1="40" y1="432" x2="80" y2="472" stroke="#C9A84C" stroke-width="2" opacity="0.4"/>
-  <line x1="432" y1="472" x2="472" y2="432" stroke="#C9A84C" stroke-width="2" opacity="0.4"/>
-  <!-- İnce dış çerçeve -->
-  <rect x="18" y="18" width="476" height="476" rx="68" fill="none" stroke="#C9A84C" stroke-width="1.5" opacity="0.25"/>
-  <!-- Kamyon silüeti -->
-  <g transform="translate(256,148) scale(0.9)">
-    <!-- Kasa -->
-    <rect x="-110" y="-38" width="130" height="70" rx="6" fill="#C9A84C" opacity="0.9"/>
-    <!-- Kabin -->
-    <rect x="20" y="-28" width="68" height="60" rx="8" fill="#C9A84C"/>
-    <!-- Ön cam -->
-    <rect x="26" y="-22" width="42" height="32" rx="4" fill="#1A2D6B" opacity="0.7"/>
-    <!-- Tekerler -->
-    <circle cx="-60" cy="36" r="18" fill="#1A2D6B" stroke="#C9A84C" stroke-width="3"/>
-    <circle cx="-60" cy="36" r="8" fill="#C9A84C" opacity="0.5"/>
-    <circle cx="55" cy="36" r="18" fill="#1A2D6B" stroke="#C9A84C" stroke-width="3"/>
-    <circle cx="55" cy="36" r="8" fill="#C9A84C" opacity="0.5"/>
-    <!-- Egzoz -->
-    <rect x="84" y="-38" width="8" height="20" rx="4" fill="#C9A84C" opacity="0.6"/>
-  </g>
-  <!-- Yatay ayırıcı -->
-  <line x1="80" y1="228" x2="432" y2="228" stroke="#C9A84C" stroke-width="1" opacity="0.4"/>
-  <!-- GL yazısı -->
-  <text x="256" y="315" font-family="Georgia, 'Times New Roman', serif" font-size="110" font-weight="700"
-        fill="#C9A84C" text-anchor="middle" letter-spacing="12">GL</text>
-  <!-- LOJİSTİK yazısı -->
-  <text x="256" y="368" font-family="Arial, sans-serif" font-size="26" font-weight="400"
-        fill="rgba(201,168,76,0.75)" text-anchor="middle" letter-spacing="14">LOJİSTİK</text>
-  <!-- Alt ince çizgi -->
-  <line x1="140" y1="390" x2="372" y2="390" stroke="#C9A84C" stroke-width="0.8" opacity="0.3"/>
-  <!-- GÜLIZ ŞIRKETLER -->
-  <text x="256" y="420" font-family="Arial, sans-serif" font-size="13"
-        fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="5">GÜLIZ ŞIRKETLER TOPLULUĞU</text>
+  <!-- Koyu lacivert arka plan -->
+  <rect width="512" height="512" rx="90" fill="#0D1F5C"/>
+  <!-- Üst kırmızı şerit -->
+  <rect x="0" y="0" width="512" height="130" rx="90" fill="#CC1F2D"/>
+  <rect x="0" y="80" width="512" height="50" fill="#CC1F2D"/>
+  <!-- Alt mavi şerit -->
+  <rect x="0" y="382" width="512" height="130" rx="90" fill="#1A3A8F"/>
+  <rect x="0" y="382" width="512" height="50" fill="#1A3A8F"/>
+  <!-- GLZ büyük harfler - beyaz -->
+  <text x="256" y="310" font-family="Arial Black, Arial, sans-serif" font-size="185" font-weight="900"
+        fill="#FFFFFF" text-anchor="middle" letter-spacing="-5">GLZ</text>
+  <!-- GÜLİZ yazısı - kırmızı şerit üstünde beyaz -->
+  <text x="256" y="100" font-family="Arial, sans-serif" font-size="46" font-weight="700"
+        fill="#FFFFFF" text-anchor="middle" letter-spacing="18">GÜLİZ</text>
+  <!-- LOJİSTİK yazısı - alt mavi şeritte beyaz -->
+  <text x="256" y="446" font-family="Arial, sans-serif" font-size="38" font-weight="600"
+        fill="#FFFFFF" text-anchor="middle" letter-spacing="14">LOJİSTİK</text>
 </svg>
