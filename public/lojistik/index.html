@@ -500,6 +500,37 @@ footer nav ul li a:hover{color:#fff;}
   </div>
 </section>
 
+<!-- YÜK BİLDİRİMİ FORMU -->
+<section id="yuk-bildirimi" style="background:#f4f6fb; padding:70px 20px;">
+  <div style="max-width:620px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:36px;">
+      <div class="section-badge" style="margin:0 auto 14px;"><span>Hızlı Teklif</span></div>
+      <h2 style="text-align:center; font-size:28px; color:var(--navy);">Yük Bildirimi Yapın</h2>
+      <p style="color:#6070a0; margin-top:10px; font-size:14px;">Yük bilgilerinizi gönderin, size en kısa sürede geri dönelim.</p>
+    </div>
+    <div style="background:#fff; border-radius:16px; padding:36px; box-shadow:0 4px 30px rgba(10,18,53,0.08);">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--navy); margin-bottom:6px; text-transform:uppercase;">Ad Soyad *</label>
+          <input id="yb-ad" type="text" placeholder="Adınız Soyadınız" style="width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Montserrat',sans-serif; outline:none; transition:border .2s;" onfocus="this.style.borderColor='#E8192C'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--navy); margin-bottom:6px; text-transform:uppercase;">Telefon *</label>
+          <input id="yb-tel" type="tel" placeholder="05XX XXX XX XX" style="width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Montserrat',sans-serif; outline:none; transition:border .2s;" onfocus="this.style.borderColor='#E8192C'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--navy); margin-bottom:6px; text-transform:uppercase;">Yük Tanımı *</label>
+        <textarea id="yb-yuk" rows="4" placeholder="Yükünüzü tanımlayın: cinsi, ağırlığı, kalkış/varış noktası, tahmini tarih..." style="width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Montserrat',sans-serif; outline:none; resize:vertical; transition:border .2s;" onfocus="this.style.borderColor='#E8192C'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+      </div>
+      <div id="yb-msg" style="display:none; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;"></div>
+      <button onclick="yukBildirimGonder()" id="yb-btn" style="width:100%; padding:14px; background:#E8192C; color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; letter-spacing:1px; cursor:pointer; font-family:'Montserrat',sans-serif; transition:background .2s;">
+        BİLDİRİM GÖNDER →
+      </button>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer style="background:var(--navy); padding: 32px 60px; text-align:center;">
   <p style="color:rgba(255,255,255,0.3); font-size:12px; letter-spacing:1px;">
@@ -510,6 +541,43 @@ footer nav ul li a:hover{color:#fff;}
 <script>
 let shipMap = null;
 let shipMarker = null;
+
+async function yukBildirimGonder() {
+  const ad  = document.getElementById('yb-ad').value.trim();
+  const tel = document.getElementById('yb-tel').value.trim();
+  const yuk = document.getElementById('yb-yuk').value.trim();
+  const msg = document.getElementById('yb-msg');
+  const btn = document.getElementById('yb-btn');
+
+  if (!ad || !tel || !yuk) {
+    msg.textContent = 'Lütfen tüm zorunlu alanları doldurun.';
+    msg.style.cssText = 'display:block; background:#fff0f0; color:#cc1f2d; border:1px solid #fca5a5; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+
+  try {
+    const res = await fetch('/api/yuk-bildirimi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad_soyad: ad, telefon: tel, yuk_tanimi: yuk, kaynak: 'lojistik-web' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Hata oluştu.');
+    msg.textContent = '✓ Bildiriminiz alındı! En kısa sürede sizi arayacağız.';
+    msg.style.cssText = 'display:block; background:#f0fdf4; color:#166534; border:1px solid #86efac; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;';
+    document.getElementById('yb-ad').value = '';
+    document.getElementById('yb-tel').value = '';
+    document.getElementById('yb-yuk').value = '';
+    btn.textContent = 'BİLDİRİM GÖNDER →';
+    btn.disabled = false;
+  } catch(e) {
+    msg.textContent = e.message;
+    msg.style.cssText = 'display:block; background:#fff0f0; color:#cc1f2d; border:1px solid #fca5a5; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;';
+    btn.disabled = false; btn.textContent = 'BİLDİRİM GÖNDER →';
+  }
+}
 
 async function doTrack() {
   const kod = document.getElementById('trackInput').value.trim().toUpperCase();
