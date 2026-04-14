@@ -14,6 +14,10 @@
 <meta name="robots" content="index,follow">
 <meta name="google-site-verification" content="RuFoRksS0tSMQxGcDbhmYv8VA-1zswZDPE9FR4LtpWk">
 <link rel="canonical" href="https://gulizlojistik.com/">
+<link rel="alternate" hreflang="tr" href="https://gulizlojistik.com/" />
+<link rel="alternate" hreflang="en" href="https://gulizlojistik.com/?lang=en" />
+<link rel="alternate" hreflang="ru" href="https://gulizlojistik.com/?lang=ru" />
+<link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/" />
 <meta property="og:type" content="website">
 <meta property="og:title" content="Güliz Şirketler Topluluğu">
 <meta property="og:description" content="Lojistik, havalimanı transferi ve kamu ihale hizmetleri.">
@@ -1036,6 +1040,15 @@ document.addEventListener('click', function(e) {
     document.getElementById('langDropdown').classList.remove('open');
   }
 });
+
+// URL parametresinden dil algıla (?lang=en veya ?lang=ru)
+(function() {
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang && LANGS[urlLang]) {
+    currentLang = urlLang;
+    localStorage.setItem('gt_lang', urlLang);
+  }
+})();
 
 // Sayfa yüklendiğinde kayıtlı dili uygula
 if (currentLang !== 'tr') setLang(currentLang);
