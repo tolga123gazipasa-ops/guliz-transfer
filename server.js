@@ -29,6 +29,7 @@ const routeRoutes   = require('./routes/routes');
 const statsRoutes   = require('./routes/stats');
 const kurumRoutes    = require('./routes/kurumlar');
 const ihalelerRoutes = require('./routes/ihaleler');
+const insaatRoutes   = require('./routes/insaat');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
 const db = require('./models/db');
 
@@ -50,6 +51,7 @@ app.use('/api/routes',   routeRoutes);
 app.use('/api/stats',    statsRoutes);
 app.use('/api/kurumlar', kurumRoutes);
 app.use('/api/ihaleler', ihalelerRoutes);
+app.use('/api/insaat',   insaatRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
@@ -416,6 +418,26 @@ db.query(`
     updated_at TIMESTAMPTZ  DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS idx_ihaleler_durum ON ihaleler(durum);
+  CREATE TABLE IF NOT EXISTS insaatlar (
+    id          SERIAL PRIMARY KEY,
+    baslik      TEXT         NOT NULL,
+    aciklama    TEXT,
+    proje_yili  INTEGER      NOT NULL,
+    durum       VARCHAR(20)  NOT NULL CHECK (durum IN ('tamamlandi','devam')),
+    konum       TEXT,
+    sira        INTEGER      DEFAULT 0,
+    created_at  TIMESTAMPTZ  DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_insaatlar_durum ON insaatlar(durum);
+  CREATE TABLE IF NOT EXISTS insaat_fotograflar (
+    id            SERIAL PRIMARY KEY,
+    insaat_id     INTEGER      NOT NULL REFERENCES insaatlar(id) ON DELETE CASCADE,
+    fotograf_path TEXT         NOT NULL,
+    sira          INTEGER      DEFAULT 1,
+    created_at    TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_insaat_foto_insaat ON insaat_fotograflar(insaat_id);
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');

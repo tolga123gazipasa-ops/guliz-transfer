@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İnşaat Projeleri – Güliz Şirketler Topluluğu</title>
+<meta name="description" content="Güliz İnşaat projeleri. Tamamlanan ve devam eden inşaat projelerimiz.">
+<meta name="robots" content="index,follow">
+<meta name="google-site-verification" content="RuFoRksS0tSMQxGcDbhmYv8VA-1zswZDPE9FR4LtpWk">
+<link rel="canonical" href="https://gulizlojistik.com/insaat/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="İnşaat Projeleri – Güliz Şirketler Topluluğu">
+<meta property="og:description" content="Güliz İnşaat tamamlanan ve devam eden projeleri.">
+<meta property="og:url" content="https://gulizlojistik.com/insaat/">
+<meta property="og:image" content="https://gulizlojistik.com/slider/logo.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --navy:       #0a1235;
+  --blue:       #1a2d6b;
+  --red:        #e8192c;
+  --red-dark:   #b01020;
+  --green:      #00c896;
+  --green-dark: #00a07a;
+  --orange:     #ff6b35;
+  --white:      #ffffff;
+  --gray:       #f4f6fb;
+  --text-muted: #8898bb;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Montserrat', sans-serif; background: var(--gray); overflow-x: hidden; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 60px;
+  background: #ffffff;
+  box-shadow: 0 2px 20px rgba(26,45,107,0.1);
+}
+.logo img { height: 52px; display: block; object-fit: contain; }
+nav ul { list-style: none; display: flex; gap: 32px; }
+nav ul li a {
+  text-decoration: none; color: var(--blue);
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; transition: color 0.2s; position: relative; padding-bottom: 4px;
+}
+nav ul li a::after {
+  content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+  background: var(--red); border-radius: 2px; transition: width 0.3s;
+}
+nav ul li a:hover::after, nav ul li a.active::after { width: 100%; }
+nav ul li a:hover, nav ul li a.active { color: var(--red); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 52vh;
+  background: linear-gradient(145deg, #050d28 0%, var(--navy) 40%, #0f1d4a 70%, #1a0a20 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; overflow: hidden; padding: 120px 60px 60px;
+  text-align: center;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+.orb {
+  position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
+}
+.orb-1 { width: 450px; height: 450px; background: rgba(232,25,44,0.12); top: -80px; right: -80px; animation: orbFloat 8s ease-in-out infinite; }
+.orb-2 { width: 280px; height: 280px; background: rgba(26,45,107,0.35); bottom: 30px; left: -60px; animation: orbFloat 10s ease-in-out infinite reverse; }
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(20px,-30px) scale(1.05); }
+}
+
+.hero-inner { position: relative; z-index: 2; animation: fadeUp 0.8s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(232,25,44,0.18); border: 1px solid rgba(232,25,44,0.45);
+  border-radius: 30px; padding: 6px 18px; margin-bottom: 20px;
+}
+.eyebrow-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity:1; }
+  50%      { transform: scale(1.5); opacity:.6; }
+}
+.eyebrow span { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: #ff5060; text-transform: uppercase; }
+
+.hero h1 {
+  font-size: 48px; font-weight: 900; line-height: 1.1; color: #fff;
+  margin-bottom: 16px; letter-spacing: -1px;
+}
+.hero h1 em { color: var(--red); font-style: normal; }
+.hero p {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px; color: rgba(255,255,255,0.68); max-width: 520px; line-height: 1.7;
+}
+
+/* ── STATS STRIP ── */
+.stats-strip {
+  background: var(--white);
+  border-bottom: 1px solid rgba(26,45,107,0.08);
+  display: flex; justify-content: center; gap: 0;
+}
+.stat-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 24px 48px;
+  border-right: 1px solid rgba(26,45,107,0.08);
+}
+.stat-item:last-child { border-right: none; }
+.stat-icon { font-size: 28px; }
+.stat-num { font-size: 26px; font-weight: 900; color: var(--navy); line-height: 1; }
+.stat-lbl { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── TABS ── */
+.tabs-section {
+  max-width: 1200px; margin: 0 auto; padding: 60px 40px 0;
+}
+.tabs-header {
+  display: flex; gap: 0; margin-bottom: 40px;
+  border-bottom: 2px solid rgba(26,45,107,0.1);
+}
+.tab-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 32px;
+  background: none; border: none; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted);
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  transition: all 0.3s;
+}
+.tab-btn:hover { color: var(--navy); }
+.tab-btn.active { color: var(--navy); border-bottom-color: var(--red); }
+.tab-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.tab-dot.green { background: var(--green); }
+.tab-dot.blue  { background: var(--blue); }
+.tab-count {
+  background: rgba(26,45,107,0.08); color: var(--blue);
+  font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700;
+}
+.tab-btn.active .tab-count { background: rgba(232,25,44,0.1); color: var(--red); }
+
+/* ── PROJE GRID ── */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 28px;
+  padding: 0 40px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.project-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(10,18,53,0.07);
+  border: 1px solid rgba(26,45,107,0.07);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(10,18,53,0.14);
+}
+
+/* Fotoğraf galerisi */
+.card-gallery {
+  position: relative;
+  height: 220px;
+  background: #e8eaf0;
+  overflow: hidden;
+}
+.card-gallery .slides { display: flex; height: 100%; transition: transform 0.4s ease; }
+.card-gallery .slide {
+  min-width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.card-gallery .slide-placeholder {
+  min-width: 100%; height: 100%;
+  background: linear-gradient(135deg, #e8eaf0 0%, #d0d4e0 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px; color: #b0b8cc;
+}
+.gallery-prev, .gallery-next {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.45); color: #fff;
+  border: none; border-radius: 50%; width: 34px; height: 34px;
+  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s; z-index: 5;
+  opacity: 0;
+}
+.card-gallery:hover .gallery-prev,
+.card-gallery:hover .gallery-next { opacity: 1; }
+.gallery-prev { left: 10px; }
+.gallery-next { right: 10px; }
+.gallery-prev:hover, .gallery-next:hover { background: rgba(232,25,44,0.75); }
+.gallery-dots {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 5px; z-index: 5;
+}
+.gallery-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,255,255,0.55); border: none; cursor: pointer; padding: 0;
+  transition: background 0.2s;
+}
+.gallery-dot.active { background: #fff; }
+
+/* Durum badge */
+.status-badge {
+  position: absolute; top: 14px; right: 14px; z-index: 5;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+}
+.status-badge.devam {
+  background: rgba(0,200,150,0.15); color: #00a07a;
+  border: 1px solid rgba(0,200,150,0.35);
+}
+.status-badge.tamamlandi {
+  background: rgba(26,45,107,0.12); color: var(--blue);
+  border: 1px solid rgba(26,45,107,0.2);
+}
+
+/* Kart içerik */
+.card-body { padding: 22px 24px 24px; }
+.card-year {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; color: var(--red);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;
+}
+.card-year::before {
+  content: ''; display: inline-block;
+  width: 18px; height: 2px; background: var(--red); border-radius: 1px;
+}
+.card-title {
+  font-size: 16px; font-weight: 800; color: var(--navy);
+  line-height: 1.4; margin-bottom: 10px;
+}
+.card-desc {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13.5px; color: #6070a0; line-height: 1.65;
+  margin-bottom: 16px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 16px; border-top: 1px solid rgba(26,45,107,0.07);
+}
+.card-konum {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted); font-weight: 600;
+}
+.card-photos-count {
+  font-size: 11px; color: var(--text-muted); font-weight: 600;
+  background: rgba(26,45,107,0.05);
+  padding: 4px 10px; border-radius: 8px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  grid-column: 1/-1;
+  text-align: center; padding: 80px 40px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; }
+.empty-state p { font-size: 15px; font-weight: 600; }
+.empty-state small { font-size: 13px; margin-top: 8px; display: block; }
+
+/* ── LIGHTBOX ── */
+#lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92); z-index: 9000;
+  align-items: center; justify-content: center;
+}
+#lightbox.open { display: flex; }
+#lightbox img {
+  max-width: 90vw; max-height: 88vh;
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  object-fit: contain;
+}
+.lb-close {
+  position: absolute; top: 20px; right: 28px;
+  background: none; border: none; color: #fff;
+  font-size: 36px; cursor: pointer; line-height: 1;
+  opacity: 0.7; transition: opacity 0.2s;
+}
+.lb-close:hover { opacity: 1; }
+.lb-prev, .lb-next {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.12); border: none; color: #fff;
+  width: 54px; height: 54px; border-radius: 50%;
+  font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lb-prev:hover, .lb-next:hover { background: rgba(232,25,44,0.5); }
+.lb-prev { left: 30px; }
+.lb-next { right: 30px; }
+.lb-counter {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--navy);
+  color: rgba(255,255,255,0.5);
+  text-align: center; padding: 32px 20px;
+  font-size: 12px;
+}
+footer a { color: var(--red); text-decoration: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 12px 20px; }
+  nav ul { display: none; }
+  .hero { padding: 100px 24px 50px; }
+  .hero h1 { font-size: 30px; }
+  .stats-strip { flex-wrap: wrap; }
+  .stat-item { padding: 18px 24px; border-right: none; border-bottom: 1px solid rgba(26,45,107,0.08); width: 50%; }
+  .tabs-section { padding: 40px 16px 0; }
+  .projects-grid { padding: 0 16px 60px; grid-template-columns: 1fr; }
+  .tab-btn { padding: 12px 18px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <a href="../index.html"><img src="../slider/logo.png" alt="Güliz Şirketler Topluluğu"></a>
+  </div>
+  <ul>
+    <li><a href="../index.html">Anasayfa</a></li>
+    <li><a href="../ihale/index.html">Kamu İhalesi</a></li>
+    <li><a href="../insaat/index.html" class="active">İnşaat</a></li>
+    <li><a href="../transfer/index.html">Transfer</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">
+      <div class="eyebrow-dot"></div>
+      <span>Güliz İnşaat</span>
+    </div>
+    <h1>İnşaat <em>Projelerimiz</em></h1>
+    <p>Tamamlanan ve devam eden inşaat projelerimizi keşfedin. Her projede kalite ve güven ön planda.</p>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip" id="statsStrip">
+  <div class="stat-item">
+    <div class="stat-icon">🏗️</div>
+    <div>
+      <div class="stat-num" id="statToplam">—</div>
+      <div class="stat-lbl">Toplam Proje</div>
+    </div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-icon">✅</div>
+    <div>
+      <div class="stat-num" id="statTamamlandi">—</div>
+      <div class="stat-lbl">Tamamlanan</div>
+    </div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-icon">🔨</div>
+    <div>
+      <div class="stat-num" id="statDevam">—</div>
+      <div class="stat-lbl">Devam Eden</div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS + GRID -->
+<section class="tabs-section">
+  <div class="tabs-header">
+    <button class="tab-btn active" id="tabDevam" onclick="switchTab('devam')">
+      <span class="tab-dot green"></span>
+      Devam Eden Projeler
+      <span class="tab-count" id="countDevam">0</span>
+    </button>
+    <button class="tab-btn" id="tabTamamlandi" onclick="switchTab('tamamlandi')">
+      <span class="tab-dot blue"></span>
+      Tamamlanan Projeler
+      <span class="tab-count" id="countTamamlandi">0</span>
+    </button>
+  </div>
+</section>
+
+<div class="projects-grid" id="projectsGrid">
+  <div class="empty-state">
+    <div class="icon">🏗️</div>
+    <p>Projeler yükleniyor...</p>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">×</button>
+  <button class="lb-prev" onclick="lbNav(-1)">‹</button>
+  <img id="lbImg" src="" alt="Proje Fotoğrafı">
+  <button class="lb-next" onclick="lbNav(1)">›</button>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Güliz Şirketler Topluluğu — <a href="../index.html">Ana Sayfa</a> · <a href="../transfer/index.html">Transfer</a> · <a href="../ihale/index.html">İhale</a></p>
+</footer>
+
+<script>
+let allProjects  = [];
+let activeTab    = 'devam';
+let lbPhotos     = [];
+let lbIndex      = 0;
+
+/* ── Veri yükle ── */
+async function loadProjects() {
+  try {
+    const res  = await fetch('/api/insaat');
+    allProjects = await res.json();
+  } catch {
+    allProjects = [];
+  }
+
+  const devam       = allProjects.filter(p => p.durum === 'devam');
+  const tamamlandi  = allProjects.filter(p => p.durum === 'tamamlandi');
+
+  document.getElementById('statToplam').textContent    = allProjects.length;
+  document.getElementById('statTamamlandi').textContent = tamamlandi.length;
+  document.getElementById('statDevam').textContent      = devam.length;
+  document.getElementById('countDevam').textContent     = devam.length;
+  document.getElementById('countTamamlandi').textContent = tamamlandi.length;
+
+  // İlk sekme: devam varsa devam, yoksa tamamlandi
+  const firstTab = devam.length > 0 ? 'devam' : 'tamamlandi';
+  switchTab(firstTab);
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabDevam').classList.toggle('active', tab === 'devam');
+  document.getElementById('tabTamamlandi').classList.toggle('active', tab === 'tamamlandi');
+  renderGrid();
+}
+
+function renderGrid() {
+  const list   = allProjects.filter(p => p.durum === activeTab);
+  const grid   = document.getElementById('projectsGrid');
+  if (!list.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🏗️</div>
+        <p>${activeTab === 'devam' ? 'Devam eden proje bulunmuyor.' : 'Tamamlanan proje bulunmuyor.'}</p>
+        <small>Yeni projeler eklendiğinde burada görünecek.</small>
+      </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p => cardHTML(p)).join('');
+}
+
+function cardHTML(p) {
+  const fotos   = p.fotograflar || [];
+  const hasFoto = fotos.length > 0;
+  const statusLabel = p.durum === 'devam' ? 'Devam Ediyor' : 'Tamamlandı';
+  const statusCls   = p.durum === 'devam' ? 'devam' : 'tamamlandi';
+
+  /* Galeri slaytlar */
+  let slidesHTML = '';
+  if (hasFoto) {
+    slidesHTML = fotos.map(f =>
+      `<img class="slide" src="${f.url}" alt="Proje fotoğrafı" loading="lazy"
+            onerror="this.style.display='none'" onclick="openLightbox('${JSON.stringify(fotos.map(x=>x.url)).replace(/'/g, '&#39;')}', ${fotos.indexOf(f)})">`
+    ).join('');
+  } else {
+    slidesHTML = `<div class="slide-placeholder">🏗️</div>`;
+  }
+
+  const dotsHTML = hasFoto && fotos.length > 1
+    ? `<div class="gallery-dots">${fotos.map((_, i) => `<button class="gallery-dot${i===0?' active':''}" onclick="gotoSlide(this, ${i})"></button>`).join('')}</div>`
+    : '';
+
+  const prevNext = hasFoto && fotos.length > 1
+    ? `<button class="gallery-prev" onclick="slideGallery(this, -1)">‹</button>
+       <button class="gallery-next" onclick="slideGallery(this,  1)">›</button>`
+    : '';
+
+  return `
+  <div class="project-card">
+    <div class="card-gallery" data-index="0" data-total="${fotos.length}">
+      ${prevNext}
+      <div class="slides">${slidesHTML}</div>
+      ${dotsHTML}
+      <span class="status-badge ${statusCls}">${statusLabel}</span>
+    </div>
+    <div class="card-body">
+      <div class="card-year">${p.proje_yili}</div>
+      <div class="card-title">${escHtml(p.baslik)}</div>
+      ${p.aciklama ? `<div class="card-desc">${escHtml(p.aciklama)}</div>` : ''}
+      <div class="card-footer">
+        <div class="card-konum">${p.konum ? '📍 ' + escHtml(p.konum) : ''}</div>
+        <div class="card-photos-count">${hasFoto ? '📷 ' + fotos.length + ' fotoğraf' : ''}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Galeri slider ── */
+function slideGallery(btn, dir) {
+  const gallery = btn.closest('.card-gallery');
+  const slides  = gallery.querySelector('.slides');
+  const total   = parseInt(gallery.dataset.total);
+  let   idx     = parseInt(gallery.dataset.index);
+  idx = (idx + dir + total) % total;
+  gallery.dataset.index = idx;
+  slides.style.transform = `translateX(-${idx * 100}%)`;
+  gallery.querySelectorAll('.gallery-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+function gotoSlide(dot, idx) {
+  const gallery = dot.closest('.card-gallery');
+  const slides  = gallery.querySelector('.slides');
+  gallery.dataset.index = idx;
+  slides.style.transform = `translateX(-${idx * 100}%)`;
+  gallery.querySelectorAll('.gallery-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+
+/* ── Lightbox ── */
+function openLightbox(photosJson, index) {
+  try { lbPhotos = JSON.parse(photosJson); } catch { return; }
+  lbIndex = index;
+  showLbImg();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+  showLbImg();
+}
+function showLbImg() {
+  document.getElementById('lbImg').src = lbPhotos[lbIndex];
+  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${lbPhotos.length}`;
+}
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target === e.currentTarget) closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft')  lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+});
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Socket.io visitor tracking ── */
+(function() {
+  const script = document.createElement('script');
+  script.src = '/socket.io/socket.io.js';
+  script.onload = () => {
+    const sid = localStorage.getItem('_vsid') || (() => {
+      const id = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+      localStorage.setItem('_vsid', id); return id;
+    })();
+    const socket = io();
+    const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'Mobil' : 'Masaüstü';
+    socket.emit('visitor:connect', { sessionId: sid, name: 'Ziyaretçi', page: location.href, pageTitle: document.title, device, referrer: document.referrer });
+    socket.emit('visitor:page', { sessionId: sid, page: location.href, pageTitle: document.title });
+  };
+  document.head.appendChild(script);
+})();
+
+loadProjects();
+</script>
+</body>
+</html>

@@ -5,273 +5,300 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Güliz Şirketler Grubu — Admin Panel</title>
 <meta name="robots" content="noindex,nofollow">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --gold:#C9A84C; --gold-l:#E8C97A; --black:#0A0A0A; --dark:#111;
-  --dark2:#1A1A1A; --dark3:#222; --border:rgba(201,168,76,0.15);
-  --text:rgba(255,255,255,0.85); --muted:rgba(255,255,255,0.4);
-  --serif:'Playfair Display',serif; --sans:'DM Sans',sans-serif;
-  --sidebar:220px;
+  /* Marka renkleri */
+  --red:#e30713; --red-dk:#b50510; --red-l:#f5222d;
+  --navy:#0a1235; --navy2:#1a2d6b;
+  --white:#ffffff; --gray:#f4f6fb; --gray2:#eaecf4;
+  /* Eski alias'lar – inline style var() çağrıları kırılmasın */
+  --gold:#e30713; --gold-l:#f5222d;
+  --black:#0a1235; --dark:#ffffff; --dark2:#ffffff; --dark3:#f4f6fb;
+  --border:rgba(26,45,107,0.10);
+  --text:#0a1235; --muted:#8898bb;
+  --serif:'Playfair Display',serif; --sans:'Inter',sans-serif;
+  --sidebar:245px;
+  --shadow:0 2px 16px rgba(10,18,53,0.08);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--black);color:var(--text);font-family:var(--sans);font-weight:300;display:flex;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(26,45,107,0.15);border-radius:3px}
+body{background:var(--gray);color:var(--text);font-family:var(--sans);font-weight:400;display:flex;min-height:100vh}
 
-/* SIDEBAR */
-.sidebar{width:var(--sidebar);background:var(--dark2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
-.sidebar-logo{padding:1.4rem 1.4rem 1rem;border-bottom:0.5px solid var(--border)}
-.sidebar-logo span{font-family:var(--serif);font-size:1.05rem;color:var(--gold);display:block}
-.sidebar-logo small{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
-.nav-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1.4rem;font-size:0.82rem;color:var(--muted);cursor:pointer;transition:all 0.2s;border-left:2px solid transparent}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
-.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,168,76,0.05)}
-.nav-icon{font-size:14px;width:16px;text-align:center}
-.sidebar-bottom{margin-top:auto;padding:1rem 1.4rem;border-top:0.5px solid var(--border)}
-.logout-btn{width:100%;padding:0.6rem;background:transparent;border:0.5px solid rgba(255,255,255,0.1);color:var(--muted);font-family:var(--sans);font-size:0.78rem;cursor:pointer;transition:all 0.2s}
-.logout-btn:hover{border-color:rgba(255,0,0,0.3);color:#ff6b6b}
-
-/* MAIN */
-.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{padding:1rem 2rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--dark)}
-.topbar-title{font-family:var(--serif);font-size:1.1rem;color:var(--text)}
-.admin-badge{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:0.5rem}
-.admin-dot{width:7px;height:7px;border-radius:50%;background:#2ecc71}
-
-/* PAGES */
-.page{display:none;padding:2rem;animation:fadeIn 0.3s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* STATS CARDS */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
-.stat-card{background:var(--dark2);border:0.5px solid var(--border);padding:1.2rem 1.4rem}
-.stat-label{font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem}
-.stat-val{font-family:var(--serif);font-size:1.8rem;color:var(--gold)}
-.stat-sub{font-size:0.72rem;color:var(--muted);margin-top:0.3rem}
-
-/* TABLE */
-.table-wrap{background:var(--dark2);border:0.5px solid var(--border);overflow-x:auto}
-.table-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;border-bottom:0.5px solid var(--border)}
-.table-header h3{font-family:var(--serif);font-size:1rem;font-weight:500}
-.search-input{background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.5rem 0.9rem;outline:none;min-width:220px}
-.search-input:focus{border-color:var(--gold)}
-table{width:100%;border-collapse:collapse}
-th{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:0.75rem 1rem;text-align:left;border-bottom:0.5px solid var(--border)}
-td{font-size:0.82rem;padding:0.8rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.05);vertical-align:middle}
-tr:hover td{background:rgba(255,255,255,0.02)}
-
-/* BADGES */
-.badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;border-radius:2px}
-.badge-pending  {background:rgba(234,179,8,0.15); color:#fbbf24}
-.badge-confirmed{background:rgba(59,130,246,0.15);color:#60a5fa}
-.badge-assigned {background:rgba(139,92,246,0.15);color:#a78bfa}
-.badge-completed{background:rgba(34,197,94,0.15); color:#4ade80}
-.badge-cancelled{background:rgba(239,68,68,0.15); color:#f87171}
-.badge-paid     {background:rgba(34,197,94,0.15); color:#4ade80}
-.badge-unpaid   {background:rgba(234,179,8,0.15); color:#fbbf24}
-.badge-available{background:rgba(34,197,94,0.15); color:#4ade80}
-.badge-busy     {background:rgba(239,68,68,0.15); color:#f87171}
-.badge-offline  {background:rgba(107,114,128,0.2);color:#9ca3af}
-
-/* BUTTONS */
-.btn{padding:0.45rem 1rem;font-family:var(--sans);font-size:0.75rem;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s;border:0.5px solid}
-.btn-gold{background:var(--gold);color:var(--black);border-color:var(--gold)}
-.btn-gold:hover{background:var(--gold-l)}
-.btn-outline{background:transparent;color:var(--muted);border-color:rgba(255,255,255,0.15)}
-.btn-outline:hover{color:var(--text);border-color:rgba(255,255,255,0.3)}
-.btn-danger{background:transparent;color:#f87171;border-color:rgba(239,68,68,0.3)}
-.btn-danger:hover{background:rgba(239,68,68,0.1)}
-.btn-sm{padding:0.3rem 0.7rem;font-size:0.7rem}
-
-/* FORMS */
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
-.form-group{display:flex;flex-direction:column;gap:0.4rem}
-.form-group.full{grid-column:1/-1}
-.form-group label{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
-.form-group input,.form-group select,.form-group textarea{
-  background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);
-  color:var(--text);font-family:var(--sans);font-size:0.85rem;
-  padding:0.65rem 0.9rem;outline:none;transition:border-color 0.2s;
-  -webkit-appearance:none;appearance:none;
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar);background:#fff;
+  border-right:1px solid var(--border);
+  box-shadow:2px 0 20px rgba(10,18,53,0.06);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;
 }
-.form-group input:focus,.form-group select:focus{border-color:var(--gold)}
-.form-group select option{background:#1e1e1e;color:var(--text)}
-.form-group select option:hover,.form-group select option:checked{background:#2a2a2a;color:var(--gold)}
+.sidebar-logo{
+  padding:18px 22px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  background:#fff;
+}
+.sidebar-logo img{width:145px;height:auto;display:block}
+.sidebar-logo span{
+  font-size:9px;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;color:#fff;
+  background:var(--red);padding:2px 10px;border-radius:20px;
+}
+.sidebar-logo small{display:none}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 20px;font-size:12.5px;font-weight:500;
+  color:var(--muted);cursor:pointer;
+  transition:all 0.18s;border-left:3px solid transparent;
+}
+.nav-item:hover{color:var(--navy2);background:rgba(26,45,107,0.04)}
+.nav-item.active{color:var(--navy);border-left-color:var(--red);background:rgba(227,7,19,0.05);font-weight:600}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.sidebar-bottom{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border)}
+.logout-btn{
+  width:100%;padding:8px 12px;border-radius:6px;
+  background:rgba(227,7,19,0.05);border:1px solid rgba(227,7,19,0.18);
+  color:var(--red);font-family:var(--sans);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.logout-btn:hover{background:rgba(227,7,19,0.1);border-color:rgba(227,7,19,0.4)}
 
-/* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem}
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  height:56px;padding:0 28px;
+  border-bottom:1px solid var(--border);
+  background:#fff;box-shadow:0 1px 8px rgba(10,18,53,0.04);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+.topbar-title{font-family:var(--serif);font-size:1.05rem;font-weight:600;color:var(--navy)}
+.admin-badge{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 13px;border-radius:20px;
+  background:rgba(26,45,107,0.04);border:1px solid var(--border);
+  font-size:12px;font-weight:500;color:var(--navy2);
+}
+.admin-dot{width:7px;height:7px;border-radius:50%;background:#2ecc71;flex-shrink:0}
+
+/* ── PAGES ── */
+.page{display:none;padding:26px 26px 40px;animation:fadeIn 0.25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── STATS CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat-card{
+  background:#fff;border:1px solid var(--border);
+  padding:20px 22px;border-radius:10px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--red) 0%,var(--navy2) 100%);
+}
+.stat-label{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-val{font-family:var(--serif);font-size:1.9rem;font-weight:600;color:var(--navy);line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* ── TABLE ── */
+.table-wrap{background:#fff;border:1px solid var(--border);overflow-x:auto;border-radius:10px;box-shadow:var(--shadow)}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.table-header h3{font-family:var(--serif);font-size:0.95rem;font-weight:600;color:var(--navy)}
+.search-input{
+  background:var(--gray);border:1px solid var(--border);
+  color:var(--text);font-family:var(--sans);font-size:12.5px;
+  padding:6px 11px;outline:none;min-width:200px;border-radius:6px;
+  transition:border-color 0.2s;
+}
+.search-input:focus{border-color:var(--red);background:#fff}
+table{width:100%;border-collapse:collapse}
+th{font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);padding:9px 14px;text-align:left;background:var(--gray);border-bottom:1px solid var(--border)}
+td{font-size:13px;padding:10px 14px;border-bottom:1px solid var(--gray2);vertical-align:middle;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(26,45,107,0.02)}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:3px 8px;font-size:10.5px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;border-radius:4px}
+.badge-pending  {background:#fef3c7;color:#d97706}
+.badge-confirmed{background:#dbeafe;color:#1d4ed8}
+.badge-assigned {background:#ede9fe;color:#7c3aed}
+.badge-completed{background:#d1fae5;color:#059669}
+.badge-cancelled{background:#fee2e2;color:#dc2626}
+.badge-paid     {background:#d1fae5;color:#059669}
+.badge-unpaid   {background:#fef3c7;color:#d97706}
+.badge-available{background:#d1fae5;color:#059669}
+.badge-busy     {background:#fee2e2;color:#dc2626}
+.badge-offline  {background:#f3f4f6;color:#6b7280}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:6px 14px;font-family:var(--sans);font-size:12px;font-weight:600;
+  letter-spacing:0.2px;cursor:pointer;transition:all 0.2s;
+  border-radius:6px;border:1px solid transparent;outline:none;
+}
+.btn-gold{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 2px 8px rgba(227,7,19,0.22)}
+.btn-gold:hover{background:var(--red-dk);box-shadow:0 4px 12px rgba(227,7,19,0.35);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--muted);border-color:var(--border)}
+.btn-outline:hover{color:var(--navy);border-color:rgba(26,45,107,0.3)}
+.btn-danger{background:transparent;color:#dc2626;border-color:rgba(220,38,38,0.25)}
+.btn-danger:hover{background:rgba(220,38,38,0.06)}
+.btn-sm{padding:4px 10px;font-size:11.5px}
+
+/* ── FORMS ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:10.5px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--muted)}
+.form-group input,.form-group select,.form-group textarea{
+  background:var(--gray);border:1.5px solid var(--border);
+  color:var(--text);font-family:var(--sans);font-size:13px;
+  padding:8px 11px;outline:none;transition:all 0.2s;
+  border-radius:6px;-webkit-appearance:none;appearance:none;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(227,7,19,0.08);
+}
+.form-group select option{background:#fff;color:var(--text)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(10,18,53,0.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
-.modal{background:var(--dark2);border:0.5px solid var(--border);width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
-.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.6rem;border-bottom:0.5px solid var(--border)}
-.modal-head h3{font-family:var(--serif);font-size:1rem}
-.modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
-.modal-body{padding:1.6rem}
+.modal{background:#fff;border:1px solid var(--border);border-radius:12px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(10,18,53,0.18)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--navy)}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all 0.2s}
+.modal-close:hover{background:var(--gray);color:var(--navy)}
+.modal-body{padding:20px}
 
-/* CHART */
-.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:2rem}
-.chart-card{background:var(--dark2);border:0.5px solid var(--border);padding:1.4rem}
-.chart-title{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
+/* ── CHART ── */
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:22px}
+.chart-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:var(--shadow)}
+.chart-title{font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 
-/* LOGIN */
+/* ── LOGIN ── */
 #loginPage{
   display:flex;align-items:center;justify-content:center;
   min-height:100vh;width:100%;
-  background:linear-gradient(135deg,#0a1a4e 0%,#0d2370 40%,#1a0a2e 100%);
+  background:linear-gradient(145deg,#050d28 0%,var(--navy) 40%,#0f1d4a 70%,#1a0a20 100%);
   position:relative;overflow:hidden;
 }
 #loginPage::before{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 20% 50%,rgba(227,7,19,0.12) 0%,transparent 60%),
-             radial-gradient(ellipse at 80% 20%,rgba(255,255,255,0.05) 0%,transparent 50%);
-  pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:50px 50px;pointer-events:none;
 }
 #loginPage::after{
-  content:'';position:absolute;bottom:-120px;right:-120px;
-  width:400px;height:400px;border-radius:50%;
-  background:radial-gradient(circle,rgba(227,7,19,0.15) 0%,transparent 70%);
-  pointer-events:none;
+  content:'';position:absolute;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(227,7,19,0.13) 0%,transparent 70%);
+  bottom:-130px;right:-130px;pointer-events:none;
 }
-.login-wrap{
-  position:relative;z-index:1;
-  display:flex;flex-direction:column;align-items:center;
-  width:100%;max-width:440px;padding:1rem;
-}
+.login-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:orbFloat 9s ease-in-out infinite}
+.login-orb-1{width:380px;height:380px;background:rgba(227,7,19,0.09);top:-80px;left:-100px}
+.login-orb-2{width:260px;height:260px;background:rgba(26,45,107,0.3);bottom:80px;right:80px;animation-delay:3s}
+@keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-25px)}}
+.login-wrap{position:relative;z-index:1;width:100%;max-width:420px;padding:16px}
+.login-card{background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,0.45);overflow:hidden}
 .login-logo-wrap{
-  display:flex;align-items:center;justify-content:center;
-  width:100%;
-  background:#ffffff;
-  border-radius:4px 4px 0 0;
-  padding:1.6rem 2.2rem;
-  border:1px solid rgba(255,255,255,0.15);
-  border-bottom:none;
+  background:#fff;padding:26px 32px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
 }
-.login-logo-img{
-  width:180px;height:auto;
-  display:block;
+.login-logo-img{width:155px;height:auto;display:block}
+.login-logo-sub{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--red)}
+.login-box{padding:28px 32px 26px}
+.login-box-title{font-family:var(--serif);font-size:1.15rem;font-weight:600;color:var(--navy);text-align:center;margin-bottom:5px}
+.login-box-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
+.login-field{margin-bottom:15px}
+.login-field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.login-field input{
+  width:100%;padding:11px 13px;border-radius:8px;font-size:13.5px;
+  border:1.5px solid var(--border);background:var(--gray);
+  color:var(--navy);font-family:var(--sans);outline:none;transition:all 0.2s;
 }
-.login-box{
-  width:100%;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.1);
-  border-top:none;
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-radius:0 0 4px 4px;
-  padding:2.2rem 2.2rem 2rem;
-  box-shadow:0 24px 60px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05) inset;
-}
-.login-box-title{
-  font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;
-  color:rgba(255,255,255,0.35);margin-bottom:1.8rem;
-  display:flex;align-items:center;gap:0.6rem;
-}
-.login-box-title::before,.login-box-title::after{
-  content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);
-}
-.login-box .form-group label{
-  color:rgba(255,255,255,0.55);font-size:0.7rem;letter-spacing:0.1em;
-}
-.login-box .form-group input{
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.12);
-  color:#fff;border-radius:3px;padding:0.75rem 0.9rem;
-  transition:border-color 0.2s,background 0.2s;
-}
-.login-box .form-group input:focus{
-  outline:none;border-color:rgba(227,7,19,0.6);
-  background:rgba(255,255,255,0.09);
-}
-.login-box .form-group input::placeholder{color:rgba(255,255,255,0.2);}
+.login-field input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(227,7,19,0.08)}
 .login-btn{
-  width:100%;padding:0.95rem;margin-top:1.2rem;
-  background:linear-gradient(135deg,#e30713 0%,#b50510 100%);
-  color:#fff;font-family:var(--sans);font-size:0.82rem;font-weight:600;
-  letter-spacing:0.12em;text-transform:uppercase;
-  border:none;border-radius:3px;cursor:pointer;
-  box-shadow:0 4px 20px rgba(227,7,19,0.35);
-  transition:all 0.2s;
+  width:100%;padding:12px;margin-top:4px;
+  background:linear-gradient(135deg,var(--red) 0%,var(--red-dk) 100%);
+  color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+  border:none;border-radius:8px;cursor:pointer;
+  box-shadow:0 4px 16px rgba(227,7,19,0.28);transition:all 0.2s;
 }
-.login-btn:hover{
-  background:linear-gradient(135deg,#f01020 0%,#c8060f 100%);
-  box-shadow:0 6px 28px rgba(227,7,19,0.5);
-  transform:translateY(-1px);
-}
-.login-btn:active{transform:translateY(0);}
-.login-footer{
-  margin-top:1.4rem;text-align:center;
-  font-size:0.65rem;color:rgba(255,255,255,0.2);letter-spacing:0.08em;
-}
+.login-btn:hover{box-shadow:0 6px 22px rgba(227,7,19,0.42);transform:translateY(-1px)}
+.login-btn:active{transform:translateY(0)}
+.login-footer{margin-top:16px;text-align:center;font-size:11px;color:rgba(255,255,255,0.22);letter-spacing:0.5px}
 
-/* SECTION TITLE */
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
-.section-head h2{font-family:var(--serif);font-size:1.2rem;font-weight:500}
+/* ── SECTION TITLE ── */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-head h2{font-family:var(--serif);font-size:1.15rem;font-weight:600;color:var(--navy)}
 
-/* PRICE TABLE */
-.price-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.05)}
+/* ── PRICE TABLE ── */
+.price-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--gray2)}
 .price-row:last-child{border-bottom:none}
-.price-edit{display:flex;align-items:center;gap:0.5rem}
-.price-input{width:90px;background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--gold);font-family:var(--sans);font-size:0.9rem;padding:0.35rem 0.6rem;outline:none}
-.price-input:focus{border-color:var(--gold)}
+.price-edit{display:flex;align-items:center;gap:8px}
+.price-input{width:90px;background:var(--gray);border:1.5px solid var(--border);color:var(--red);font-family:var(--sans);font-size:0.9rem;font-weight:600;padding:5px 8px;outline:none;border-radius:5px;transition:border-color 0.2s}
+.price-input:focus{border-color:var(--red);background:#fff}
 
-/* FILTER BAR */
-.filter-bar{display:flex;gap:0.6rem;margin-bottom:1.2rem;flex-wrap:wrap}
-.filter-btn{padding:0.4rem 1rem;font-size:0.72rem;letter-spacing:0.08em;background:transparent;border:0.5px solid rgba(255,255,255,0.12);color:var(--muted);cursor:pointer;transition:all 0.2s}
-.filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-btn{padding:5px 14px;font-size:11.5px;font-weight:600;background:#fff;border:1.5px solid var(--border);color:var(--muted);cursor:pointer;transition:all 0.2s;border-radius:6px}
+.filter-btn.active,.filter-btn:hover{border-color:var(--red);color:var(--red);background:rgba(227,7,19,0.04)}
 
 /* ── CANLI DESTEK ── */
-.support-wrap{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 120px);border:0.5px solid var(--border)}
-.visitor-list{border-right:0.5px solid var(--border);overflow-y:auto;background:var(--dark2)}
-.visitor-list-head{padding:0.9rem 1.2rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.visitor-list-head span{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
-.online-count{background:rgba(74,222,128,0.15);color:#4ade80;font-size:0.68rem;padding:2px 8px;border-radius:20px}
-.visitor-item{padding:0.85rem 1.2rem;cursor:pointer;border-bottom:0.5px solid rgba(255,255,255,0.04);transition:background 0.15s;position:relative}
-.visitor-item:hover{background:rgba(255,255,255,0.03)}
-.visitor-item.active{background:rgba(201,168,76,0.06);border-left:2px solid var(--gold)}
-.visitor-item.has-unread{background:rgba(201,168,76,0.04)}
-.v-name{font-size:0.82rem;color:var(--text);display:flex;align-items:center;gap:0.5rem;margin-bottom:3px}
-.v-online{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0}
-.v-offline{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.2);flex-shrink:0}
-.v-page{font-size:0.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
-.v-time{font-size:0.62rem;color:rgba(255,255,255,0.2)}
-.v-unread{position:absolute;top:0.85rem;right:1rem;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
-
-.chat-panel{display:flex;flex-direction:column;background:var(--black)}
-.chat-panel-head{padding:0.9rem 1.4rem;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:1rem}
-.chat-panel-name{font-family:var(--serif);font-size:1rem}
-.chat-panel-meta{font-size:0.7rem;color:var(--muted)}
-.chat-panel-page{font-size:0.72rem;color:var(--gold);text-decoration:none;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-.activity-log{width:260px;border-left:0.5px solid var(--border);background:var(--dark2);overflow-y:auto;display:flex;flex-direction:column}
-.activity-head{padding:0.7rem 1rem;border-bottom:0.5px solid var(--border);display:flex;gap:0.5rem}
-.activity-tab{font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;padding:0.25rem 0.6rem;border-radius:2px}
-.activity-tab.active{background:rgba(201,168,76,0.12);color:var(--gold)}
-.activity-item{padding:0.55rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.03);font-size:0.7rem}
-.activity-item .a-time{color:rgba(255,255,255,0.2);font-size:0.6rem;margin-bottom:1px}
-.activity-item .a-action{color:var(--text);font-size:0.72rem}
-.activity-item .a-detail{color:var(--muted);font-size:0.68rem;margin-top:1px}
-.activity-item .a-duration{color:var(--gold);font-size:0.65rem;margin-top:1px}
-.page-hist-item{padding:0.6rem 1rem;border-bottom:0.5px solid rgba(255,255,255,0.03)}
-.page-hist-title{font-size:0.75rem;color:var(--text);margin-bottom:2px}
-.page-hist-url{font-size:0.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.page-hist-dur{font-size:0.65rem;color:var(--gold);margin-top:2px}
-
-.admin-messages{flex:1;overflow-y:auto;padding:1.2rem;display:flex;flex-direction:column;gap:0.7rem}
-.admin-messages::-webkit-scrollbar{width:3px}
-.admin-messages::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.2)}
-.msg-bubble{max-width:70%;padding:0.6rem 1rem;font-size:0.82rem;line-height:1.5}
-.msg-bubble.from-visitor{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);color:var(--text);align-self:flex-start;border-radius:0 8px 8px 8px}
-.msg-bubble.from-admin{background:rgba(201,168,76,0.15);border:0.5px solid rgba(201,168,76,0.25);color:var(--text);align-self:flex-end;border-radius:8px 0 8px 8px}
-.msg-time{font-size:0.6rem;color:var(--muted);margin-top:3px}
-.admin-typing-row{padding:0.5rem 1.2rem;font-size:0.72rem;color:var(--muted);display:none}
-
-.admin-input-row{display:flex;gap:0;border-top:0.5px solid var(--border)}
-.admin-chat-input{flex:1;background:#1e1e1e;border:none;color:var(--text);font-family:var(--sans);font-size:0.85rem;padding:0.9rem 1.2rem;outline:none;resize:none}
-.admin-send-btn{padding:0 1.4rem;background:var(--gold);border:none;color:var(--black);cursor:pointer;font-size:0.8rem;font-weight:500;letter-spacing:0.05em;transition:background 0.2s}
-.admin-send-btn:hover{background:var(--gold-l)}
-
-.no-visitor-selected{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:0.8rem}
-.no-visitor-selected .icon{font-size:2.5rem;opacity:0.3}
+.support-wrap{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 112px);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.visitor-list{border-right:1px solid var(--border);overflow-y:auto;background:#fff}
+.visitor-list-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--gray)}
+.visitor-list-head span{font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted)}
+.online-count{background:rgba(5,150,105,0.1);color:#059669;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.visitor-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gray2);transition:background 0.15s;position:relative}
+.visitor-item:hover{background:rgba(26,45,107,0.03)}
+.visitor-item.active{background:rgba(227,7,19,0.04);border-left:3px solid var(--red)}
+.visitor-item.has-unread{background:rgba(227,7,19,0.03)}
+.v-name{font-size:13px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.v-online{width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0}
+.v-offline{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.v-page{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.v-time{font-size:10px;color:var(--muted)}
+.v-unread{position:absolute;top:10px;right:12px;background:#e30713;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.chat-panel{display:flex;flex-direction:column;background:var(--gray)}
+.chat-panel-head{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:#fff}
+.chat-panel-name{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--navy)}
+.chat-panel-meta{font-size:11px;color:var(--muted)}
+.chat-panel-page{font-size:11.5px;color:var(--red);text-decoration:none;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.activity-log{width:260px;border-left:1px solid var(--border);background:#fff;overflow-y:auto;display:flex;flex-direction:column}
+.activity-head{padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;background:var(--gray)}
+.activity-tab{font-size:10.5px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.2s}
+.activity-tab.active{background:rgba(227,7,19,0.08);color:var(--red)}
+.activity-item{padding:7px 12px;border-bottom:1px solid var(--gray2);font-size:11.5px}
+.activity-item .a-time{color:var(--muted);font-size:10px;margin-bottom:1px}
+.activity-item .a-action{color:var(--navy);font-size:12px;font-weight:500}
+.activity-item .a-detail{color:var(--muted);font-size:11px;margin-top:1px}
+.activity-item .a-duration{color:var(--red);font-size:10.5px;margin-top:1px;font-weight:600}
+.page-hist-item{padding:8px 12px;border-bottom:1px solid var(--gray2)}
+.page-hist-title{font-size:12px;color:var(--navy);font-weight:500;margin-bottom:2px}
+.page-hist-url{font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.page-hist-dur{font-size:10.5px;color:var(--red);margin-top:2px;font-weight:600}
+.admin-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.admin-messages::-webkit-scrollbar{width:4px}
+.admin-messages::-webkit-scrollbar-thumb{background:rgba(227,7,19,0.15);border-radius:2px}
+.msg-bubble{max-width:72%;padding:8px 13px;font-size:13px;line-height:1.5;border-radius:8px}
+.msg-bubble.from-visitor{background:#fff;border:1px solid var(--border);color:var(--text);align-self:flex-start;border-radius:0 10px 10px 10px;box-shadow:var(--shadow)}
+.msg-bubble.from-admin{background:var(--red);color:#fff;align-self:flex-end;border-radius:10px 0 10px 10px;box-shadow:0 2px 8px rgba(227,7,19,0.25)}
+.msg-time{font-size:10px;margin-top:3px;opacity:0.6}
+.admin-typing-row{padding:6px 14px;font-size:12px;color:var(--muted);display:none}
+.admin-input-row{display:flex;gap:0;border-top:1px solid var(--border)}
+.admin-chat-input{flex:1;background:#fff;border:none;color:var(--text);font-family:var(--sans);font-size:13px;padding:11px 14px;outline:none;resize:none}
+.admin-send-btn{padding:0 18px;background:var(--red);border:none;color:#fff;cursor:pointer;font-size:13px;font-weight:600;transition:background 0.2s}
+.admin-send-btn:hover{background:var(--red-dk)}
+.no-visitor-selected{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:10px}
+.no-visitor-selected .icon{font-size:2.5rem;opacity:0.25}
 
 @media(max-width:900px){
   .sidebar{transform:translateX(-100%)}
@@ -285,29 +312,38 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
 <!-- LOGIN PAGE -->
 <div id="loginPage">
+  <div class="login-orb login-orb-1"></div>
+  <div class="login-orb login-orb-2"></div>
   <div class="login-wrap">
+    <div class="login-card">
 
-    <!-- Logo & Marka -->
-    <div class="login-logo-wrap">
-      <img src="/slider/logo.png" class="login-logo-img" alt="Güliz Şirketler Grubu">
-    </div>
-
-    <!-- Form Kutusu -->
-    <div class="login-box">
-      <div class="login-box-title">Yönetim Paneli</div>
-      <div class="form-group" style="margin-bottom:0.9rem">
-        <label>E-POSTA</label>
-        <input type="email" id="loginEmail" placeholder="admin@guliztransfer.com">
+      <!-- Logo şeridi -->
+      <div class="login-logo-wrap">
+        <img src="/slider/logo.png" class="login-logo-img" alt="Güliz Şirketler Grubu">
+        <div class="login-logo-sub">Admin · Yönetim Paneli</div>
       </div>
-      <div class="form-group">
-        <label>ŞİFRE</label>
-        <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <p id="loginErr" style="color:#ff6b6b;font-size:0.78rem;margin-top:0.7rem;display:none;background:rgba(227,7,19,0.1);padding:0.5rem 0.7rem;border-left:2px solid #e30713;border-radius:2px"></p>
-      <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
-      <div class="login-footer">© 2025 Güliz Şirketler Grubu · Tüm hakları saklıdır</div>
-    </div>
 
+      <!-- Form -->
+      <div class="login-box">
+        <div class="login-box-title">Hoş Geldiniz</div>
+        <div class="login-box-sub">Devam etmek için giriş yapın</div>
+
+        <div class="login-field">
+          <label>Kullanıcı Adı</label>
+          <input type="email" id="loginEmail" value="admin@guliztransfer.com" autocomplete="username">
+        </div>
+        <div class="login-field">
+          <label>Şifre</label>
+          <input type="password" id="loginPass" value="Guliz2025!" autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+
+        <p id="loginErr" style="color:#dc2626;font-size:12px;margin-top:10px;display:none;background:#fee2e2;padding:8px 12px;border-left:3px solid #dc2626;border-radius:6px"></p>
+        <button class="login-btn" onclick="doLogin()">Giriş Yap</button>
+      </div><!-- login-box -->
+    </div><!-- login-card -->
+
+    <div class="login-footer">© 2025 Güliz Şirketler Grubu · Tüm hakları saklıdır</div>
   </div>
 </div>
 
@@ -317,10 +353,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <span>Güliz Transfer</span>
-      <small>Admin Paneli</small>
+      <img src="/slider/logo.png" alt="Güliz Şirketler Grubu">
+      <span>Admin Paneli</span>
     </div>
-    <nav style="padding:0.8rem 0">
+    <nav style="padding:8px 0">
       <div class="nav-item active" onclick="showPage('dashboard')">
         <span class="nav-icon">◈</span> Dashboard
       </div>
@@ -344,6 +380,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <div class="nav-item" onclick="showPage('ihaleler')">
         <span class="nav-icon">🏗️</span> İhale Yönetimi
       </div>
+      <div class="nav-item" onclick="showPage('insaat')">
+        <span class="nav-icon">🧱</span> İnşaat Yönetimi
+      </div>
       <div class="nav-item" onclick="showPage('kurumlar')">
         <span class="nav-icon">🏛️</span> Kurum Yönetimi
       </div>
@@ -352,8 +391,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
     </nav>
     <div class="sidebar-bottom">
-      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.6rem" id="adminNameDisplay"></div>
-      <button class="logout-btn" onclick="doLogout()">Çıkış Yap</button>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="adminNameDisplay"></div>
+      <button class="logout-btn" onclick="doLogout()">↩ Çıkış Yap</button>
     </div>
   </aside>
 
@@ -361,7 +400,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   <main class="main">
     <div class="topbar">
       <span class="topbar-title" id="pageTitle">Dashboard</span>
-      <span class="admin-badge"><span class="admin-dot"></span><span id="adminEmailDisplay"></span></span>
+      <div class="admin-badge"><span class="admin-dot"></span><span id="adminEmailDisplay"></span></div>
     </div>
 
     <!-- DASHBOARD -->
@@ -578,6 +617,81 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
 
       <div id="ihaleListWrap">
+        <div style="padding:2rem;text-align:center;color:var(--muted)">Yükleniyor...</div>
+      </div>
+    </div>
+
+    <!-- İNŞAAT YÖNETİMİ -->
+    <div class="page" id="page-insaat">
+      <div class="section-head">
+        <h2>İnşaat Yönetimi</h2>
+        <button class="btn btn-gold btn-sm" onclick="openInsaatModal()">+ Yeni İnşaat Ekle</button>
+      </div>
+
+      <!-- İnşaat Modal -->
+      <div id="insaatModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:2rem;width:580px;max-width:94vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 8px 40px rgba(10,18,53,0.18)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--navy);font-weight:600" id="insaatModalTitle">🧱 Yeni İnşaat Ekle</div>
+            <button onclick="closeInsaatModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">×</button>
+          </div>
+          <input type="hidden" id="ins-id">
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Proje Başlığı *</label>
+            <input type="text" id="ins-baslik" placeholder="Okul İnşaatı, Köprü Projesi...">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group">
+              <label>Proje Yılı *</label>
+              <input type="number" id="ins-yil" placeholder="2024" min="2000" max="2099">
+            </div>
+            <div class="form-group">
+              <label>Durum *</label>
+              <select id="ins-durum" style="width:100%;background:#fff;border:1px solid var(--border);color:var(--text);padding:0.55rem 0.75rem;font-size:0.85rem;border-radius:6px;outline:none;">
+                <option value="devam">Devam Ediyor</option>
+                <option value="tamamlandi">Tamamlandı</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Konum</label>
+            <input type="text" id="ins-konum" placeholder="İstanbul, Kadıköy...">
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Açıklama</label>
+            <textarea id="ins-aciklama" rows="3" placeholder="Proje hakkında kısa bilgi..." style="width:100%;background:#fff;border:1px solid var(--border);color:var(--text);padding:0.6rem 0.75rem;font-size:0.85rem;border-radius:6px;outline:none;resize:vertical;font-family:var(--sans)"></textarea>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem">
+            <label>Sıra (Görüntüleme Önceliği)</label>
+            <input type="number" id="ins-sira" placeholder="0" min="0">
+          </div>
+
+          <!-- Fotoğraf yükleme (sadece edit modunda görünür) -->
+          <div id="insaatFotoPanel" style="display:none;margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--border)">
+            <div style="font-size:0.82rem;font-weight:600;color:var(--navy);margin-bottom:0.6rem">Fotoğraflar (maks. 5)</div>
+            <div id="insaatFotoGrid" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0.7rem"></div>
+            <label id="insaatFotoLabel" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--red);font-weight:500">
+              <input type="file" id="ins-foto-input" multiple accept="image/*" style="display:none" onchange="uploadInsaatFoto()">
+              ＋ Fotoğraf Ekle
+            </label>
+            <div id="insaatFotoMsg" style="font-size:0.75rem;color:var(--muted);margin-top:4px"></div>
+          </div>
+
+          <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.5rem">
+            <button class="btn btn-outline btn-sm" onclick="closeInsaatModal()">İptal</button>
+            <button class="btn btn-gold btn-sm" onclick="saveInsaat()">Kaydet</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtre tabs -->
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;">
+        <button id="insaatTabAll"   onclick="setInsaatTab('all')"        class="btn btn-gold    btn-sm">Tümü</button>
+        <button id="insaatTabDevam" onclick="setInsaatTab('devam')"      class="btn btn-outline btn-sm">Devam Ediyor</button>
+        <button id="insaatTabDone"  onclick="setInsaatTab('tamamlandi')" class="btn btn-outline btn-sm">Tamamlandı</button>
+      </div>
+
+      <div id="insaatListWrap">
         <div style="padding:2rem;text-align:center;color:var(--muted)">Yükleniyor...</div>
       </div>
     </div>
@@ -933,6 +1047,192 @@ async function deleteIhale(id, baslik) {
 }
 
 /* ══════════════════════════════════
+   İNŞAAT YÖNETİMİ
+══════════════════════════════════ */
+let insaatData = [];
+let insaatTab  = 'all';
+
+async function loadInsaat() {
+  try {
+    insaatData = await api('/api/insaat');
+    renderInsaat();
+  } catch(e) {
+    document.getElementById('insaatListWrap').innerHTML =
+      `<div style="padding:2rem;color:#f87171;">Yükleme hatası: ${e.message}</div>`;
+  }
+}
+
+function setInsaatTab(tab) {
+  insaatTab = tab;
+  document.getElementById('insaatTabAll').className   = tab === 'all'        ? 'btn btn-gold btn-sm' : 'btn btn-outline btn-sm';
+  document.getElementById('insaatTabDevam').className = tab === 'devam'      ? 'btn btn-gold btn-sm' : 'btn btn-outline btn-sm';
+  document.getElementById('insaatTabDone').className  = tab === 'tamamlandi' ? 'btn btn-gold btn-sm' : 'btn btn-outline btn-sm';
+  renderInsaat();
+}
+
+function renderInsaat() {
+  const filtered = insaatTab === 'all' ? insaatData : insaatData.filter(i => i.durum === insaatTab);
+  const wrap = document.getElementById('insaatListWrap');
+  if (!filtered.length) {
+    wrap.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted);font-size:0.85rem;">Kayıt bulunamadı.</div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>#</th>
+        <th>Başlık</th>
+        <th>Yıl</th>
+        <th>Konum</th>
+        <th>Fotoğraf</th>
+        <th>Durum</th>
+        <th style="text-align:right">İşlem</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map((ins, idx) => `
+          <tr>
+            <td style="color:var(--muted);font-size:0.75rem">${idx+1}</td>
+            <td style="max-width:240px;word-break:break-word;font-weight:500">${escapeHtml(ins.baslik)}</td>
+            <td style="font-size:0.82rem;color:var(--muted)">${ins.proje_yili}</td>
+            <td style="font-size:0.8rem;color:var(--muted);max-width:160px">${ins.konum ? escapeHtml(ins.konum) : '—'}</td>
+            <td style="font-size:0.8rem;color:var(--muted)">${(ins.fotograflar||[]).length} / 5</td>
+            <td>${ins.durum === 'tamamlandi'
+              ? '<span style="color:#16a34a;font-size:0.75rem;font-weight:600">✅ Tamamlandı</span>'
+              : '<span style="color:#d97706;font-size:0.75rem;font-weight:600">🔄 Devam Ediyor</span>'}</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="btn btn-outline btn-sm" onclick="editInsaat(${ins.id})" style="margin-right:4px">Düzenle</button>
+              <button class="btn btn-sm" style="background:rgba(239,68,68,0.10);color:#ef4444;border:1px solid rgba(239,68,68,0.25)" onclick="deleteInsaat(${ins.id}, '${escapeHtml(ins.baslik).replace(/'/g,"\\'")}')">Sil</button>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function openInsaatModal() {
+  document.getElementById('ins-id').value       = '';
+  document.getElementById('ins-baslik').value   = '';
+  document.getElementById('ins-yil').value      = new Date().getFullYear();
+  document.getElementById('ins-durum').value    = 'devam';
+  document.getElementById('ins-konum').value    = '';
+  document.getElementById('ins-aciklama').value = '';
+  document.getElementById('ins-sira').value     = '0';
+  document.getElementById('insaatModalTitle').textContent = '🧱 Yeni İnşaat Ekle';
+  document.getElementById('insaatFotoPanel').style.display = 'none';
+  document.getElementById('insaatModal').style.display = 'flex';
+}
+
+function editInsaat(id) {
+  const ins = insaatData.find(i => i.id === id);
+  if (!ins) return;
+  document.getElementById('ins-id').value       = ins.id;
+  document.getElementById('ins-baslik').value   = ins.baslik;
+  document.getElementById('ins-yil').value      = ins.proje_yili;
+  document.getElementById('ins-durum').value    = ins.durum;
+  document.getElementById('ins-konum').value    = ins.konum || '';
+  document.getElementById('ins-aciklama').value = ins.aciklama || '';
+  document.getElementById('ins-sira').value     = ins.sira || 0;
+  document.getElementById('insaatModalTitle').textContent = '✏️ İnşaat Düzenle';
+  renderInsaatFotoGrid(ins);
+  document.getElementById('insaatFotoPanel').style.display = 'block';
+  document.getElementById('insaatModal').style.display = 'flex';
+}
+
+function renderInsaatFotoGrid(ins) {
+  const fotos = ins.fotograflar || [];
+  const grid  = document.getElementById('insaatFotoGrid');
+  const label = document.getElementById('insaatFotoLabel');
+  grid.innerHTML = fotos.map(f => `
+    <div style="position:relative;width:72px;height:72px;border-radius:6px;overflow:hidden;border:1px solid var(--border)">
+      <img src="${escapeHtml(f.url)}" style="width:100%;height:100%;object-fit:cover">
+      <button onclick="deleteInsaatFoto(${ins.id}, ${f.id})" title="Sil"
+        style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.65);border:none;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1;padding:0">×</button>
+    </div>`).join('');
+  label.style.display = fotos.length >= 5 ? 'none' : 'inline-flex';
+  document.getElementById('insaatFotoMsg').textContent = fotos.length >= 5 ? 'Maksimum fotoğraf sayısına ulaşıldı.' : '';
+}
+
+function closeInsaatModal() {
+  document.getElementById('insaatModal').style.display = 'none';
+}
+
+async function saveInsaat() {
+  const id      = document.getElementById('ins-id').value;
+  const baslik  = document.getElementById('ins-baslik').value.trim();
+  const yil     = document.getElementById('ins-yil').value.trim();
+  const durum   = document.getElementById('ins-durum').value;
+  const konum   = document.getElementById('ins-konum').value.trim();
+  const aciklama= document.getElementById('ins-aciklama').value.trim();
+  const sira    = document.getElementById('ins-sira').value;
+  if (!baslik || !yil) {
+    alert('Proje başlığı ve yılı zorunludur.');
+    return;
+  }
+  const body = { baslik, proje_yili: parseInt(yil), durum, konum: konum||null, aciklama: aciklama||null, sira: parseInt(sira)||0 };
+  try {
+    if (id) {
+      await api('/api/insaat/'+id, { method:'PUT', body: JSON.stringify(body) });
+    } else {
+      await api('/api/insaat', { method:'POST', body: JSON.stringify(body) });
+    }
+    closeInsaatModal();
+    await loadInsaat();
+  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+}
+
+async function deleteInsaat(id, baslik) {
+  if (!confirm(`"${baslik}" projesi silinecek. Emin misiniz?`)) return;
+  try {
+    await api('/api/insaat/'+id, { method:'DELETE' });
+    loadInsaat();
+  } catch(e) { alert('Silme hatası: ' + e.message); }
+}
+
+async function uploadInsaatFoto() {
+  const insaatId = document.getElementById('ins-id').value;
+  if (!insaatId) return;
+  const input = document.getElementById('ins-foto-input');
+  if (!input.files.length) return;
+  const formData = new FormData();
+  for (const f of input.files) formData.append('fotograflar', f);
+  const msg = document.getElementById('insaatFotoMsg');
+  msg.textContent = 'Yükleniyor...';
+  msg.style.color = 'var(--muted)';
+  try {
+    const headers = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch(API + '/api/insaat/' + insaatId + '/fotograflar', {
+      method: 'POST', headers, body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
+    input.value = '';
+    await loadInsaat();
+    // Refresh modal fotoğraf grid
+    const updated = insaatData.find(i => i.id === parseInt(insaatId));
+    if (updated) renderInsaatFotoGrid(updated);
+    msg.textContent = `${data.eklenen} fotoğraf eklendi.`;
+    msg.style.color = '#16a34a';
+  } catch(e) {
+    msg.textContent = 'Hata: ' + e.message;
+    msg.style.color = '#ef4444';
+  }
+}
+
+async function deleteInsaatFoto(insaatId, fotoId) {
+  if (!confirm('Bu fotoğraf silinecek. Emin misiniz?')) return;
+  const msg = document.getElementById('insaatFotoMsg');
+  try {
+    await api('/api/insaat/'+insaatId+'/fotograflar/'+fotoId, { method:'DELETE' });
+    await loadInsaat();
+    const updated = insaatData.find(i => i.id === insaatId);
+    if (updated) renderInsaatFotoGrid(updated);
+  } catch(e) {
+    msg.textContent = 'Silme hatası: ' + e.message;
+    msg.style.color = '#ef4444';
+  }
+}
+
+/* ══════════════════════════════════
    KURUM YÖNETİMİ
 ══════════════════════════════════ */
 async function loadKurumlar() {
@@ -1037,15 +1337,16 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','kurumlar','settings'];
+  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','insaat','kurumlar','settings'];
   document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
-  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',kurumlar:'Kurum Yönetimi',settings:'Ayarlar'};
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
   if (name === 'bookings') loadBookings();
   if (name === 'stats')    loadStats();
   if (name === 'settings') loadSettings();
   if (name === 'kurumlar') loadKurumlar();
   if (name === 'ihaleler') loadIhaleler();
+  if (name === 'insaat')   loadInsaat();
   if (name === 'support')  { supportAdminJoin(); clearSupportBadge(); }
 }
 
