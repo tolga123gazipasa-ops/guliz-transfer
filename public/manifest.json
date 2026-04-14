@@ -1,11 +1,11 @@
 {
-  "name": "Güliz Transfer",
-  "short_name": "Güliz Transfer",
-  "description": "VIP ve Shuttle Transfer Hizmeti — Havalimanı, Şehirlerarası",
-  "start_url": "/transfer/",
+  "name": "Güliz Lojistik",
+  "short_name": "Güliz",
+  "description": "Güliz Şirketler Topluluğu — Lojistik, Transfer ve Kamu İhale Hizmetleri",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0A0A0A",
-  "theme_color": "#C9A84C",
+  "background_color": "#1A2D6B",
+  "theme_color": "#1A2D6B",
   "orientation": "portrait-primary",
   "lang": "tr",
   "icons": [
@@ -22,21 +22,27 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [],
-  "categories": ["travel", "lifestyle"],
+  "categories": ["business", "logistics", "travel"],
   "shortcuts": [
     {
-      "name": "VIP Transfer",
-      "short_name": "VIP",
-      "description": "Özel VIP transfer rezervasyonu",
-      "url": "/transfer/#rezervasyon",
+      "name": "Lojistik",
+      "short_name": "Lojistik",
+      "description": "Yurt içi ve yurt dışı taşımacılık",
+      "url": "/lojistik/",
       "icons": [{ "src": "icons/icon-192.svg", "sizes": "192x192" }]
     },
     {
-      "name": "Shuttle",
-      "short_name": "Shuttle",
-      "description": "Paylaşımlı shuttle rezervasyonu",
-      "url": "/transfer/#rezervasyon",
+      "name": "Transfer",
+      "short_name": "Transfer",
+      "description": "Havalimanı ve VIP transfer",
+      "url": "/transfer/",
+      "icons": [{ "src": "icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Admin Panel",
+      "short_name": "Admin",
+      "description": "Yönetim paneli",
+      "url": "/admin.html",
       "icons": [{ "src": "icons/icon-192.svg", "sizes": "192x192" }]
     }
   ]
