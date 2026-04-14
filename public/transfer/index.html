@@ -2092,17 +2092,17 @@
       <p>Güliz Şirketler Grubu bünyesinde VIP transfer hizmeti sunuyoruz. Her türlü sorunuz için bize ulaşabilirsiniz.</p>
       <div class="contact-item">
         <div class="contact-item-icon">✆</div>
-        <span>+90 (212) XXX XX XX</span>
+        <span><a href="tel:05448654200" style="color:inherit;text-decoration:none">0544 865 42 00</a></span>
       </div>
       <div class="contact-item">
         <div class="contact-item-icon">@</div>
-        <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="452c2b232a052230292c3f3137242b362320376b262a28">[email&#160;protected]</a></span>
+        <span><a href="mailto:gulizlojistik@hotmail.com" style="color:inherit;text-decoration:none">gulizlojistik@hotmail.com</a></span>
       </div>
       <div class="contact-item">
         <div class="contact-item-icon">◎</div>
-        <span>İstanbul, Türkiye</span>
+        <span>Pazarcı Mah. 10003. Sk. No:32/7 Gazipaşa / ANTALYA</span>
       </div>
-      <a href="https://wa.me/905XXXXXXXXX" class="whatsapp-btn">
+      <a href="https://wa.me/905448654200" class="whatsapp-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp ile Yazın
       </a>
@@ -2111,16 +2111,17 @@
       <form onsubmit="handleContact(event)" style="display:flex;flex-direction:column;gap:1rem;">
         <div class="form-group">
           <label>Ad Soyad</label>
-          <input type="text" placeholder="Adınız Soyadınız">
+          <input type="text" id="ctAdSoyad" placeholder="Adınız Soyadınız" required>
         </div>
         <div class="form-group">
           <label>Telefon</label>
-          <input type="tel" placeholder="+90 5XX XXX XX XX">
+          <input type="tel" id="ctTelefon" placeholder="0544 865 42 00" required>
         </div>
         <div class="form-group">
           <label>Mesajınız</label>
-          <textarea style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.12);color:#fff;font-family:var(--sans);font-size:0.9rem;padding:0.85rem 1rem;outline:none;resize:vertical;min-height:120px;transition:border-color 0.3s;" placeholder="Transfer hakkında bilgi almak istiyorum..." onfocus="this.style.borderColor='#1D4ED8'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'"></textarea>
+          <textarea id="ctMesaj" style="background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.12);color:#fff;font-family:var(--sans);font-size:0.9rem;padding:0.85rem 1rem;outline:none;resize:vertical;min-height:120px;transition:border-color 0.3s;" placeholder="Transfer hakkında bilgi almak istiyorum..." onfocus="this.style.borderColor='#1D4ED8'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'" required></textarea>
         </div>
+        <p id="ctMsg" style="font-size:0.85rem;display:none;padding:0.5rem;border-radius:6px;"></p>
         <button type="submit" class="btn-primary" style="width:100%;text-align:center;">Mesaj Gönder</button>
       </form>
     </div>
@@ -2599,9 +2600,34 @@
     setTimeout(() => { btn.textContent='Ödemeyi Tamamla'; btn.disabled=false; goStep(3); }, 2000);
   }
 
-  function handleContact(e) {
+  async function handleContact(e) {
     e.preventDefault();
-    alert('Mesajınız iletildi! En kısa sürede dönüş yapacağız.');
+    const ad_soyad = document.getElementById('ctAdSoyad').value.trim();
+    const telefon  = document.getElementById('ctTelefon').value.trim();
+    const mesaj    = document.getElementById('ctMesaj').value.trim();
+    const msgEl    = document.getElementById('ctMsg');
+    if (!ad_soyad || !telefon || !mesaj) {
+      msgEl.textContent = 'Lütfen tüm alanları doldurun.';
+      msgEl.style.cssText = 'display:block;color:#f87171;background:rgba(248,113,113,0.1)';
+      return;
+    }
+    try {
+      const res = await fetch('/api/iletisim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ad_soyad, telefon, mesaj, kaynak: 'transfer' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Hata');
+      msgEl.textContent = '✅ Mesajınız alındı! En kısa sürede dönüş yapacağız.';
+      msgEl.style.cssText = 'display:block;color:#4ade80;background:rgba(74,222,128,0.08)';
+      document.getElementById('ctAdSoyad').value = '';
+      document.getElementById('ctTelefon').value = '';
+      document.getElementById('ctMesaj').value   = '';
+    } catch(err) {
+      msgEl.textContent = 'Hata: ' + err.message;
+      msgEl.style.cssText = 'display:block;color:#f87171;background:rgba(248,113,113,0.1)';
+    }
   }
 
   document.getElementById('paymentModal').addEventListener('click', function(e) {
@@ -2762,17 +2788,20 @@ function scrollChatToBottom() {
 }
 
 function onChatTyping() {
-  if (!isTyping) { isTyping = true; chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: true }); }
+  const el = document.getElementById('chatInput');
+  const currentText = el ? el.value : '';
+  if (!isTyping) { isTyping = true; }
+  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: true, text: currentText });
   clearTimeout(chatTypingTimer);
   chatTypingTimer = setTimeout(stopTyping, 2000);
   // Auto-resize textarea
-  const el = document.getElementById('chatInput');
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 80) + 'px';
 }
 function stopTyping() {
   isTyping = false;
-  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false });
+  const el = document.getElementById('chatInput');
+  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false, text: el ? el.value : '' });
 }
 
 // Form doldurma aktivitelerini izle

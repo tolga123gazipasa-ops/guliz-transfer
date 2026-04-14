@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Güliz Lojistik">
+<meta name="theme-color" content="#1A2D6B">
+<title>İletişim – Güliz Şirketler Topluluğu</title>
+<meta name="description" content="Güliz Şirketler Topluluğu iletişim bilgileri ve mesaj formu. Gazipaşa / Antalya.">
+<link rel="canonical" href="https://gulizlojistik.com/iletisim/">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1235;--navy2:#1a2d6b;--red:#e8192c;--red2:#b01020;
+  --white:#fff;--gray:#f4f6fb;
+}
+body{font-family:'Montserrat',sans-serif;background:#fff;overflow-x:hidden;}
+
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 60px;background:#fff;
+  box-shadow:0 2px 20px rgba(0,0,0,0.12);
+}
+.logo img{height:54px;display:block;object-fit:contain;}
+nav ul{list-style:none;display:flex;gap:28px;}
+nav ul li a{
+  text-decoration:none;color:var(--navy);font-size:11px;
+  font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;
+}
+nav ul li a:hover,nav ul li a.active{color:var(--red);}
+
+.hero{
+  background:linear-gradient(140deg,#050d28 0%,#0a1235 55%,#0f1d4a 100%);
+  padding:80px 60px 60px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(232,25,44,0.15);border:1px solid rgba(232,25,44,0.4);
+  border-radius:30px;padding:6px 16px;margin-bottom:20px;
+}
+.hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--red);}
+.hero-eyebrow span{font-size:10.5px;font-weight:700;letter-spacing:2px;color:#ff5060;text-transform:uppercase;}
+.hero h1{font-size:42px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:16px;position:relative;}
+.hero h1 .red{color:var(--red);}
+.hero p{font-family:'Open Sans',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);max-width:500px;margin:0 auto;line-height:1.75;position:relative;}
+
+.main-wrap{max-width:1080px;margin:60px auto;padding:0 24px;display:grid;grid-template-columns:1fr 1.4fr;gap:50px;align-items:start;}
+
+.info-card{background:#fff;border:1.5px solid #eaecf4;border-radius:16px;padding:36px;box-shadow:0 4px 24px rgba(10,18,53,0.06);}
+.info-card h2{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.info-card p{font-size:13.5px;color:#6b7280;line-height:1.75;margin-bottom:28px;}
+.info-item{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;}
+.info-icon{width:44px;height:44px;background:rgba(232,25,44,0.08);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.info-label{font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8898bb;text-transform:uppercase;margin-bottom:4px;}
+.info-val{font-size:14px;font-weight:600;color:var(--navy);}
+.info-val a{color:var(--navy);text-decoration:none;}
+.info-val a:hover{color:var(--red);}
+.wa-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#25D366;color:#fff;text-decoration:none;
+  border-radius:10px;padding:12px 20px;font-size:13px;font-weight:700;
+  margin-top:8px;transition:background .2s;
+}
+.wa-btn:hover{background:#1da851;}
+
+.form-card{background:#fff;border:1.5px solid #eaecf4;border-radius:16px;padding:36px;box-shadow:0 4px 24px rgba(10,18,53,0.08);}
+.form-card h2{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.form-card p{font-size:13.5px;color:#6b7280;margin-bottom:24px;}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-group label{font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8898bb;}
+.form-group input,.form-group textarea{
+  background:#f4f6fb;border:1.5px solid #eaecf4;color:#0a1235;
+  font-family:'Montserrat',sans-serif;font-size:13px;padding:10px 12px;outline:none;
+  border-radius:8px;transition:all .2s;
+}
+.form-group input:focus,.form-group textarea:focus{
+  border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(232,25,44,0.08);
+}
+.btn-submit{
+  width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;
+  padding:14px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;
+  transition:background .2s;
+}
+.btn-submit:hover{background:var(--red2);}
+.form-msg{font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:14px;display:none;}
+
+footer{background:#0a1235;padding:32px 60px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+footer span{font-size:12px;color:rgba(255,255,255,0.35);}
+footer a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:12px;}
+footer a:hover{color:#fff;}
+
+@media(max-width:768px){
+  nav{padding:12px 20px;}
+  nav ul{display:none;}
+  .hero{padding:60px 24px 40px;}
+  .hero h1{font-size:28px;}
+  .main-wrap{grid-template-columns:1fr;gap:30px;}
+  footer{padding:24px 20px;flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <a href="/index.html"><img src="/slider/logo.png" alt="Güliz Şirketler Topluluğu"></a>
+  </div>
+  <ul>
+    <li><a href="/index.html">Anasayfa</a></li>
+    <li><a href="/lojistik/index.html">Lojistik</a></li>
+    <li><a href="/ihale/index.html">Kamu İhalesi</a></li>
+    <li><a href="/insaat/index.html">İnşaat</a></li>
+    <li><a href="/kurum/index.html">Kurum Girişi</a></li>
+    <li><a href="/ik/index.html">İnsan Kaynakları</a></li>
+    <li><a href="/iletisim/index.html" class="active">İletişim</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">
+    <div class="dot"></div>
+    <span>Bize Ulaşın</span>
+  </div>
+  <h1>İletişim &<br><span class="red">Destek</span></h1>
+  <p>Her türlü soru ve talebiniz için bize ulaşabilirsiniz. En kısa sürede geri dönüş yapacağız.</p>
+</div>
+
+<div class="main-wrap">
+
+  <div class="info-card">
+    <h2>İletişim Bilgileri</h2>
+    <p>Telefon, WhatsApp veya mesaj formu ile bize ulaşabilirsiniz.</p>
+
+    <div class="info-item">
+      <div class="info-icon">📞</div>
+      <div>
+        <div class="info-label">Telefon</div>
+        <div class="info-val"><a href="tel:05448654200">0544 865 42 00</a></div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">📍</div>
+      <div>
+        <div class="info-label">Adres</div>
+        <div class="info-val" style="font-size:13px;font-weight:500;line-height:1.5;">Pazarcı Mah. 10003. Sk.<br>No:32/7 Gazipaşa / ANTALYA</div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">📧</div>
+      <div>
+        <div class="info-label">E-posta</div>
+        <div class="info-val"><a href="mailto:gulizlojistik@hotmail.com">gulizlojistik@hotmail.com</a></div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">🕐</div>
+      <div>
+        <div class="info-label">Çalışma Saatleri</div>
+        <div class="info-val" style="font-size:13px;font-weight:500;">Hafta içi 08:00 – 18:00<br>Cumartesi 09:00 – 14:00</div>
+      </div>
+    </div>
+
+    <a href="https://wa.me/905448654200" target="_blank" class="wa-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      WhatsApp ile Yazın
+    </a>
+  </div>
+
+  <div class="form-card">
+    <h2>Mesaj Gönderin</h2>
+    <p>Formu doldurun, en kısa sürede size dönüş yapalım.</p>
+
+    <div id="ctMsg" class="form-msg"></div>
+
+    <form onsubmit="handleContact(event)">
+      <div class="form-group">
+        <label>Ad Soyad *</label>
+        <input type="text" id="ctAd" placeholder="Adınız Soyadınız" required>
+      </div>
+      <div class="form-group">
+        <label>Telefon *</label>
+        <input type="tel" id="ctTel" placeholder="0544 865 42 00" required>
+      </div>
+      <div class="form-group">
+        <label>Mesajınız *</label>
+        <textarea id="ctMesaj" rows="5" placeholder="Nasıl yardımcı olabiliriz?" required></textarea>
+      </div>
+      <button type="submit" class="btn-submit">Mesaj Gönder →</button>
+    </form>
+  </div>
+
+</div>
+
+<footer>
+  <span>© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır</span>
+  <div style="display:flex;gap:24px;">
+    <a href="/index.html">Anasayfa</a>
+    <a href="/ik/index.html">İnsan Kaynakları</a>
+    <a href="tel:05448654200">0544 865 42 00</a>
+  </div>
+</footer>
+
+<script>
+async function handleContact(e) {
+  e.preventDefault();
+  const ad_soyad = document.getElementById('ctAd').value.trim();
+  const telefon  = document.getElementById('ctTel').value.trim();
+  const mesaj    = document.getElementById('ctMesaj').value.trim();
+  const msgEl    = document.getElementById('ctMsg');
+  if (!ad_soyad || !telefon || !mesaj) {
+    msgEl.textContent = 'Lütfen tüm alanları doldurun.';
+    msgEl.style.cssText = 'display:block;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;';
+    return;
+  }
+  const btn = e.target.querySelector('.btn-submit');
+  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+  try {
+    const res = await fetch('/api/iletisim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad_soyad, telefon, mesaj, kaynak: 'iletisim' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Hata');
+    msgEl.textContent = '✅ Mesajınız alındı! En kısa sürede dönüş yapacağız.';
+    msgEl.style.cssText = 'display:block;color:#059669;background:#f0fdf4;border:1px solid #bbf7d0;';
+    e.target.reset();
+  } catch(err) {
+    msgEl.textContent = 'Hata: ' + err.message;
+    msgEl.style.cssText = 'display:block;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Mesaj Gönder →';
+  }
+}
+</script>
+</body>
+</html>

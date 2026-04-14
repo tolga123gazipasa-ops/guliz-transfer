@@ -402,7 +402,8 @@
       <li><a href="ihale/index.html">Kamu İhalesi</a></li>
       <li><a href="insaat/index.html">İnşaat</a></li>
       <li><a href="kurum/index.html">Kurum Girişi</a></li>
-      <li><a href="transfer/index.html">Transfer</a></li>
+      <li><a href="ik/index.html">İnsan Kaynakları</a></li>
+      <li><a href="iletisim/index.html">İletişim</a></li>
     </ul>
   </nav>
 
@@ -719,17 +720,21 @@ function scrollChatToBottom() {
   msgs.scrollTop = msgs.scrollHeight;
 }
 function onChatTyping() {
-  if (!isTyping) { isTyping = true; chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: true }); }
+  const el = document.getElementById('chatInput');
+  const currentText = el ? el.value : '';
+  if (!isTyping) { isTyping = true; }
+  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: true, text: currentText });
   clearTimeout(chatTypingTimer);
   chatTypingTimer = setTimeout(stopTyping, 2000);
-  const el = document.getElementById('chatInput');
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 80) + 'px';
 }
 function stopTyping() {
   isTyping = false;
-  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false });
+  const el = document.getElementById('chatInput');
+  chatSocket.emit('visitor:typing', { sessionId: chatSessionId, typing: false, text: el ? el.value : '' });
 }
+
 </script>
 </body>
 </html>

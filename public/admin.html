@@ -399,6 +399,14 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         <span class="nav-icon">📦</span> Yük Bildirimleri
         <span id="yukBadge" style="margin-left:auto;background:rgba(251,191,36,0.2);color:#fbbf24;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
+      <div class="nav-item" onclick="showPage('iletisim')">
+        <span class="nav-icon">✉️</span> İletişim Mesajları
+        <span id="iletisimBadge" style="margin-left:auto;background:rgba(96,165,250,0.2);color:#60a5fa;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('ik')">
+        <span class="nav-icon">👔</span> İK Başvuruları
+        <span id="ikBadge" style="margin-left:auto;background:rgba(167,139,250,0.2);color:#a78bfa;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
+      </div>
       <div class="nav-item" onclick="showPage('settings')">
         <span class="nav-icon">⚙</span> Ayarlar
       </div>
@@ -460,7 +468,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
           <button class="filter-btn" onclick="filterBookings('completed',this)">Tamamlandı</button>
           <button class="filter-btn" onclick="filterBookings('cancelled',this)">İptal</button>
         </div>
-        <input type="date" id="dateFilter" onchange="loadBookings()" style="background:#1e1e1e;border:0.5px solid rgba(255,255,255,0.1);color:var(--text);font-family:var(--sans);font-size:0.82rem;padding:0.4rem 0.7rem;outline:none">
+        <input type="date" id="dateFilter" onchange="loadBookings()" style="background:#fff;border:1px solid #ddd;color:#0a1235;font-family:var(--sans);font-size:0.82rem;padding:0.4rem 0.7rem;outline:none;border-radius:6px">
         <input class="search-input" type="text" id="searchInput" placeholder="İsim, ref veya telefon..." oninput="loadBookings()">
       </div>
       <div class="table-wrap">
@@ -543,12 +551,14 @@ tr:hover td{background:rgba(26,45,107,0.02)}
                     <span id="cpReferrer" style="color:var(--muted);max-width:18rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
                   </div>
                 </div>
-                <div style="font-size:0.68rem;color:var(--muted);text-align:right">
+                <div style="font-size:0.68rem;color:var(--muted);text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
                   <div id="cpOnlineStatus"></div>
                   <div id="cpTime"></div>
+                  <button class="btn btn-danger btn-sm" onclick="deleteChatSession()" style="margin-top:4px;font-size:10px">🗑 Konuşmayı Sil</button>
                 </div>
               </div>
               <div class="admin-messages" id="adminMessages"></div>
+              <div id="liveTypingPreview" style="display:none;padding:4px 12px;font-size:11px;color:#fbbf24;background:rgba(251,191,36,0.06);border-top:0.5px solid rgba(251,191,36,0.15);font-style:italic">✏️ Yazıyor: <span id="liveTypingText"></span></div>
               <div class="admin-typing-row" id="adminTypingRow">Ziyaretçi yazıyor...</div>
               <div class="admin-input-row">
                 <textarea class="admin-chat-input" id="adminChatInput" placeholder="Mesajınızı yazın... (Enter = gönder)" rows="1"
@@ -812,7 +822,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div class="form-group"><label>Durum</label>
-              <select id="sevk-durum" style="width:100%;background:var(--card);border:0.5px solid var(--border);color:var(--text);padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+              <select id="sevk-durum" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
                 <option value="beklemede">Beklemede</option>
                 <option value="yolda">Yolda</option>
                 <option value="teslim_edildi">Teslim Edildi</option>
@@ -825,7 +835,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <div class="form-group"><label>Konum (lat,lng)</label><input type="text" id="sevk-konum" placeholder="37.0, 35.3"></div>
             <div class="form-group"><label>Konum Adı</label><input type="text" id="sevk-konum-adi" placeholder="Konya, Türkiye"></div>
           </div>
-          <div class="form-group" style="margin-bottom:1.5rem"><label>Notlar</label><textarea id="sevk-notlar" rows="2" style="width:100%;background:var(--card);border:0.5px solid var(--border);color:#ffffff;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans);resize:vertical" placeholder="İç notlar..."></textarea></div>
+          <div class="form-group" style="margin-bottom:1.5rem"><label>Notlar</label><textarea id="sevk-notlar" rows="2" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans);resize:vertical" placeholder="İç notlar..."></textarea></div>
           <p id="sevkFormMsg" style="font-size:0.78rem;margin-bottom:1rem;display:none"></p>
           <div style="display:flex;gap:0.8rem">
             <button class="btn btn-gold" style="flex:1;padding:0.75rem" onclick="saveSevk()">Kaydet</button>
@@ -857,7 +867,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 
     <!-- YÜK BİLDİRİMLERİ SAYFASI -->
     <div class="page" id="page-yukbildirim">
-      <div class="section-head"><h2>Yük Bildirimleri</h2><div style="display:flex;gap:8px;align-items:center;"><span id="yukSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn-sm" onclick="loadYukBildirimleri()">↻ Yenile</button></div></div>
+      <div class="section-head"><h2>Yük Bildirimleri</h2><div style="display:flex;gap:8px;align-items:center;"><span id="yukSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn btn-outline btn-sm" onclick="loadYukBildirimleri()">↻ Yenile</button></div></div>
       <div class="table-wrap" style="margin-top:16px;">
         <div class="table-header"><h3>Gelen Yük Bildirimleri</h3></div>
         <table>
@@ -867,10 +877,54 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <th>Telefon</th>
             <th>Yük Tanımı</th>
             <th>Kaynak</th>
+            <th>IP</th>
             <th>Tarih</th>
-            <th>Durum</th>
+            <th>Durum / İşlem</th>
           </tr></thead>
           <tbody id="yukBildirimleriTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- İLETİŞİM MESAJLARI SAYFASI -->
+    <div class="page" id="page-iletisim">
+      <div class="section-head"><h2>İletişim Mesajları</h2><div style="display:flex;gap:8px;align-items:center;"><span id="iletisimSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn btn-outline btn-sm" onclick="loadIletisim()">↻ Yenile</button></div></div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <div class="table-header"><h3>Gelen Mesajlar</h3></div>
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th>Ad Soyad</th>
+            <th>Telefon</th>
+            <th>Mesaj</th>
+            <th>Kaynak</th>
+            <th>IP</th>
+            <th>Tarih</th>
+            <th>İşlem</th>
+          </tr></thead>
+          <tbody id="iletisimTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- İK BAŞVURULARI SAYFASI -->
+    <div class="page" id="page-ik">
+      <div class="section-head"><h2>İK Başvuruları</h2><div style="display:flex;gap:8px;align-items:center;"><span id="ikSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn btn-outline btn-sm" onclick="loadIK()">↻ Yenile</button></div></div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <div class="table-header"><h3>İş Başvuruları</h3></div>
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th>Ad Soyad</th>
+            <th>Telefon / E-posta</th>
+            <th>Pozisyon</th>
+            <th>Deneyim</th>
+            <th>Not</th>
+            <th>IP</th>
+            <th>Tarih</th>
+            <th>İşlem</th>
+          </tr></thead>
+          <tbody id="ikTable"></tbody>
         </table>
       </div>
     </div>
@@ -940,6 +994,36 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 
 <!-- MODALS -->
 
+<!-- Yeni Rezervasyon Modal -->
+<div id="newBookingModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:2rem;width:600px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(10,18,53,0.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <div style="font-family:var(--serif);font-size:1.1rem;color:var(--navy)">📋 Yeni Rezervasyon</div>
+      <button onclick="closeNewBookingModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div class="form-group"><label>Müşteri Adı *</label><input type="text" id="nb-name" placeholder="Ad Soyad"></div>
+      <div class="form-group"><label>Telefon *</label><input type="tel" id="nb-phone" placeholder="05XX XXX XX XX"></div>
+      <div class="form-group"><label>E-posta</label><input type="email" id="nb-email" placeholder="ornek@mail.com"></div>
+      <div class="form-group"><label>Uçuş No</label><input type="text" id="nb-flight" placeholder="TK123"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div class="form-group"><label>Kalkış Noktası *</label><input type="text" id="nb-from" placeholder="Gazipaşa Havalimanı"></div>
+      <div class="form-group"><label>Varış Noktası *</label><input type="text" id="nb-to" placeholder="Alanya Merkez"></div>
+      <div class="form-group"><label>Tarih *</label><input type="date" id="nb-date"></div>
+      <div class="form-group"><label>Saat *</label><input type="time" id="nb-time"></div>
+      <div class="form-group"><label>Yolcu Sayısı</label><input type="number" id="nb-pax" value="1" min="1" max="20"></div>
+      <div class="form-group"><label>Fiyat (₺) *</label><input type="number" id="nb-price" placeholder="650"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:1.5rem"><label>Notlar</label><textarea id="nb-notes" rows="2" style="width:100%;resize:vertical" placeholder="Özel istek veya notlar..."></textarea></div>
+    <p id="nbMsg" style="font-size:0.8rem;margin-bottom:1rem;display:none"></p>
+    <div style="display:flex;gap:0.8rem">
+      <button class="btn btn-gold" style="flex:1;padding:0.75rem" onclick="saveNewBooking()">Rezervasyon Oluştur</button>
+      <button class="btn btn-outline" style="padding:0.75rem 1.5rem" onclick="closeNewBookingModal()">İptal</button>
+    </div>
+  </div>
+</div>
+
 <!-- Booking Detail / Edit Modal -->
 <div class="modal-overlay" id="bookingModal">
   <div class="modal">
@@ -996,6 +1080,7 @@ let currentAdmin = JSON.parse(localStorage.getItem('gt_admin') || 'null');
 let bookingFilter = 'all';
 let allDrivers = [];
 let allRoutes  = [];
+let currentChatSessionId = null;
 
 /* ── AUTH ── */
 async function doLogin() {
@@ -1442,9 +1527,9 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','insaat','kurumlar','sevkiyatlar','yukbildirim','settings'];
+  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','insaat','kurumlar','sevkiyatlar','yukbildirim','iletisim','ik','settings'];
   document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
-  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',sevkiyatlar:'Sevkiyat Takip',yukbildirim:'Yük Bildirimleri',settings:'Ayarlar'};
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',sevkiyatlar:'Sevkiyat Takip',yukbildirim:'Yük Bildirimleri',iletisim:'İletişim Mesajları',ik:'İK Başvuruları',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
   if (name === 'bookings')    loadBookings();
   if (name === 'stats')       loadStats();
@@ -1454,6 +1539,8 @@ function showPage(name) {
   if (name === 'insaat')      loadInsaat();
   if (name === 'sevkiyatlar') loadSevkiyatlar();
   if (name === 'yukbildirim') loadYukBildirimleri();
+  if (name === 'iletisim')    loadIletisim();
+  if (name === 'ik')          loadIK();
   if (name === 'support')     { supportAdminJoin(); clearSupportBadge(); }
 }
 
@@ -1831,9 +1918,17 @@ function supportAdminJoin() {
     supportSocket.on('visitor:joined',  onVisitorJoined);
     supportSocket.on('visitor:activity', onVisitorActivity);
     supportSocket.on('chat:sync',        onChatSync);
-    supportSocket.on('chat:visitor_typing', ({sessionId, typing}) => {
+    supportSocket.on('chat:visitor_typing', ({sessionId, typing, text}) => {
       if (sessionId === activeSessionId) {
         document.getElementById('adminTypingRow').style.display = typing ? 'block' : 'none';
+        const preview = document.getElementById('liveTypingPreview');
+        const previewText = document.getElementById('liveTypingText');
+        if (text && text.length > 0) {
+          previewText.textContent = text;
+          preview.style.display = 'block';
+        } else if (!typing) {
+          preview.style.display = 'none';
+        }
       }
     });
     supportJoined = true;
@@ -1912,6 +2007,7 @@ function renderVisitorList(list) {
 
 function selectVisitor(sessionId) {
   activeSessionId = sessionId;
+  currentChatSessionId = sessionId;
   const v = allVisitorsData.find(x => x.sessionId === sessionId);
   if (!v) return;
 
@@ -1950,6 +2046,8 @@ function selectVisitor(sessionId) {
   const msgs = document.getElementById('adminMessages');
   msgs.innerHTML = '';
   document.getElementById('adminTypingRow').style.display = 'none';
+  document.getElementById('liveTypingPreview').style.display = 'none';
+  document.getElementById('liveTypingText').textContent = '';
   if (v.messages && v.messages.length) {
     v.messages.forEach(m => appendAdminBubble(m.from, m.senderName || (m.from==='admin'?'Yönetici':v.name), m.text, m.time));
   }
@@ -2300,7 +2398,7 @@ async function loadYukBildirimleri() {
     else badge.style.display = 'none';
 
     if (!rows.length) {
-      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">Henüz yük bildirimi yok</td></tr>';
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Henüz yük bildirimi yok</td></tr>';
       return;
     }
     tb.innerHTML = rows.map(r => {
@@ -2308,15 +2406,16 @@ async function loadYukBildirimleri() {
       const durum = r.okundu
         ? '<span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Okundu</span>'
         : '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Yeni</span>';
-      const oku = r.okundu ? '' : `<button class="btn-sm" onclick="yukOkundu(${r.id})" style="margin-top:4px;font-size:10px;">Okundu İşaretle</button>`;
+      const oku = r.okundu ? '' : `<button class="btn btn-outline btn-sm" onclick="yukOkundu(${r.id})" style="margin-top:4px;font-size:10px;">✓ Okundu</button>`;
       return `<tr style="${r.okundu ? '' : 'background:rgba(251,191,36,0.04);'}">
         <td style="color:var(--muted);font-size:12px;">${r.id}</td>
-        <td style="font-weight:600;">${r.ad_soyad}</td>
+        <td style="font-weight:600;">${escapeHtml(r.ad_soyad)}</td>
         <td><a href="tel:${r.telefon}" style="color:var(--red);text-decoration:none;font-weight:600;">${r.telefon}</a></td>
-        <td style="max-width:280px;white-space:pre-wrap;word-break:break-word;font-size:12.5px;">${r.yuk_tanimi}</td>
+        <td style="max-width:260px;white-space:pre-wrap;word-break:break-word;font-size:12.5px;">${escapeHtml(r.yuk_tanimi)}</td>
         <td style="font-size:11px;color:var(--muted);">${r.kaynak || '-'}</td>
+        <td style="font-size:11px;color:var(--muted);font-family:monospace;">${r.ip || '-'}</td>
         <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
-        <td>${durum}${oku}</td>
+        <td style="white-space:nowrap">${durum}<br>${oku}<br><button class="btn btn-danger btn-sm" onclick="yukSil(${r.id})" style="margin-top:4px;font-size:10px;">🗑 Sil</button></td>
       </tr>`;
     }).join('');
   } catch(e) { alert(e.message); }
@@ -2329,6 +2428,160 @@ async function yukOkundu(id) {
     });
     loadYukBildirimleri();
   } catch(e) { alert(e.message); }
+}
+
+async function yukSil(id) {
+  if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
+  try {
+    await api('/api/yuk-bildirimleri/' + id, { method: 'DELETE' });
+    loadYukBildirimleri();
+  } catch(e) { alert(e.message); }
+}
+
+/* ── İLETİŞİM MESAJLARI ── */
+async function loadIletisim() {
+  try {
+    const rows = await api('/api/iletisim');
+    const tb   = document.getElementById('iletisimTable');
+    const okunmamis = rows.filter(r => !r.okundu).length;
+    document.getElementById('iletisimSayac').textContent = `${rows.length} mesaj, ${okunmamis} yeni`;
+    const badge = document.getElementById('iletisimBadge');
+    if (okunmamis > 0) { badge.textContent = okunmamis; badge.style.display = 'inline-block'; }
+    else badge.style.display = 'none';
+
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Henüz mesaj yok</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(r => {
+      const tarih = new Date(r.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      return `<tr style="${r.okundu ? '' : 'background:rgba(96,165,250,0.04);'}">
+        <td style="color:var(--muted);font-size:12px;">${r.id}</td>
+        <td style="font-weight:600;">${escapeHtml(r.ad_soyad)}</td>
+        <td><a href="tel:${r.telefon}" style="color:var(--red);text-decoration:none;font-weight:600;">${r.telefon}</a></td>
+        <td style="max-width:280px;white-space:pre-wrap;word-break:break-word;font-size:12.5px;">${escapeHtml(r.mesaj)}</td>
+        <td style="font-size:11px;color:var(--muted);">${r.kaynak || '-'}</td>
+        <td style="font-size:11px;color:var(--muted);font-family:monospace;">${r.ip || '-'}</td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="iletisimSil(${r.id})">🗑 Sil</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { alert(e.message); }
+}
+
+async function iletisimSil(id) {
+  if (!confirm('Bu mesajı kalıcı olarak silmek istediğinizden emin misiniz?')) return;
+  try {
+    await api('/api/iletisim/' + id, { method: 'DELETE' });
+    loadIletisim();
+  } catch(e) { alert(e.message); }
+}
+
+/* ── İK BAŞVURULARI ── */
+async function loadIK() {
+  try {
+    const rows = await api('/api/ik');
+    const tb   = document.getElementById('ikTable');
+    const okunmamis = rows.filter(r => !r.okundu).length;
+    document.getElementById('ikSayac').textContent = `${rows.length} başvuru, ${okunmamis} yeni`;
+    const badge = document.getElementById('ikBadge');
+    if (okunmamis > 0) { badge.textContent = okunmamis; badge.style.display = 'inline-block'; }
+    else badge.style.display = 'none';
+
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted);">Henüz başvuru yok</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(r => {
+      const tarih = new Date(r.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      return `<tr>
+        <td style="color:var(--muted);font-size:12px;">${r.id}</td>
+        <td style="font-weight:600;">${escapeHtml(r.ad_soyad)}</td>
+        <td><a href="tel:${r.telefon}" style="color:var(--red);text-decoration:none;font-weight:600;">${r.telefon}</a>${r.email ? '<br><span style="font-size:10px;color:var(--muted)">'+escapeHtml(r.email)+'</span>' : ''}</td>
+        <td style="font-weight:600;color:var(--navy2)">${escapeHtml(r.pozisyon)}</td>
+        <td style="font-size:11px;color:var(--muted);">${r.deneyim || '-'}</td>
+        <td style="max-width:200px;white-space:pre-wrap;word-break:break-word;font-size:12px;">${r.mesaj ? escapeHtml(r.mesaj) : '-'}</td>
+        <td style="font-size:11px;color:var(--muted);font-family:monospace;">${r.ip || '-'}</td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="ikSil(${r.id})">🗑 Sil</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { alert(e.message); }
+}
+
+async function ikSil(id) {
+  if (!confirm('Bu başvuruyu kalıcı olarak silmek istediğinizden emin misiniz?')) return;
+  try {
+    await api('/api/ik/' + id, { method: 'DELETE' });
+    loadIK();
+  } catch(e) { alert(e.message); }
+}
+
+/* ── CHAT SESSION SİL ── */
+async function deleteChatSession() {
+  if (!currentChatSessionId) return;
+  if (!confirm('Bu konuşmayı ve tüm mesajları kalıcı olarak silmek istediğinizden emin misiniz?\n\nZiyaretçi tekrar mesaj gönderdiğinde yeni oturum açılacak.')) return;
+  try {
+    await api('/api/chat/' + currentChatSessionId, { method: 'DELETE' });
+    // Memory'den de temizle
+    const idx = allVisitorsData.findIndex(v => v.sessionId === currentChatSessionId);
+    if (idx > -1) allVisitorsData.splice(idx, 1);
+    currentChatSessionId = null;
+    activeSessionId = null;
+    document.getElementById('chatPanelContent').style.display = 'none';
+    document.getElementById('noChatSelected').style.display   = 'flex';
+    renderVisitorList(allVisitorsData);
+    alert('Konuşma silindi.');
+  } catch(e) { alert(e.message); }
+}
+
+/* ── YENİ REZERVASYON ── */
+function openNewBookingModal() {
+  document.getElementById('newBookingModal').style.display = 'flex';
+  ['nb-name','nb-phone','nb-email','nb-flight','nb-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('nb-pax').value = '1';
+  document.getElementById('nb-price').value = '';
+  document.getElementById('nb-from').value = '';
+  document.getElementById('nb-to').value = '';
+  document.getElementById('nb-date').value = '';
+  document.getElementById('nb-time').value = '';
+  document.getElementById('nbMsg').style.display = 'none';
+}
+function closeNewBookingModal() {
+  document.getElementById('newBookingModal').style.display = 'none';
+}
+async function saveNewBooking() {
+  const name  = document.getElementById('nb-name').value.trim();
+  const phone = document.getElementById('nb-phone').value.trim();
+  const from  = document.getElementById('nb-from').value.trim();
+  const to    = document.getElementById('nb-to').value.trim();
+  const date  = document.getElementById('nb-date').value;
+  const time  = document.getElementById('nb-time').value;
+  const price = parseFloat(document.getElementById('nb-price').value);
+  const pax   = parseInt(document.getElementById('nb-pax').value) || 1;
+  const email = document.getElementById('nb-email').value.trim();
+  const flight= document.getElementById('nb-flight').value.trim();
+  const notes = document.getElementById('nb-notes').value.trim();
+  const msg   = document.getElementById('nbMsg');
+  if (!name||!phone||!from||!to||!date||!time||!price) {
+    msg.textContent = 'Zorunlu alanları doldurun.'; msg.style.cssText = 'display:block;color:#f87171'; return;
+  }
+  try {
+    await api('/api/bookings', { method:'POST', body:JSON.stringify({
+      customer_name: name, customer_phone: phone,
+      customer_email: email||null, from_point: from, to_point: to,
+      transfer_date: date, transfer_time: time,
+      passenger_count: pax, price, flight_number: flight||null, notes: notes||null,
+      status: 'confirmed'
+    })});
+    closeNewBookingModal();
+    loadBookings();
+    loadDashboard();
+  } catch(e) {
+    msg.textContent = e.message; msg.style.cssText = 'display:block;color:#f87171';
+  }
 }
 
 </script>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Güliz Lojistik">
+<meta name="theme-color" content="#1A2D6B">
+<title>İnsan Kaynakları & İş Başvurusu – Güliz Şirketler Topluluğu</title>
+<meta name="description" content="Güliz Şirketler Topluluğu bünyesinde çalışmak ister misiniz? İş başvurusu için formu doldurun.">
+<link rel="canonical" href="https://gulizlojistik.com/ik/">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#0a1235;--navy2:#1a2d6b;--red:#e8192c;--red2:#b01020;
+  --white:#fff;--gray:#f4f6fb;
+}
+body{font-family:'Montserrat',sans-serif;background:#fff;overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 60px;background:#fff;
+  box-shadow:0 2px 20px rgba(0,0,0,0.12);
+}
+.logo img{height:54px;display:block;object-fit:contain;}
+nav ul{list-style:none;display:flex;gap:28px;}
+nav ul li a{
+  text-decoration:none;color:var(--navy);font-size:11px;
+  font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;
+}
+nav ul li a:hover,nav ul li a.active{color:var(--red);}
+
+/* ── HERO ── */
+.hero{
+  background:linear-gradient(140deg,#050d28 0%,#0a1235 55%,#0f1d4a 100%);
+  padding:80px 60px 60px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(232,25,44,0.15);border:1px solid rgba(232,25,44,0.4);
+  border-radius:30px;padding:6px 16px;margin-bottom:20px;
+}
+.hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--red);}
+.hero-eyebrow span{font-size:10.5px;font-weight:700;letter-spacing:2px;color:#ff5060;text-transform:uppercase;}
+.hero h1{font-size:42px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:16px;letter-spacing:-1px;position:relative;}
+.hero h1 .red{color:var(--red);}
+.hero p{font-family:'Open Sans',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);max-width:520px;margin:0 auto;line-height:1.75;position:relative;}
+
+/* ── MAIN ── */
+.main-wrap{max-width:960px;margin:60px auto;padding:0 24px;}
+.section-label{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(232,25,44,0.08);border:1px solid rgba(232,25,44,0.18);
+  border-radius:30px;padding:5px 14px;margin-bottom:14px;
+  font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red);
+}
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:50px;}
+.card{background:#fff;border:1.5px solid #eaecf4;border-radius:14px;padding:28px;text-align:center;box-shadow:0 2px 16px rgba(10,18,53,0.06);}
+.card-icon{font-size:32px;margin-bottom:14px;}
+.card-title{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:8px;}
+.card-desc{font-size:13px;color:#6b7280;line-height:1.6;}
+
+.form-card{background:#fff;border:1.5px solid #eaecf4;border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(10,18,53,0.08);}
+.form-card h2{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.form-card p{font-size:14px;color:#6b7280;margin-bottom:28px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+.form-group label{font-size:10.5px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#8898bb;}
+.form-group input,.form-group select,.form-group textarea{
+  background:#f4f6fb;border:1.5px solid #eaecf4;color:#0a1235;
+  font-family:'Montserrat',sans-serif;font-size:13px;padding:10px 12px;outline:none;
+  border-radius:8px;transition:all .2s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(232,25,44,0.08);
+}
+.form-group select{appearance:none;}
+.btn-submit{
+  width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;
+  padding:14px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;
+  transition:background .2s;margin-top:8px;
+}
+.btn-submit:hover{background:var(--red2);}
+.form-msg{font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:none;}
+
+/* ── FOOTER ── */
+footer{background:#0a1235;padding:32px 60px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+footer span{font-size:12px;color:rgba(255,255,255,0.35);}
+footer a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:12px;}
+footer a:hover{color:#fff;}
+
+@media(max-width:768px){
+  nav{padding:12px 20px;}
+  nav ul{display:none;}
+  .hero{padding:60px 24px 40px;}
+  .hero h1{font-size:28px;}
+  .cards-grid{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  footer{padding:24px 20px;flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <a href="/index.html"><img src="/slider/logo.png" alt="Güliz Şirketler Topluluğu"></a>
+  </div>
+  <ul>
+    <li><a href="/index.html">Anasayfa</a></li>
+    <li><a href="/lojistik/index.html">Lojistik</a></li>
+    <li><a href="/ihale/index.html">Kamu İhalesi</a></li>
+    <li><a href="/insaat/index.html">İnşaat</a></li>
+    <li><a href="/kurum/index.html">Kurum Girişi</a></li>
+    <li><a href="/ik/index.html" class="active">İnsan Kaynakları</a></li>
+    <li><a href="/iletisim/index.html">İletişim</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">
+    <div class="dot"></div>
+    <span>Kariyer · İş Başvurusu</span>
+  </div>
+  <h1>Ekibimize<br><span class="red">Katılın</span></h1>
+  <p>Güliz Şirketler Topluluğu bünyesinde lojistik, inşaat ve kamu hizmetleri alanında görev almak ister misiniz? Bize CV'nizi gönderin.</p>
+</div>
+
+<div class="main-wrap">
+
+  <div style="margin-bottom:50px;">
+    <div class="section-label">Neden Güliz?</div>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">🚚</div>
+        <div class="card-title">Lojistik & Transfer</div>
+        <div class="card-desc">Yurt içi ve yurt dışı taşımacılık, VIP transfer hizmetleri ile dinamik bir ekip.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏗️</div>
+        <div class="card-title">İnşaat & Kamu İhalesi</div>
+        <div class="card-desc">Devlet ihalelerinden inşaat projelerine geniş kapsamlı faaliyet alanları.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <div class="card-title">Kariyer Gelişimi</div>
+        <div class="card-desc">Deneyimli bir ekiple çalışma ve sektörde uzmanlaşma fırsatı.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h2>İş Başvurusu</h2>
+    <p>Aşağıdaki formu doldurun, başvurunuzu inceleyip en kısa sürede sizinle iletişime geçeceğiz.</p>
+
+    <div id="ikMsg" class="form-msg"></div>
+
+    <form onsubmit="handleIKForm(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ad Soyad *</label>
+          <input type="text" id="ikAd" placeholder="Adınız Soyadınız" required>
+        </div>
+        <div class="form-group">
+          <label>Telefon *</label>
+          <input type="tel" id="ikTel" placeholder="0544 865 42 00" required>
+        </div>
+        <div class="form-group">
+          <label>E-posta</label>
+          <input type="email" id="ikEmail" placeholder="ornek@mail.com">
+        </div>
+        <div class="form-group">
+          <label>Başvurduğunuz Pozisyon *</label>
+          <select id="ikPozisyon" required>
+            <option value="">Pozisyon seçin...</option>
+            <option value="Sürücü (Transfer)">Sürücü (Transfer)</option>
+            <option value="Lojistik Koordinatör">Lojistik Koordinatör</option>
+            <option value="İnşaat Teknikeri">İnşaat Teknikeri</option>
+            <option value="Muhasebe / Finans">Muhasebe / Finans</option>
+            <option value="Müşteri Temsilcisi">Müşteri Temsilcisi</option>
+            <option value="İdari Personel">İdari Personel</option>
+            <option value="Diğer">Diğer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Deneyim</label>
+          <select id="ikDeneyim">
+            <option value="">Seçin...</option>
+            <option value="Yeni mezun / deneyimsiz">Yeni mezun / deneyimsiz</option>
+            <option value="1-2 yıl">1-2 yıl</option>
+            <option value="3-5 yıl">3-5 yıl</option>
+            <option value="5-10 yıl">5-10 yıl</option>
+            <option value="10+ yıl">10+ yıl</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Kendinizi Kısaca Tanıtın</label>
+          <textarea id="ikMesaj" rows="4" placeholder="Neden bu pozisyon için uygun olduğunuzu kısaca belirtin..."></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit">Başvuruyu Gönder →</button>
+    </form>
+  </div>
+
+</div>
+
+<footer>
+  <span>© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır</span>
+  <div style="display:flex;gap:24px;">
+    <a href="/index.html">Anasayfa</a>
+    <a href="/iletisim/index.html">İletişim</a>
+    <a href="tel:05448654200">0544 865 42 00</a>
+  </div>
+</footer>
+
+<script>
+async function handleIKForm(e) {
+  e.preventDefault();
+  const ad_soyad = document.getElementById('ikAd').value.trim();
+  const telefon  = document.getElementById('ikTel').value.trim();
+  const email    = document.getElementById('ikEmail').value.trim();
+  const pozisyon = document.getElementById('ikPozisyon').value;
+  const deneyim  = document.getElementById('ikDeneyim').value;
+  const mesaj    = document.getElementById('ikMesaj').value.trim();
+  const msgEl    = document.getElementById('ikMsg');
+
+  if (!ad_soyad || !telefon || !pozisyon) {
+    msgEl.textContent = 'Lütfen zorunlu alanları doldurun (Ad Soyad, Telefon, Pozisyon).';
+    msgEl.style.cssText = 'display:block;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;';
+    return;
+  }
+  const btn = e.target.querySelector('.btn-submit');
+  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+  try {
+    const res = await fetch('/api/ik', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ad_soyad, telefon, email: email||undefined, pozisyon, deneyim: deneyim||undefined, mesaj: mesaj||undefined, kaynak: 'ik' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Hata');
+    msgEl.textContent = '✅ Başvurunuz alındı! Sizinle en kısa sürede iletişime geçeceğiz.';
+    msgEl.style.cssText = 'display:block;color:#059669;background:#f0fdf4;border:1px solid #bbf7d0;';
+    e.target.reset();
+  } catch(err) {
+    msgEl.textContent = 'Hata: ' + err.message;
+    msgEl.style.cssText = 'display:block;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Başvuruyu Gönder →';
+  }
+}
+</script>
+</body>
+</html>

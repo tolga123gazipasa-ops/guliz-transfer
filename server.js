@@ -100,6 +100,121 @@ app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.delete('/api/yuk-bildirimleri/:id', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    await db.query(`DELETE FROM yuk_bildirimleri WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+/* ── İLETİŞİM MESAJLARI ── */
+app.post('/api/iletisim', async (req, res) => {
+  try {
+    const { ad_soyad, telefon, mesaj, kaynak } = req.body;
+    if (!ad_soyad || !telefon || !mesaj)
+      return res.status(400).json({ error: 'Ad soyad, telefon ve mesaj zorunludur.' });
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const { rows } = await db.query(
+      `INSERT INTO iletisim_mesajlari (ad_soyad, telefon, mesaj, kaynak, ip)
+       VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at`,
+      [ad_soyad.trim(), telefon.trim(), mesaj.trim(), kaynak || 'anasayfa', ip]
+    );
+    const { tg } = require('./services/telegram');
+    await tg(
+      `📩 <b>YENİ İLETİŞİM MESAJI</b>\n` +
+      `👤 <b>${ad_soyad.trim()}</b>\n` +
+      `📞 ${telefon.trim()}\n` +
+      `💬 ${mesaj.trim()}\n` +
+      `📍 Kaynak: ${kaynak || 'anasayfa'}\n` +
+      `🌐 IP: <code>${ip}</code>\n` +
+      `🕐 ${new Date().toLocaleString('tr-TR')}`
+    );
+    res.json({ ok: true, id: rows[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/iletisim', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    const { rows } = await db.query(
+      `SELECT * FROM iletisim_mesajlari ORDER BY created_at DESC LIMIT 300`
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/iletisim/:id', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    await db.query(`DELETE FROM iletisim_mesajlari WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+/* ── İK BAŞVURULARI ── */
+app.post('/api/ik', async (req, res) => {
+  try {
+    const { ad_soyad, telefon, email, pozisyon, deneyim, mesaj, kaynak } = req.body;
+    if (!ad_soyad || !telefon || !pozisyon)
+      return res.status(400).json({ error: 'Ad soyad, telefon ve pozisyon zorunludur.' });
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const { rows } = await db.query(
+      `INSERT INTO is_basvurulari (ad_soyad, telefon, email, pozisyon, deneyim, mesaj, kaynak, ip)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, created_at`,
+      [ad_soyad.trim(), telefon.trim(), email||null, pozisyon.trim(), deneyim||null, mesaj||null, kaynak||'ik', ip]
+    );
+    const { tg } = require('./services/telegram');
+    await tg(
+      `👔 <b>YENİ İŞ BAŞVURUSU</b>\n` +
+      `👤 <b>${ad_soyad.trim()}</b>\n` +
+      `📞 ${telefon.trim()}\n` +
+      (email ? `📧 ${email}\n` : '') +
+      `💼 Pozisyon: ${pozisyon.trim()}\n` +
+      (deneyim ? `🏅 Deneyim: ${deneyim}\n` : '') +
+      (mesaj ? `💬 Not: ${mesaj.trim()}\n` : '') +
+      `🌐 IP: <code>${ip}</code>\n` +
+      `🕐 ${new Date().toLocaleString('tr-TR')}`
+    );
+    res.json({ ok: true, id: rows[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/ik', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    const { rows } = await db.query(
+      `SELECT * FROM is_basvurulari ORDER BY created_at DESC LIMIT 300`
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/ik/:id', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    await db.query(`DELETE FROM is_basvurulari WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+/* ── CHAT SESSION SİL ── */
+app.delete('/api/chat/:sessionId', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    const sid = req.params.sessionId;
+    // ON DELETE CASCADE chat_messages'ı da siler
+    await db.query(`DELETE FROM chat_sessions WHERE session_id=$1`, [sid]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 /* ══════════════════════════════════════════
    CANLI DESTEK — Socket.io
 ══════════════════════════════════════════ */
@@ -333,9 +448,26 @@ io.on('connection', (socket) => {
     socket.emit('chat:delivered', { id: msg.id });
   });
 
-  /* ── Ziyaretçi yazıyor ── */
-  socket.on('visitor:typing', ({ sessionId, typing }) => {
-    io.to('admins').emit('chat:visitor_typing', { sessionId, typing });
+  /* ── Ziyaretçi yazıyor (canlı metin önizleme) ── */
+  socket.on('visitor:typing', ({ sessionId, typing, text }) => {
+    io.to('admins').emit('chat:visitor_typing', { sessionId, typing, text: text || '' });
+    // Canlı yazan metin Telegram'a gönder (sadece metin değiştiyse, debounce)
+    if (text && text.length > 0) {
+      const v = visitors.get(sessionId);
+      if (!v) return;
+      // Önceki timer'ı temizle
+      if (v._typingTgTimer) clearTimeout(v._typingTgTimer);
+      v._lastTypingText = text;
+      v._typingTgTimer = setTimeout(() => {
+        const { tg } = require('./services/telegram');
+        tg(
+          `⌨️ <b>ZİYARETÇİ YAZIYOR</b>\n` +
+          `👤 ${v.name}${v.phone ? ' | 📞 ' + v.phone : ''}\n` +
+          `📝 <i>${text}</i>\n` +
+          `🌐 IP: <code>${v.ip || '?'}</code>`
+        ).catch(() => {});
+      }, 2500);
+    }
   });
 
   /* ── Bağlantı kesildi ── */
@@ -513,6 +645,31 @@ db.query(`
     created_at TIMESTAMPTZ  DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS idx_yuk_bildirimleri_tarih ON yuk_bildirimleri(created_at DESC);
+  CREATE TABLE IF NOT EXISTS iletisim_mesajlari (
+    id         SERIAL PRIMARY KEY,
+    ad_soyad   VARCHAR(100) NOT NULL,
+    telefon    VARCHAR(30)  NOT NULL,
+    mesaj      TEXT         NOT NULL,
+    kaynak     VARCHAR(50)  DEFAULT 'anasayfa',
+    ip         VARCHAR(50),
+    okundu     BOOLEAN      DEFAULT FALSE,
+    created_at TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_iletisim_tarih ON iletisim_mesajlari(created_at DESC);
+  CREATE TABLE IF NOT EXISTS is_basvurulari (
+    id         SERIAL PRIMARY KEY,
+    ad_soyad   VARCHAR(100) NOT NULL,
+    telefon    VARCHAR(30)  NOT NULL,
+    email      VARCHAR(150),
+    pozisyon   VARCHAR(150) NOT NULL,
+    deneyim    VARCHAR(100),
+    mesaj      TEXT,
+    kaynak     VARCHAR(50)  DEFAULT 'ik',
+    ip         VARCHAR(50),
+    okundu     BOOLEAN      DEFAULT FALSE,
+    created_at TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_is_basvuru_tarih ON is_basvurulari(created_at DESC);
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');

@@ -37,7 +37,7 @@ router.get('/:id', auth, async (req, res) => {
 router.post('/', async (req, res) => {
   const { customer_name, customer_phone, customer_email,
           from_point, to_point, transfer_date, transfer_time,
-          passenger_count, flight_number, price } = req.body;
+          passenger_count, flight_number, price, notes, status } = req.body;
   try {
     let ref, exists = true;
     while (exists) {
@@ -45,15 +45,16 @@ router.post('/', async (req, res) => {
       const r = await db.query('SELECT id FROM bookings WHERE booking_ref=$1', [ref]);
       exists = r.rows.length > 0;
     }
+    const bookingStatus = status || 'pending';
     const { rows } = await db.query(`
       INSERT INTO bookings
         (booking_ref,customer_name,customer_phone,customer_email,
          from_point,to_point,transfer_date,transfer_time,
-         passenger_count,flight_number,price)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-      [ref, customer_name, customer_phone, customer_email,
+         passenger_count,flight_number,price,notes,status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+      [ref, customer_name, customer_phone, customer_email||null,
        from_point, to_point, transfer_date, transfer_time,
-       passenger_count||1, flight_number||null, price]);
+       passenger_count||1, flight_number||null, price, notes||null, bookingStatus]);
     const booking = rows[0];
     // Admin bildirimleri
     notifyAdminNewBooking(booking).catch(() => {});
