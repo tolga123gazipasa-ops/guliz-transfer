@@ -260,6 +260,55 @@ app.delete('/api/ik/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* ── TEKLİF TALEPLERİ ── */
+app.post('/api/teklif', async (req, res) => {
+  try {
+    const { ad_soyad, telefon, kalkis, varis, km, arac, yuk, fiyat } = req.body;
+    if (!ad_soyad || !telefon || !kalkis || !varis)
+      return res.status(400).json({ error: 'Zorunlu alanlar eksik.' });
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const { rows } = await db.query(
+      `INSERT INTO teklifler (ad_soyad, telefon, kalkis, varis, mesafe_km, arac_tipi, yuk_tipi, fiyat_tahmini, ip)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, created_at`,
+      [ad_soyad.trim(), telefon.trim(), kalkis, varis, km||0, arac||'', yuk||'', fiyat||0, ip]
+    );
+    const { tg } = require('./services/telegram');
+    const aracAdi = {tir:'Tır Tenteli',onteker:'Onteker',kamyon:'Kamyon'}[arac] || arac;
+    const yukAdi  = {tenteli:'Tenteli',frigo:'Soğuk Zincir (Frigo)',tehlikeli:'Tehlikeli Madde'}[yuk] || yuk;
+    await tg(
+      `💰 <b>YENİ TEKLİF TALEBİ</b>\n` +
+      `👤 <b>${ad_soyad.trim()}</b>\n` +
+      `📞 ${telefon.trim()}\n` +
+      `🗺️ ${kalkis} → ${varis} (${km} km)\n` +
+      `🚛 Araç: ${aracAdi}\n` +
+      `📦 Yük: ${yukAdi}\n` +
+      `💵 Tahmini: ${Number(fiyat).toLocaleString('tr-TR')} ₺\n` +
+      `🕐 ${new Date().toLocaleString('tr-TR')}`
+    );
+    res.json({ ok: true, id: rows[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/teklifler', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    const { rows } = await db.query(
+      `SELECT * FROM teklifler ORDER BY created_at DESC LIMIT 300`
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/teklifler/:id', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+    await db.query(`DELETE FROM teklifler WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 /* ── CHAT SESSION SİL ── */
 app.delete('/api/chat/:sessionId', async (req, res) => {
   try {

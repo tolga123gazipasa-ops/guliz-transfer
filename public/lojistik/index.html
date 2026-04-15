@@ -125,6 +125,95 @@ section{padding:80px 60px;}
 section h2{font-size:36px;font-weight:900;color:var(--navy);line-height:1.15;margin-bottom:14px;letter-spacing:-0.5px;}
 section p.lead{font-family:'Open Sans',sans-serif;font-size:15px;color:#555;line-height:1.75;max-width:580px;margin-bottom:50px;}
 
+/* ── TEKLİF MODÜLÜ ── */
+.tk-section{background:#f4f6fb;padding:72px 60px;}
+.tk-inner{max-width:860px;margin:0 auto;}
+.tk-head{text-align:center;margin-bottom:44px;}
+.tk-head h2{font-size:34px;font-weight:900;color:var(--navy);letter-spacing:-.5px;margin-bottom:10px;}
+.tk-head p{font-family:'Open Sans',sans-serif;font-size:15px;color:#6070a0;max-width:520px;margin:0 auto;line-height:1.7;}
+.tk-route{display:grid;grid-template-columns:1fr 44px 1fr;gap:0;align-items:end;margin-bottom:28px;}
+.tk-route-arrow{display:flex;align-items:center;justify-content:center;padding-bottom:6px;font-size:22px;color:#c0cce0;font-weight:900;}
+.tk-label{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--navy);margin-bottom:7px;}
+.tk-select{
+  width:100%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:10px;
+  font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;color:var(--navy);
+  background:#fff;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;
+  transition:border-color .2s,box-shadow .2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%230a1235' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+.tk-select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,25,44,0.1);}
+.tk-group-label{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--navy);margin-bottom:12px;}
+.tk-cards{display:grid;gap:12px;margin-bottom:24px;}
+.tk-arac-cards{grid-template-columns:repeat(3,1fr);}
+.tk-yuk-cards{grid-template-columns:repeat(3,1fr);}
+.tk-card{
+  border:2px solid #e2e8f0;border-radius:12px;padding:16px 14px;
+  cursor:pointer;transition:all .2s;background:#fff;text-align:center;
+}
+.tk-card:hover{border-color:rgba(232,25,44,0.4);background:rgba(232,25,44,0.03);}
+.tk-card.active{border-color:var(--red);background:rgba(232,25,44,0.05);}
+.tk-card .tc-icon{font-size:26px;margin-bottom:8px;}
+.tk-card .tc-name{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:4px;}
+.tk-card .tc-sub{font-size:11px;color:#8898bb;font-weight:500;}
+.tk-card.active .tc-name{color:var(--red);}
+.tk-calc-btn{
+  width:100%;padding:16px;background:linear-gradient(135deg,var(--red) 0%,#b01020 100%);
+  color:#fff;border:none;border-radius:12px;font-family:'Montserrat',sans-serif;
+  font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;
+  transition:all .25s;box-shadow:0 6px 24px rgba(232,25,44,0.28);margin-top:8px;
+}
+.tk-calc-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(232,25,44,0.38);}
+.tk-calc-btn:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+/* Lead modal */
+.tk-lead-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(10,18,53,0.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.tk-lead-overlay.open{display:flex;}
+.tk-lead-card{background:#fff;border-radius:18px;padding:36px;width:100%;max-width:440px;box-shadow:0 30px 80px rgba(10,18,53,0.2);}
+.tk-lead-card h3{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:6px;}
+.tk-lead-card p{font-size:13px;color:#6b7280;margin-bottom:24px;line-height:1.6;}
+.tk-lead-input{
+  width:100%;padding:13px 15px;border:2px solid #e2e8f0;border-radius:10px;
+  font-family:'Montserrat',sans-serif;font-size:14px;color:var(--navy);
+  outline:none;transition:border-color .2s;margin-bottom:12px;background:#f9fafb;
+}
+.tk-lead-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(232,25,44,0.08);}
+.tk-lead-submit{
+  width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:10px;
+  font-family:'Montserrat',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+  transition:background .2s;margin-bottom:10px;
+}
+.tk-lead-submit:hover{background:var(--red2);}
+.tk-lead-back{background:none;border:none;color:#8898bb;font-family:'Montserrat',sans-serif;font-size:13px;cursor:pointer;width:100%;padding:6px;}
+.tk-lead-back:hover{color:var(--navy);}
+/* Sonuç kartı */
+.tk-result-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(10,18,53,0.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.tk-result-overlay.open{display:flex;}
+.tk-result-card{background:#fff;border-radius:18px;padding:36px;width:100%;max-width:480px;box-shadow:0 30px 80px rgba(10,18,53,0.2);text-align:center;}
+.tk-result-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,25,44,0.08);border:1px solid rgba(232,25,44,0.2);border-radius:30px;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:16px;}
+.tk-result-route{font-size:13px;font-weight:600;color:#6070a0;margin-bottom:8px;}
+.tk-result-km{font-size:13px;color:#8898bb;margin-bottom:20px;}
+.tk-result-price{font-size:42px;font-weight:900;color:var(--navy);letter-spacing:-1px;line-height:1;}
+.tk-result-price span{font-size:18px;color:#8898bb;font-weight:600;}
+.tk-result-range{font-size:13px;color:#8898bb;margin-top:6px;margin-bottom:28px;}
+.tk-result-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.tk-ri{background:#f4f6fb;border-radius:10px;padding:12px;text-align:center;}
+.tk-ri .ri-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8898bb;margin-bottom:4px;}
+.tk-ri .ri-val{font-size:13px;font-weight:700;color:var(--navy);}
+.tk-result-cta{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  background:#25D366;color:#fff;text-decoration:none;border-radius:12px;
+  padding:15px 24px;font-size:14px;font-weight:700;transition:background .2s;
+}
+.tk-result-cta:hover{background:#1da851;}
+.tk-result-close{background:none;border:none;color:#8898bb;font-size:12px;cursor:pointer;margin-top:14px;font-family:'Montserrat',sans-serif;}
+.tk-result-close:hover{color:var(--navy);}
+@media(max-width:768px){
+  .tk-section{padding:52px 20px;}
+  .tk-arac-cards,.tk-yuk-cards{grid-template-columns:1fr 1fr;}
+  .tk-route{grid-template-columns:1fr 28px 1fr;}
+  .tk-route-arrow{font-size:16px;}
+}
+
 /* ── İKİLİ BLOK ── */
 .split-grid{
   display:grid;grid-template-columns:1fr 1fr;gap:24px;
@@ -389,6 +478,102 @@ footer nav ul li a:hover{color:#fff;}
   </div>
 </section>
 
+<!-- TEKLİF HESAPLAMA MODÜLÜ -->
+<section class="tk-section" id="teklif-hesaplama">
+  <div class="tk-inner">
+    <div class="tk-head">
+      <div class="section-badge" style="margin:0 auto 14px;"><span>Anlık Fiyat Tahmini</span></div>
+      <h2>Teklif Hesapla</h2>
+      <p>Güzergah, araç ve yük tipini seçin — saniyeler içinde tahmini fiyatı görün.</p>
+    </div>
+
+    <!-- Güzergah -->
+    <div class="tk-route">
+      <div>
+        <div class="tk-label">Kalkış Şehri</div>
+        <select class="tk-select" id="tk-kalkis"><option value="">Şehir seçin...</option></select>
+      </div>
+      <div class="tk-route-arrow">→</div>
+      <div>
+        <div class="tk-label">Varış Şehri</div>
+        <select class="tk-select" id="tk-varis"><option value="">Şehir seçin...</option></select>
+      </div>
+    </div>
+
+    <!-- Araç Tipi -->
+    <div class="tk-group-label">Araç Tipi</div>
+    <div class="tk-cards tk-arac-cards" id="tk-arac-cards">
+      <div class="tk-card active" data-arac="tir" onclick="tkSelectArac(this)">
+        <div class="tc-icon">🚛</div>
+        <div class="tc-name">Tır Tenteli</div>
+        <div class="tc-sub">25 ton · Tam kapasite</div>
+      </div>
+      <div class="tk-card" data-arac="onteker" onclick="tkSelectArac(this)">
+        <div class="tc-icon">🚐</div>
+        <div class="tc-name">Onteker</div>
+        <div class="tc-sub">10 ton · Bölgesel</div>
+      </div>
+      <div class="tk-card" data-arac="kamyon" onclick="tkSelectArac(this)">
+        <div class="tc-icon">🚚</div>
+        <div class="tc-name">Kamyon</div>
+        <div class="tc-sub">5 ton · Orta ölçek</div>
+      </div>
+    </div>
+
+    <!-- Yük Tipi -->
+    <div class="tk-group-label">Yük Tipi</div>
+    <div class="tk-cards tk-yuk-cards" id="tk-yuk-cards">
+      <div class="tk-card active" data-yuk="tenteli" onclick="tkSelectYuk(this)">
+        <div class="tc-icon">📦</div>
+        <div class="tc-name">Tenteli</div>
+        <div class="tc-sub">Standart yük</div>
+      </div>
+      <div class="tk-card" data-yuk="frigo" onclick="tkSelectYuk(this)">
+        <div class="tc-icon">❄️</div>
+        <div class="tc-name">Soğuk Zincir</div>
+        <div class="tc-sub">Frigo · Soğutmalı</div>
+      </div>
+      <div class="tk-card" data-yuk="tehlikeli" onclick="tkSelectYuk(this)">
+        <div class="tc-icon">⚠️</div>
+        <div class="tc-name">Tehlikeli Madde</div>
+        <div class="tc-sub">ADR sertifikalı</div>
+      </div>
+    </div>
+
+    <button class="tk-calc-btn" onclick="tkHesapla()">Fiyatı Hesapla →</button>
+  </div>
+</section>
+
+<!-- LEAD YAKALAMA MODAL -->
+<div class="tk-lead-overlay" id="tkLeadOverlay">
+  <div class="tk-lead-card">
+    <h3>Tahmini fiyatı görmek için</h3>
+    <p>İsminiz ve telefonunuzu girin, fiyatı anında görün. Sizi arayıp detaylı teklif sunabiliriz.</p>
+    <input class="tk-lead-input" id="tk-lead-ad" type="text" placeholder="Ad Soyad *">
+    <input class="tk-lead-input" id="tk-lead-tel" type="tel" placeholder="+90 5XX XXX XX XX *">
+    <div id="tk-lead-err" style="color:#dc2626;font-size:12px;margin-bottom:10px;display:none;"></div>
+    <button class="tk-lead-submit" onclick="tkFiyatiGoster()">Fiyatı Gör →</button>
+    <button class="tk-lead-back" onclick="tkLeadKapat()">← Geri Dön</button>
+  </div>
+</div>
+
+<!-- SONUÇ KARTI MODAL -->
+<div class="tk-result-overlay" id="tkResultOverlay">
+  <div class="tk-result-card">
+    <div class="tk-result-badge">✦ Tahmini Teklif</div>
+    <div class="tk-result-route" id="tk-res-route">— → —</div>
+    <div class="tk-result-km" id="tk-res-km">Tahmini mesafe: — km</div>
+    <div class="tk-result-price" id="tk-res-price">—<span> ₺</span></div>
+    <div class="tk-result-range" id="tk-res-range">Tahmini aralık</div>
+    <div class="tk-result-info" id="tk-res-info"></div>
+    <a class="tk-result-cta" id="tk-res-wa" href="#" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Hemen Teklif Al
+    </a>
+    <button class="tk-result-close" onclick="tkResultKapat()">Kapat</button>
+  </div>
+</div>
+
 <!-- İKİLİ BLOK -->
 <section>
   <div class="section-badge"><span>Hizmetlerimiz</span></div>
@@ -603,6 +788,122 @@ function setLang(lang) {
 function toggleLangMenu(){document.getElementById('langDropdown').classList.toggle('open');}
 document.addEventListener('click',function(e){const sw=document.getElementById('langSwitcher');if(sw&&!sw.contains(e.target))document.getElementById('langDropdown').classList.remove('open');});
 (function(){const u=new URLSearchParams(location.search).get('lang');if(u&&LOJ_LANGS[u]){lojLang=u;localStorage.setItem('gt_lang',u);}if(lojLang!=='tr')setLang(lojLang);})();
+
+/* ══ TEKLİF HESAPLAMA MODÜLÜ ══ */
+const TK_SEHIRLER = {
+  'Adana':[37.0000,35.3213],'Adıyaman':[37.7636,38.2773],'Afyonkarahisar':[38.7564,30.5389],
+  'Ankara':[39.9208,32.8541],'Antalya':[36.8969,30.7133],'Artvin':[41.1829,41.8183],
+  'Aydın':[37.8560,27.8416],'Balıkesir':[39.6484,27.8826],'Bolu':[40.7356,31.6061],
+  'Bursa':[40.1826,29.0665],'Çanakkale':[40.1535,26.4142],'Denizli':[37.7765,29.0864],
+  'Diyarbakır':[37.9144,40.2306],'Düzce':[40.8438,31.1565],'Edirne':[41.6771,26.5557],
+  'Elazığ':[38.6748,39.2225],'Erzincan':[39.7500,39.5000],'Erzurum':[39.9043,41.2679],
+  'Eskişehir':[39.7767,30.5206],'Gaziantep':[37.0662,37.3833],'Giresun':[40.9128,38.3895],
+  'Hatay':[36.4018,36.3498],'İstanbul':[41.0082,28.9784],'İzmir':[38.4192,27.1287],
+  'Kahramanmaraş':[37.5858,36.9371],'Kars':[40.6013,43.0975],'Kastamonu':[41.3887,33.7827],
+  'Kayseri':[38.7312,35.4787],'Kırıkkale':[39.8468,33.5153],'Kocaeli':[40.8533,29.8815],
+  'Konya':[37.8713,32.4846],'Kütahya':[39.4242,29.9834],'Malatya':[38.3552,38.3095],
+  'Manisa':[38.6191,27.4289],'Mardin':[37.3212,40.7245],'Mersin':[36.8121,34.6415],
+  'Muğla':[37.2153,28.3636],'Muş':[38.7432,41.5064],'Nevşehir':[38.6939,34.6857],
+  'Ordu':[40.9862,37.8797],'Rize':[41.0201,40.5234],'Sakarya':[40.6940,30.4358],
+  'Samsun':[41.2867,36.3300],'Siirt':[37.9273,41.9403],'Sivas':[39.7477,37.0179],
+  'Şanlıurfa':[37.1591,38.7969],'Tekirdağ':[40.9781,27.5115],'Tokat':[40.3167,36.5500],
+  'Trabzon':[41.0015,39.7178],'Van':[38.4891,43.4089],'Yalova':[40.6553,29.2726],
+  'Zonguldak':[41.4564,31.7987]
+};
+const TK_ARAC_KATSAYI = { tir:1.0, onteker:0.82, kamyon:0.68 };
+const TK_YUK_KATSAYI  = { tenteli:1.0, frigo:1.45, tehlikeli:1.65 };
+const TK_BASE_RATE = 40; // TL/km
+const TK_MIN_PRICE = 2500; // TL
+
+let tkArac = 'tir', tkYuk = 'tenteli', tkCalcData = null;
+
+(function tkBuildSelects() {
+  const sehirler = Object.keys(TK_SEHIRLER).sort();
+  ['tk-kalkis','tk-varis'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sehirler.forEach(s => {
+      const o = document.createElement('option'); o.value = s; o.textContent = s;
+      sel.appendChild(o);
+    });
+  });
+  // Varsayılan: Antalya → İstanbul
+  const k = document.getElementById('tk-kalkis');
+  const v = document.getElementById('tk-varis');
+  if (k) k.value = 'Antalya';
+  if (v) v.value = 'İstanbul';
+})();
+
+function tkSelectArac(el) {
+  document.querySelectorAll('.tk-arac-cards .tk-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); tkArac = el.dataset.arac;
+}
+function tkSelectYuk(el) {
+  document.querySelectorAll('.tk-yuk-cards .tk-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); tkYuk = el.dataset.yuk;
+}
+function tkHaversine(lat1,lon1,lat2,lon2) {
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*1.38);
+}
+function tkHesapla() {
+  const kalkis = document.getElementById('tk-kalkis').value;
+  const varis  = document.getElementById('tk-varis').value;
+  if (!kalkis || !varis) { alert('Lütfen kalkış ve varış şehri seçin.'); return; }
+  if (kalkis === varis)  { alert('Kalkış ve varış şehri aynı olamaz.'); return; }
+  const [lat1,lon1] = TK_SEHIRLER[kalkis];
+  const [lat2,lon2] = TK_SEHIRLER[varis];
+  const km = tkHaversine(lat1,lon1,lat2,lon2);
+  const fiyat = Math.max(TK_MIN_PRICE, Math.round(km * TK_BASE_RATE * TK_ARAC_KATSAYI[tkArac] * TK_YUK_KATSAYI[tkYuk] / 100) * 100);
+  tkCalcData = { kalkis, varis, km, arac:tkArac, yuk:tkYuk, fiyat };
+  document.getElementById('tkLeadOverlay').classList.add('open');
+}
+function tkLeadKapat() {
+  document.getElementById('tkLeadOverlay').classList.remove('open');
+  document.getElementById('tk-lead-err').style.display='none';
+}
+function tkResultKapat() {
+  document.getElementById('tkResultOverlay').classList.remove('open');
+}
+async function tkFiyatiGoster() {
+  const ad  = document.getElementById('tk-lead-ad').value.trim();
+  const tel = document.getElementById('tk-lead-tel').value.trim();
+  const err = document.getElementById('tk-lead-err');
+  if (!ad || !tel) { err.textContent='Ad Soyad ve Telefon zorunludur.'; err.style.display='block'; return; }
+  err.style.display='none';
+  const btn = document.querySelector('.tk-lead-submit');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+  try {
+    await fetch('/api/teklif', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ ad_soyad:ad, telefon:tel, ...tkCalcData })
+    });
+  } catch(e) { /* sessizce devam */ }
+  btn.disabled=false; btn.textContent='Fiyatı Gör →';
+  document.getElementById('tkLeadOverlay').classList.remove('open');
+  document.getElementById('tk-lead-ad').value='';
+  document.getElementById('tk-lead-tel').value='';
+
+  // Sonucu göster
+  const { kalkis, varis, km, arac, yuk, fiyat } = tkCalcData;
+  const aracAdi = {tir:'Tır Tenteli',onteker:'Onteker',kamyon:'Kamyon'}[arac];
+  const yukAdi  = {tenteli:'Tenteli',frigo:'Soğuk Zincir (Frigo)',tehlikeli:'Tehlikeli Madde'}[yuk];
+  const min = Math.round(fiyat*0.9/100)*100, max = Math.round(fiyat*1.15/100)*100;
+  document.getElementById('tk-res-route').textContent = `${kalkis} → ${varis}`;
+  document.getElementById('tk-res-km').textContent    = `Tahmini mesafe: ${km.toLocaleString('tr-TR')} km`;
+  document.getElementById('tk-res-price').innerHTML   = `${fiyat.toLocaleString('tr-TR')}<span> ₺</span>`;
+  document.getElementById('tk-res-range').textContent = `Tahmini aralık: ${min.toLocaleString('tr-TR')} – ${max.toLocaleString('tr-TR')} ₺`;
+  document.getElementById('tk-res-info').innerHTML    = `
+    <div class="tk-ri"><div class="ri-lbl">Araç Tipi</div><div class="ri-val">${aracAdi}</div></div>
+    <div class="tk-ri"><div class="ri-lbl">Yük Tipi</div><div class="ri-val">${yukAdi}</div></div>
+    <div class="tk-ri"><div class="ri-lbl">Mesafe</div><div class="ri-val">${km.toLocaleString('tr-TR')} km</div></div>
+    <div class="tk-ri"><div class="ri-lbl">Baz Fiyat</div><div class="ri-val">${TK_BASE_RATE} ₺/km</div></div>
+  `;
+  const waText = encodeURIComponent(`Merhaba, ${kalkis}→${varis} güzergahı için ${aracAdi} / ${yukAdi} taşımacılık teklifi almak istiyorum. Tahmini fiyat: ${fiyat.toLocaleString('tr-TR')} ₺`);
+  document.getElementById('tk-res-wa').href = `https://wa.me/905448654200?text=${waText}`;
+  document.getElementById('tkResultOverlay').classList.add('open');
+}
 
 /* ══ HARİTA & TAKİP ══ */
 let shipMap = null;

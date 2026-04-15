@@ -122,6 +122,22 @@ async function migrate() {
         last_login   TIMESTAMPTZ
       );
       CREATE INDEX IF NOT EXISTS idx_kurumlar_username ON kurumlar(username);
+
+      CREATE TABLE IF NOT EXISTS teklifler (
+        id             SERIAL PRIMARY KEY,
+        ad_soyad       VARCHAR(150) NOT NULL,
+        telefon        VARCHAR(30)  NOT NULL,
+        kalkis         VARCHAR(100) NOT NULL,
+        varis          VARCHAR(100) NOT NULL,
+        mesafe_km      INTEGER      DEFAULT 0,
+        arac_tipi      VARCHAR(50),
+        yuk_tipi       VARCHAR(50),
+        fiyat_tahmini  NUMERIC(12,2) DEFAULT 0,
+        ip             VARCHAR(60),
+        okundu         BOOLEAN DEFAULT FALSE,
+        created_at     TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_teklifler_date ON teklifler(created_at);
     `);
 
     await client.query(`
