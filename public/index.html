@@ -23,6 +23,7 @@
 <meta property="og:description" content="Lojistik, havalimanı transferi ve kamu ihale hizmetleri.">
 <meta property="og:url" content="https://gulizlojistik.com/">
 <meta property="og:image" content="https://gulizlojistik.com/slider/logo.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -226,6 +227,101 @@
     font-weight: 600;
     color: rgba(255,255,255,0.95);
     text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* ── CANLI SEVKİYAT HARİTASI ── */
+  .map-section {
+    background: linear-gradient(180deg, #030a1f 0%, #050d28 100%);
+    padding: 72px 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(232,25,44,0.6) 40%, rgba(26,45,107,0.6) 70%, transparent 100%);
+  }
+  .map-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 48px;
+  }
+  .map-head { margin-bottom: 32px; }
+  .map-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(232,25,44,0.1); border: 1px solid rgba(232,25,44,0.3);
+    border-radius: 30px; padding: 5px 14px; margin-bottom: 14px;
+  }
+  .map-eyebrow-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #e8192c;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .map-eyebrow span { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #ff5060; }
+  .map-title { font-size: 34px; font-weight: 900; color: #fff; letter-spacing: -.5px; margin-bottom: 8px; line-height: 1.15; }
+  .map-title em { color: #e8192c; font-style: normal; }
+  .map-subtitle { font-family: 'Open Sans', sans-serif; font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.65; max-width: 480px; }
+  .map-wrap {
+    position: relative;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-bottom: none;
+    box-shadow: 0 -20px 60px rgba(232,25,44,0.06);
+  }
+  #sevkiyat-map { height: 500px; width: 100%; }
+  #sevkiyat-canvas {
+    position: absolute; top: 0; left: 0;
+    pointer-events: none; z-index: 450;
+  }
+  .map-legend {
+    background: rgba(5,13,40,0.97);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-top: 1px solid rgba(232,25,44,0.2);
+    border-radius: 0 0 16px 16px;
+    padding: 18px 28px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .map-legend-chip {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; padding: 6px 13px;
+    font-size: 11.5px; font-weight: 600;
+    color: rgba(255,255,255,0.65);
+    white-space: nowrap; transition: background .2s;
+  }
+  .map-legend-chip:hover { background: rgba(255,255,255,0.08); }
+  .mlc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .map-live-badge {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #4ade80;
+  }
+  .map-live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #4ade80; animation: pulse 1.5s ease-in-out infinite;
+  }
+  /* Leaflet popup dark theme */
+  .dark-popup .leaflet-popup-content-wrapper {
+    background: #0a1235; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    color: #e2e8f0; font-family: 'Montserrat', sans-serif;
+  }
+  .dark-popup .leaflet-popup-tip { background: #0a1235; }
+  .dark-popup .leaflet-popup-content { margin: 10px 14px; line-height: 1.7; font-size: 12px; }
+  /* Leaflet controls dark */
+  .leaflet-control-zoom a { background: #0a1235 !important; border-color: rgba(255,255,255,0.12) !important; color: rgba(255,255,255,0.7) !important; }
+  .leaflet-control-zoom a:hover { background: #1a2d6b !important; color: #fff !important; }
+  @media(max-width: 900px) {
+    .map-section { padding: 52px 0 0; }
+    .map-inner { padding: 0 20px; }
+    .map-title { font-size: 24px; }
+    #sevkiyat-map { height: 340px; }
+    .map-legend { padding: 14px 16px; gap: 8px; }
+    .map-legend-chip { font-size: 10.5px; padding: 5px 10px; }
   }
 
   .stats {
@@ -601,6 +697,27 @@
 
 </section>
 
+<!-- CANLI SEVKİYAT HARİTASI -->
+<section class="map-section">
+  <div class="map-inner">
+    <div class="map-head">
+      <div class="map-eyebrow">
+        <div class="map-eyebrow-dot"></div>
+        <span>Canlı Takip</span>
+      </div>
+      <h2 class="map-title">Canlı Sevkiyat <em>Operasyonları</em></h2>
+      <p class="map-subtitle">Türkiye'nin dört bir yanından Gazipaşa merkezimize akan lojistik hareketleri gerçek zamanlı takip edin.</p>
+    </div>
+    <div class="map-wrap">
+      <div id="sevkiyat-map"></div>
+      <canvas id="sevkiyat-canvas"></canvas>
+    </div>
+    <div class="map-legend" id="sevkiyat-legend">
+      <div style="font-size:11px;color:rgba(255,255,255,0.3);">Yükleniyor...</div>
+    </div>
+  </div>
+</section>
+
 <!-- YÜK BİLDİRİMİ MODAL -->
 <div id="yukModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(5,13,40,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
   <div style="background:#0a1235;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:36px 32px;width:100%;max-width:440px;margin:16px;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
@@ -676,6 +793,224 @@
     </button>
   </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ══════════════════════════════════════
+   CANLI SEVKİYAT HARİTASI
+══════════════════════════════════════ */
+(function() {
+  const DEST = { lat: 36.897, lng: 30.713 };
+
+  const ALL_CITIES = [
+    { name: 'İstanbul',   lat: 41.008, lng: 28.978, region: 'Marmara' },
+    { name: 'Ankara',     lat: 39.920, lng: 32.854, region: 'İç Anadolu' },
+    { name: 'İzmir',      lat: 38.419, lng: 27.129, region: 'Ege' },
+    { name: 'Bursa',      lat: 40.183, lng: 29.067, region: 'Marmara' },
+    { name: 'Kayseri',    lat: 38.731, lng: 35.479, region: 'İç Anadolu' },
+    { name: 'Samsun',     lat: 41.287, lng: 36.330, region: 'Karadeniz' },
+    { name: 'Konya',      lat: 37.871, lng: 32.485, region: 'İç Anadolu' },
+    { name: 'Gaziantep',  lat: 37.066, lng: 37.383, region: 'Güneydoğu Anadolu' },
+    { name: 'Mersin',     lat: 36.812, lng: 34.641, region: 'Akdeniz' },
+    { name: 'Adana',      lat: 37.000, lng: 35.321, region: 'Akdeniz' },
+    { name: 'Trabzon',    lat: 41.002, lng: 39.718, region: 'Karadeniz' },
+    { name: 'Eskişehir',  lat: 39.777, lng: 30.521, region: 'İç Anadolu' },
+    { name: 'Denizli',    lat: 37.777, lng: 29.086, region: 'Ege' },
+    { name: 'Malatya',    lat: 38.355, lng: 38.310, region: 'Doğu Anadolu' },
+    { name: 'Diyarbakır', lat: 37.914, lng: 40.231, region: 'Güneydoğu Anadolu' },
+    { name: 'Erzurum',    lat: 39.904, lng: 41.268, region: 'Doğu Anadolu' },
+    { name: 'Van',        lat: 38.489, lng: 43.409, region: 'Doğu Anadolu' },
+    { name: 'Manisa',     lat: 38.619, lng: 27.429, region: 'Ege' },
+    { name: 'Balıkesir',  lat: 39.648, lng: 27.883, region: 'Ege' },
+    { name: 'Kocaeli',    lat: 40.853, lng: 29.882, region: 'Marmara' },
+  ];
+
+  const COLORS  = ['#e8192c','#ff6b35','#4ade80','#60a5fa','#a78bfa','#fbbf24'];
+  const CARGOS  = ['Gıda Ürünleri','Yapı Malzemesi','Tekstil','Elektronik','Kimyasal','İnşaat Malz.','Tarım Ürünleri','Makine Parkı'];
+
+  function rnd(min, max) { return Math.floor(min + Math.random() * (max - min)); }
+
+  function pickCities() {
+    return [...ALL_CITIES].sort(() => Math.random() - 0.5).slice(0, 6).map((c, i) => ({
+      ...c,
+      color:    COLORS[i],
+      tonnage:  rnd(12, 52),
+      cargo:    CARGOS[rnd(0, CARGOS.length)],
+      distance: rnd(280, 950),
+      particles: [
+        { t: Math.random(), speed: 0.0018 + Math.random() * 0.0010 },
+        { t: Math.random(), speed: 0.0014 + Math.random() * 0.0008 },
+      ]
+    }));
+  }
+
+  const cities = pickCities();
+
+  /* ── Harita ── */
+  const map = L.map('sevkiyat-map', {
+    center: [39.2, 34.8],
+    zoom: 6,
+    zoomControl: false,
+    attributionControl: false,
+    scrollWheelZoom: false,
+    dragging: true,
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+
+  L.control.zoom({ position: 'topright' }).addTo(map);
+
+  /* ── Popup factory ── */
+  function mkPopup(html) {
+    return L.popup({ className: 'dark-popup', maxWidth: 220, offset: [0, -4] }).setContent(html);
+  }
+
+  /* ── Hedef marker (Gazipaşa) ── */
+  const destIcon = L.divIcon({
+    html: `<div style="width:16px;height:16px;background:#e8192c;border-radius:50%;
+      border:2.5px solid #fff;box-shadow:0 0 0 4px rgba(232,25,44,0.3),0 0 20px #e8192c;"></div>`,
+    iconSize: [16,16], iconAnchor: [8,8], className: ''
+  });
+  L.marker([DEST.lat, DEST.lng], { icon: destIcon })
+    .bindPopup(mkPopup(`
+      <div style="font-weight:700;margin-bottom:4px;">🏢 Merkez Depo</div>
+      <div style="color:#8898bb;font-size:11px;">Gazipaşa / Antalya</div>
+      <div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;font-size:11px;">
+        Aktif güzergah: <b style="color:#4ade80;">${cities.length}</b>
+      </div>`))
+    .addTo(map);
+
+  /* ── Şehir markerleri ── */
+  cities.forEach(c => {
+    const icon = L.divIcon({
+      html: `<div style="width:11px;height:11px;background:${c.color};border-radius:50%;
+        border:2px solid rgba(255,255,255,0.8);box-shadow:0 0 10px ${c.color};"></div>`,
+      iconSize: [11,11], iconAnchor: [5.5,5.5], className: ''
+    });
+    L.marker([c.lat, c.lng], { icon })
+      .bindPopup(mkPopup(`
+        <div style="font-weight:700;margin-bottom:2px;">📍 ${c.name}</div>
+        <div style="color:#8898bb;font-size:11px;">${c.region} Bölgesi</div>
+        <div style="margin-top:7px;border-top:1px solid rgba(255,255,255,0.1);padding-top:7px;">
+          <div>🚛 Bugünkü yükleme: <b style="color:${c.color}">${c.tonnage} Ton</b></div>
+          <div>📦 Yük tipi: ${c.cargo}</div>
+          <div>📏 Mesafe: ~${c.distance} km</div>
+        </div>`))
+      .addTo(map);
+  });
+
+  /* ── Canvas overlay ── */
+  const canvas = document.getElementById('sevkiyat-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  function resize() {
+    const c = map.getContainer();
+    canvas.width  = c.offsetWidth;
+    canvas.height = c.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); map.invalidateSize(); });
+
+  function toXY(lat, lng) {
+    const pt = map.latLngToContainerPoint([lat, lng]);
+    return { x: pt.x, y: pt.y };
+  }
+
+  function controlPoint(p1, p2) {
+    const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+    const dx = p2.x - p1.x,       dy = p2.y - p1.y;
+    return { x: mx - dy * 0.24, y: my + dx * 0.24 };
+  }
+
+  function bezierPt(t, p1, cp, p2) {
+    const u = 1 - t;
+    return { x: u*u*p1.x + 2*u*t*cp.x + t*t*p2.x,
+             y: u*u*p1.y + 2*u*t*cp.y + t*t*p2.y };
+  }
+
+  let animActive = true;
+
+  function frame() {
+    if (!animActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const dst = toXY(DEST.lat, DEST.lng);
+
+    cities.forEach(c => {
+      const src = toXY(c.lat, c.lng);
+      const cp  = controlPoint(src, dst);
+
+      // Faint trail line
+      ctx.beginPath();
+      ctx.moveTo(src.x, src.y);
+      ctx.quadraticCurveTo(cp.x, cp.y, dst.x, dst.y);
+      ctx.strokeStyle = c.color + '22';
+      ctx.lineWidth   = 2;
+      ctx.shadowBlur  = 0;
+      ctx.stroke();
+
+      // Glowing line
+      ctx.beginPath();
+      ctx.moveTo(src.x, src.y);
+      ctx.quadraticCurveTo(cp.x, cp.y, dst.x, dst.y);
+      ctx.strokeStyle = c.color + '90';
+      ctx.lineWidth   = 1.5;
+      ctx.shadowBlur  = 12;
+      ctx.shadowColor = c.color;
+      ctx.stroke();
+      ctx.shadowBlur  = 0;
+
+      // Particles
+      c.particles.forEach(p => {
+        p.t = (p.t + p.speed) % 1;
+        const pt = bezierPt(p.t, src, cp, dst);
+
+        // Glow halo
+        const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, 11);
+        g.addColorStop(0,   c.color + 'dd');
+        g.addColorStop(0.4, c.color + '55');
+        g.addColorStop(1,   c.color + '00');
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 11, 0, Math.PI*2);
+        ctx.fillStyle = g;
+        ctx.fill();
+
+        // White core
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI*2);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur  = 8;
+        ctx.shadowColor = c.color;
+        ctx.fill();
+        ctx.shadowBlur  = 0;
+      });
+    });
+
+    requestAnimationFrame(frame);
+  }
+
+  frame();
+
+  // Pause when off-screen
+  new IntersectionObserver(entries => {
+    animActive = entries[0].isIntersecting;
+    if (animActive) frame();
+  }).observe(document.getElementById('sevkiyat-map'));
+
+  /* ── Legend ── */
+  const legend = document.getElementById('sevkiyat-legend');
+  legend.innerHTML = cities.map(c => `
+    <div class="map-legend-chip">
+      <div class="mlc-dot" style="background:${c.color};box-shadow:0 0 5px ${c.color}40;"></div>
+      ${c.name}&nbsp;·&nbsp;<b>${c.tonnage}t</b>
+    </div>`).join('') +
+    `<div class="map-live-badge">
+      <div class="map-live-dot"></div>CANLI
+    </div>`;
+})();
+</script>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
