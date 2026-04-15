@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ── ANASAYFA ── -->
   <url>
     <loc>https://gulizlojistik.com/</loc>
-    <lastmod>2026-04-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/"/>
     <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/?lang=en"/>
@@ -13,8 +15,8 @@
   </url>
   <url>
     <loc>https://gulizlojistik.com/?lang=en</loc>
-    <lastmod>2026-04-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/"/>
     <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/?lang=en"/>
@@ -23,48 +25,181 @@
   </url>
   <url>
     <loc>https://gulizlojistik.com/?lang=ru</loc>
-    <lastmod>2026-04-14</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/"/>
     <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/?lang=en"/>
     <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/?lang=ru"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/"/>
   </url>
+
+  <!-- ── TRANSFER ── -->
   <url>
     <loc>https://gulizlojistik.com/transfer/</loc>
-    <lastmod>2026-04-14</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
   </url>
-  <url>
-    <loc>https://gulizlojistik.com/ihale/</loc>
-    <lastmod>2026-04-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://gulizlojistik.com/insaat/</loc>
-    <lastmod>2026-04-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
+  <!-- ── LOJİSTİK ── -->
   <url>
     <loc>https://gulizlojistik.com/lojistik/</loc>
-    <lastmod>2026-04-14</lastmod>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/lojistik/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/lojistik/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/lojistik/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/lojistik/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/lojistik/?lang=en</loc>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/lojistik/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/lojistik/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/lojistik/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/lojistik/"/>
   </url>
+  <url>
+    <loc>https://gulizlojistik.com/lojistik/?lang=ru</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/lojistik/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/lojistik/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/lojistik/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/lojistik/"/>
+  </url>
+
+  <!-- ── KAMU İHALESİ ── -->
+  <url>
+    <loc>https://gulizlojistik.com/ihale/</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/ihale/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/ihale/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/ihale/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ihale/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/ihale/?lang=en</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/ihale/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/ihale/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/ihale/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ihale/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/ihale/?lang=ru</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/ihale/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/ihale/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/ihale/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ihale/"/>
+  </url>
+
+  <!-- ── İNŞAAT ── -->
+  <url>
+    <loc>https://gulizlojistik.com/insaat/</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/insaat/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/insaat/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/insaat/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/insaat/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/insaat/?lang=en</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/insaat/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/insaat/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/insaat/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/insaat/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/insaat/?lang=ru</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/insaat/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/insaat/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/insaat/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/insaat/"/>
+  </url>
+
+  <!-- ── İLETİŞİM ── -->
   <url>
     <loc>https://gulizlojistik.com/iletisim/</loc>
-    <lastmod>2026-04-14</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/iletisim/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/iletisim/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/iletisim/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/iletisim/"/>
   </url>
   <url>
+    <loc>https://gulizlojistik.com/iletisim/?lang=en</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/iletisim/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/iletisim/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/iletisim/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/iletisim/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/iletisim/?lang=ru</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/iletisim/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/iletisim/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/iletisim/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/iletisim/"/>
+  </url>
+
+  <!-- ── İNSAN KAYNAKLARI ── -->
+  <url>
     <loc>https://gulizlojistik.com/ik/</loc>
-    <lastmod>2026-04-14</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/ik/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/ik/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/ik/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ik/"/>
   </url>
+  <url>
+    <loc>https://gulizlojistik.com/ik/?lang=en</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/ik/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/ik/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/ik/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ik/"/>
+  </url>
+  <url>
+    <loc>https://gulizlojistik.com/ik/?lang=ru</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr"        href="https://gulizlojistik.com/ik/"/>
+    <xhtml:link rel="alternate" hreflang="en"        href="https://gulizlojistik.com/ik/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru"        href="https://gulizlojistik.com/ik/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ik/"/>
+  </url>
+
 </urlset>

@@ -344,6 +344,19 @@ nav ul li a:hover, nav ul li a.active { color: var(--red); }
   .big-separator { margin: 0 20px; }
 }
 
+/* ── DİL SEÇİCİ ── */
+.lang-switcher{position:relative;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+#currentLangFlag{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.18);}
+#currentLangFlag img{width:28px;height:20px;display:block;object-fit:cover;border-radius:3px;}
+.lang-dots-btn{background:none;border:none;cursor:pointer;padding:2px 4px;font-size:11px;color:#1a2d6b;font-weight:900;border-radius:4px;transition:background 0.2s;line-height:1;}
+.lang-dots-btn:hover{background:rgba(26,45,107,0.08);}
+.lang-dropdown{display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.18);overflow:hidden;z-index:300;min-width:140px;border:1px solid rgba(0,0,0,0.07);}
+.lang-dropdown.open{display:block;}
+.lang-dropdown button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#1a2d6b;font-family:'Montserrat',sans-serif;transition:background 0.15s;border-bottom:1px solid rgba(0,0,0,0.05);}
+.lang-dropdown button:last-child{border-bottom:none;}
+.lang-dropdown button:hover{background:rgba(26,45,107,0.05);}
+.lang-dropdown button .lf{width:26px;height:18px;display:block;object-fit:cover;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.15);flex-shrink:0;}
+
 /* ── CANLI DESTEK WIDGET ── */
 .chat-btn {
   position:fixed; bottom:2rem; left:2rem; z-index:200;
@@ -442,15 +455,28 @@ nav ul li a:hover, nav ul li a.active { color: var(--red); }
     </a>
   </div>
   <ul>
-    <li><a href="../index.html">Anasayfa</a></li>
-    <li><a href="../lojistik/index.html">Lojistik</a></li>
-    <li><a href="#" class="active">Kamu İhalesi</a></li>
-    <li><a href="../insaat/index.html">İnşaat</a></li>
-    <li><a href="../kurum/index.html">Kurum Girişi</a></li>
-    <li><a href="../ik/index.html">İK</a></li>
-    <li><a href="../iletisim/index.html">İletişim</a></li>
+    <li><a href="../index.html" data-i18n="nav.home">Anasayfa</a></li>
+    <li><a href="../lojistik/index.html" data-i18n="nav.logistics">Lojistik</a></li>
+    <li><a href="#" class="active" data-i18n="nav.tender">Kamu İhalesi</a></li>
+    <li><a href="../insaat/index.html" data-i18n="nav.construction">İnşaat</a></li>
+    <li><a href="../kurum/index.html" data-i18n="nav.login">Kurum Girişi</a></li>
+    <li><a href="../ik/index.html" data-i18n="nav.hr">İnsan Kaynakları</a></li>
+    <li><a href="../iletisim/index.html" data-i18n="nav.contact">İletişim</a></li>
   </ul>
-  <a href="../kurum/" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1a2d6b,#0a1235);color:#fff;text-decoration:none;padding:9px 18px;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 14px rgba(26,45,107,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(232,25,44,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(26,45,107,0.3)'">🏛️ EKAP Kurum Girişi</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="lang-switcher" id="langSwitcher">
+      <span id="currentLangFlag" onclick="toggleLangMenu()" title="Dil seç">
+        <img src="https://flagcdn.com/28x21/tr.png" alt="TR" id="currentFlagImg">
+      </span>
+      <button class="lang-dots-btn" onclick="toggleLangMenu()" aria-label="Dil seç">▾</button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button onclick="setLang('tr')"><img class="lf" src="https://flagcdn.com/28x21/tr.png" alt="TR"> Türkçe</button>
+        <button onclick="setLang('en')"><img class="lf" src="https://flagcdn.com/28x21/us.png" alt="US"> English</button>
+        <button onclick="setLang('ru')"><img class="lf" src="https://flagcdn.com/28x21/ru.png" alt="RU"> Русский</button>
+      </div>
+    </div>
+    <a href="../kurum/" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1a2d6b,#0a1235);color:#fff;text-decoration:none;padding:9px 18px;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 14px rgba(26,45,107,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(232,25,44,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(26,45,107,0.3)'"><span data-i18n="ihale.ekap">🏛️ EKAP Kurum Girişi</span></a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -463,31 +489,30 @@ nav ul li a:hover, nav ul li a.active { color: var(--red); }
   <div class="hero-inner">
     <div class="hero-badge">
       <div class="badge-dot"></div>
-      <span>Kamu İhaleleri Portalı</span>
+      <span data-i18n="ihale.badge">Kamu İhaleleri Portalı</span>
     </div>
 
     <h1>
-      İhale <span class="accent">Süreçlerimiz</span><br>
-      &amp; <span class="accent2">Başarılarımız</span>
+      <span data-i18n="ihale.h1a">İhale</span> <span class="accent" data-i18n="ihale.h1b">Süreçlerimiz</span><br>
+      &amp; <span class="accent2" data-i18n="ihale.h1c">Başarılarımız</span>
     </h1>
 
-    <p class="hero-desc">
-      Guliz Şirketler Topluluğu olarak yürüttüğümüz ve tamamladığımız<br>
-      kamu ihale projelerimizi şeffaf bir şekilde paylaşıyoruz.
+    <p class="hero-desc" data-i18n="ihale.desc">
+      Guliz Şirketler Topluluğu olarak yürüttüğümüz ve tamamladığımız kamu ihale projelerimizi şeffaf bir şekilde paylaşıyoruz.
     </p>
 
     <div class="stats-row">
       <div class="stat-card">
         <div class="num" id="st-toplam">0</div>
-        <div class="lbl">Toplam İhale</div>
+        <div class="lbl" data-i18n="ihale.statTotal">Toplam İhale</div>
       </div>
       <div class="stat-card green">
         <div class="num" id="st-tamamlandi">0</div>
-        <div class="lbl">Tamamlanan</div>
+        <div class="lbl" data-i18n="ihale.statDone">Tamamlanan</div>
       </div>
       <div class="stat-card red">
         <div class="num" id="st-devam">0</div>
-        <div class="lbl">Devam Eden</div>
+        <div class="lbl" data-i18n="ihale.statOngoing">Devam Eden</div>
       </div>
     </div>
   </div>
@@ -538,6 +563,46 @@ nav ul li a:hover, nav ul li a.active { color: var(--red); }
 </footer>
 
 <script>
+/* ══ DİL SİSTEMİ ══ */
+const IH_LANGS = {
+  tr:{
+    'nav.home':'Anasayfa','nav.logistics':'Lojistik','nav.tender':'Kamu İhalesi',
+    'nav.construction':'İnşaat','nav.login':'Kurum Girişi','nav.hr':'İnsan Kaynakları','nav.contact':'İletişim',
+    'ihale.badge':'Kamu İhaleleri Portalı','ihale.h1a':'İhale','ihale.h1b':'Süreçlerimiz','ihale.h1c':'Başarılarımız',
+    'ihale.desc':'Guliz Şirketler Topluluğu olarak yürüttüğümüz ve tamamladığımız kamu ihale projelerimizi şeffaf bir şekilde paylaşıyoruz.',
+    'ihale.statTotal':'Toplam İhale','ihale.statDone':'Tamamlanan','ihale.statOngoing':'Devam Eden',
+    'ihale.ekap':'🏛️ EKAP Kurum Girişi'
+  },
+  en:{
+    'nav.home':'Home','nav.logistics':'Logistics','nav.tender':'Public Tender',
+    'nav.construction':'Construction','nav.login':'Login','nav.hr':'Human Resources','nav.contact':'Contact',
+    'ihale.badge':'Public Tenders Portal','ihale.h1a':'Tender','ihale.h1b':'Processes','ihale.h1c':'Achievements',
+    'ihale.desc':'We transparently share the public tender projects we manage and complete as Guliz Group.',
+    'ihale.statTotal':'Total Tenders','ihale.statDone':'Completed','ihale.statOngoing':'Ongoing',
+    'ihale.ekap':'🏛️ EKAP Login'
+  },
+  ru:{
+    'nav.home':'Главная','nav.logistics':'Логистика','nav.tender':'Госзакупки',
+    'nav.construction':'Строительство','nav.login':'Вход','nav.hr':'Персонал','nav.contact':'Контакты',
+    'ihale.badge':'Портал госзакупок','ihale.h1a':'Тендерные','ihale.h1b':'Процессы','ihale.h1c':'и Достижения',
+    'ihale.desc':'Мы открыто делимся государственными тендерными проектами, которые ведём и завершаем в рамках Guliz Group.',
+    'ihale.statTotal':'Всего тендеров','ihale.statDone':'Завершено','ihale.statOngoing':'В процессе',
+    'ihale.ekap':'🏛️ Вход EKAP'
+  }
+};
+let ihLang = localStorage.getItem('gt_lang') || 'tr';
+function setLang(lang) {
+  if (!IH_LANGS[lang]) return;
+  ihLang = lang; localStorage.setItem('gt_lang', lang);
+  document.getElementById('currentFlagImg').src = {tr:'https://flagcdn.com/28x21/tr.png',en:'https://flagcdn.com/28x21/us.png',ru:'https://flagcdn.com/28x21/ru.png'}[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(IH_LANGS[lang][k])el.textContent=IH_LANGS[lang][k];});
+  document.getElementById('langDropdown').classList.remove('open');
+  document.documentElement.lang = lang;
+}
+function toggleLangMenu(){document.getElementById('langDropdown').classList.toggle('open');}
+document.addEventListener('click',function(e){const sw=document.getElementById('langSwitcher');if(sw&&!sw.contains(e.target))document.getElementById('langDropdown').classList.remove('open');});
+(function(){const u=new URLSearchParams(location.search).get('lang');if(u&&IH_LANGS[u]){ihLang=u;localStorage.setItem('gt_lang',u);}if(ihLang!=='tr')setLang(ihLang);})();
+
 /* ── KART BUILDER ── */
 function escIhale(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
