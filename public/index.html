@@ -941,289 +941,307 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ══════════════════════════════════════
-   ARAÇ TAKİP SİSTEMİ
-══════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   ARAÇ TAKİP SİSTEMİ  v2  —  Gerçekçi Simülasyon
+   • Gece 22:00–06:00 tırlar dinlenir (hız=0, konum sabit)
+   • Rota ping-pong: A→B→A döngüsü, teleport yok
+   • Kümülatif km sadece aktif saatleri sayar
+   • GPS jitter: 30sn'de bir ±80m titreme
+   • İstanbul→Afyon→Antalya gerçek yol süresi tutarlı
+══════════════════════════════════════════════════════════ */
 (function(){
 
-/* ── Rotalar (waypoints) ── */
+/* ════════════════════════════
+   ROTA TANIMLARI (tek yön, ping-pong uygulanacak)
+   Gerçek Türk karayolları izlenerek hazırlandı
+════════════════════════════ */
 const R = {
+  // Antalya → Afyon → Bursa → İstanbul  (~730 km tek yön → gidiş+dönüş ~1460 km)
   WEST:[
-    [36.897,30.713],[37.726,30.289],[38.757,30.539],[39.424,29.983],
-    [40.183,29.067],[41.008,28.978],[40.853,29.882],[40.843,31.157],
-    [40.736,31.606],[39.920,32.854],[37.871,32.485],[36.897,30.713]
+    [36.897,30.713],[37.764,30.556],[38.757,30.539],[39.424,29.983],
+    [40.183,29.067],[40.655,29.273],[41.008,28.978]
   ],
+  // Antalya → Adana → Gaziantep  (~510 km)
   EAST:[
     [36.897,30.713],[36.544,32.001],[36.812,34.641],[37.000,35.321],
-    [37.066,37.383],[37.585,36.937],[37.871,32.485],[36.897,30.713]
+    [37.066,37.383]
   ],
+  // Antalya → Ankara → Samsun → Trabzon  (~920 km)
   NORTH:[
     [36.897,30.713],[37.871,32.485],[39.920,32.854],[40.317,34.957],
-    [41.287,36.330],[41.002,39.718],[39.748,37.018],[38.731,35.479],
-    [37.871,32.485],[36.897,30.713]
+    [41.287,36.330],[41.002,39.718]
   ],
+  // Antalya → Kayseri → Diyarbakır → Van  (~960 km)
   NEAST:[
     [36.897,30.713],[37.871,32.485],[38.731,35.479],[38.355,38.310],
-    [38.675,39.223],[37.914,40.231],[38.489,43.409],[39.904,41.268],
-    [39.748,37.018],[38.731,35.479],[37.871,32.485],[36.897,30.713]
+    [37.914,40.231],[38.489,43.409]
   ],
+  // Antalya → Muğla → İzmir → Bursa  (~620 km)
   EGE:[
     [36.897,30.713],[36.650,29.124],[37.215,28.364],[37.777,29.086],
-    [38.419,27.129],[38.619,27.429],[39.648,27.883],[40.183,29.067],
-    [39.920,32.854],[37.871,32.485],[36.897,30.713]
+    [38.419,27.129],[39.648,27.883],[40.183,29.067]
   ],
+  // Antalya → Ankara → Trabzon → Batum → Krasnodar  (~1850 km)
   KRASNODAR:[
     [36.897,30.713],[39.920,32.854],[41.002,39.718],[41.183,41.820],
-    [41.647,41.640],[41.694,44.833],[43.041,44.655],[45.040,38.975],
-    [45.040,38.975],[43.041,44.655],[41.694,44.833],[41.647,41.640],
-    [41.183,41.820],[41.002,39.718],[39.920,32.854],[36.897,30.713]
+    [41.647,41.640],[41.694,44.833],[43.041,44.655],[45.040,38.975]
   ],
+  // Antalya → Ankara → Trabzon → Tiflis → Rostov → Moskova  (~2900 km)
   MOSCOW:[
     [36.897,30.713],[39.920,32.854],[41.002,39.718],[41.183,41.820],
     [41.647,41.640],[41.694,44.833],[47.222,39.710],[51.660,39.200],
-    [54.193,37.617],[55.751,37.618],[55.751,37.618],[54.193,37.617],
-    [51.660,39.200],[47.222,39.710],[41.694,44.833],[41.647,41.640],
-    [41.183,41.820],[41.002,39.718],[39.920,32.854],[36.897,30.713]
+    [54.193,37.617],[55.751,37.618]
   ],
+  // Antalya → İstanbul → Edirne → Sofya → Bükreş  (~1450 km)
   BALKAN:[
-    [36.897,30.713],[40.183,29.067],[41.008,28.978],[41.677,26.556],
-    [42.697,23.322],[44.426,26.103],[44.426,26.103],[42.697,23.322],
-    [41.677,26.556],[41.008,28.978],[40.183,29.067],[36.897,30.713]
+    [36.897,30.713],[40.183,29.067],[41.008,28.978],
+    [41.677,26.556],[42.697,23.322],[44.426,26.103]
   ],
+  // Antalya → Trabzon → Batum → Tiflis  (~1060 km)
   KAFKAS:[
-    [36.897,30.713],[39.920,32.854],[41.002,39.718],[41.183,41.820],
-    [41.647,41.640],[41.694,44.833],[41.694,44.833],[41.647,41.640],
-    [41.183,41.820],[41.002,39.718],[39.920,32.854],[36.897,30.713]
+    [36.897,30.713],[39.920,32.854],[41.002,39.718],
+    [41.183,41.820],[41.647,41.640],[41.694,44.833]
   ]
 };
 
-function hav(a, b) {
-  const R=6371, dLat=(b[0]-a[0])*Math.PI/180, dLon=(b[1]-a[1])*Math.PI/180;
+/* ── Yardımcı fonksiyonlar ── */
+function hav(a,b){
+  const R=6371,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180;
   const x=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
 function routeKm(pts){let s=0;for(let i=0;i<pts.length-1;i++)s+=hav(pts[i],pts[i+1]);return s;}
+const RKM={};Object.keys(R).forEach(k=>RKM[k]=routeKm(R[k]));
 
-// Precompute route lengths
-const RKM = {};
-Object.keys(R).forEach(k=>RKM[k]=routeKm(R[k]));
-
-function posOnRoute(pts, km) {
-  const total = routeKm(pts);
-  let rem = ((km % total) + total) % total;
-  for(let i=0;i<pts.length-1;i++){
-    const d=hav(pts[i],pts[i+1]);
-    if(rem<=d){const t=rem/d;return [pts[i][0]+(pts[i+1][0]-pts[i][0])*t, pts[i][1]+(pts[i+1][1]-pts[i][1])*t];}
-    rem-=d;
+/* Ping-pong rota: A→B→A→B... teleport YOK */
+function posOnPingPong(pts,km){
+  const L=routeKm(pts);
+  const cycle=2*L;
+  const pos=((km%cycle)+cycle)%cycle;
+  const rem=pos<=L?pos:cycle-pos; // gidiş veya dönüş
+  let r=rem;
+  const wp=pos<=L?pts:[...pts].reverse();
+  for(let i=0;i<wp.length-1;i++){
+    const d=hav(wp[i],wp[i+1]);
+    if(r<=d){const t=r/d;return[wp[i][0]+(wp[i+1][0]-wp[i][0])*t,wp[i][1]+(wp[i+1][1]-wp[i][1])*t];}
+    r-=d;
   }
-  return pts[0];
+  return wp[0];
 }
 
-/* ── Referans zaman (epoch) ── */
-const EPOCH = 1745107200000; // 2026-04-20 00:00 UTC (sabit)
+/* ════════════════════════════
+   ZAMAN MODELİ
+   • Gece 22:00–06:00: sürücü uyur, araç durur
+   • Gündüz: hız×aktif_saat kümülatif km
+════════════════════════════ */
+const EPOCH=1745107200000; // 2026-04-20 00:00 UTC — sabit referans
+const DRIVE_START=6, DRIVE_END=22, DRIVE_H=16; // 16 saat/gün
 
-/* ── Araç tanımları ── */
-// status: 'moving' | 'offline' | 'mola' | 'yukleme'
-// offlineSince: saat (kaç saat önce kapandı, sadece offline için)
-const TRUCKS = [
-  // 5 AKTIF - Türkiye
-  {plate:'07 GLZ 01', route:'WEST',   offsetKm:  40, speedKmh:68, status:'moving', cargo:'Çimento & Yapı Malz.',  driver:'Mehmet K.'},
-  {plate:'07 GLZ 03', route:'EAST',   offsetKm: 180, speedKmh:62, status:'moving', cargo:'Gıda & İçecek',         driver:'Hasan A.'},
-  {plate:'07 GLZ 06', route:'NORTH',  offsetKm:  95, speedKmh:71, status:'moving', cargo:'Tekstil Ürünleri',      driver:'Ali D.'},
-  {plate:'07 GLZ 111',route:'NEAST',  offsetKm: 260, speedKmh:65, status:'moving', cargo:'Makine Parkı',          driver:'Osman B.'},
-  {plate:'07 GLZ 158',route:'EGE',    offsetKm: 130, speedKmh:74, status:'moving', cargo:'Elektronik Ekipman',    driver:'Yusuf T.'},
-  // 2 KAPALI
-  {plate:'07 GLZ 98', route:'WEST',   offsetKm: 320, speedKmh:0,  status:'offline', offlineSince:6,  cargo:'Tarım Ürünleri',   driver:'İbrahim S.'},
-  {plate:'07 ATF 44', route:'EAST',   offsetKm: 155, speedKmh:0,  status:'offline', offlineSince:5,  cargo:'Kimyasal Madde',   driver:'Ercan M.'},
-  // 3 MOLA/YÜKLEME - Türkiye
-  {plate:'07 TK 658', route:'NORTH',  offsetKm: 440, speedKmh:0,  status:'mola',    molaCity:'Samsun',    cargo:'İnşaat Malz.', driver:'Serkan Ö.'},
-  {plate:'07 AUC 487',route:'NEAST',  offsetKm: 510, speedKmh:0,  status:'yukleme', molaCity:'Kayseri',   cargo:'Cam & Seramik', driver:'Murat C.'},
-  {plate:'07 UP 767', route:'EGE',    offsetKm: 280, speedKmh:0,  status:'mola',    molaCity:'İzmir',     cargo:'Mobilya',       driver:'Kemal F.'},
-  // 4 ULUSLARARASI
-  {plate:'07 CCF 336',route:'KRASNODAR',offsetKm:490,speedKmh:72, status:'moving', cargo:'Çelik Konstrüksiyon', driver:'Volkan Ş.', intl:true},
-  {plate:'07 BJV 411',route:'MOSCOW',   offsetKm:680,speedKmh:75, status:'moving', cargo:'Tekstil & Konfeksiyon',driver:'Emre Y.',  intl:true},
-  {plate:'07 KZL 71', route:'KAFKAS',   offsetKm:240,speedKmh:0,  status:'mola', molaCity:'Tbilisi',     cargo:'Cam & Optik',    driver:'Ferhat B.', intl:true},
-  {plate:'07 UH 434', route:'BALKAN',   offsetKm:310,speedKmh:69, status:'moving', cargo:'Tarım Ekipmanı',     driver:'Tolga N.', intl:true},
+/* nowMs anına kadar toplam aktif (sürüş) saati */
+function activeHours(nowMs){
+  const ms=nowMs-EPOCH;
+  const fullDays=Math.floor(ms/86400000);
+  const remMs=ms%86400000;
+  const hourOfDay=remMs/3600000;
+  let partial=0;
+  if(hourOfDay>=DRIVE_START&&hourOfDay<DRIVE_END) partial=hourOfDay-DRIVE_START;
+  else if(hourOfDay>=DRIVE_END) partial=DRIVE_H;
+  return fullDays*DRIVE_H+partial;
+}
+
+/* Şu an sürücü aktif mi? */
+function isDriving(nowMs,truckStatus){
+  if(truckStatus==='offline') return false;
+  const h=new Date(nowMs).getHours();
+  return h>=DRIVE_START&&h<DRIVE_END;
+}
+
+/* Deterministic GPS jitter (±80m, 30sn'de bir değişir, tekrar edilebilir) */
+function noise(seed){const x=Math.sin(seed)*43758.5453;return x-Math.floor(x);}
+function gpsJitter(idx,nowMs){
+  const slot=Math.floor(nowMs/30000);
+  return[(noise(idx*9.12+slot*1.78)-0.5)*0.0014,(noise(idx*17.34+slot*2.56)-0.5)*0.0014];
+}
+
+/* ════════════════════════════
+   ARAÇ TANIMLAMALARI
+════════════════════════════ */
+const TRUCKS=[
+  // ── 5 AKTİF Türkiye ──
+  {plate:'07 GLZ 01',route:'WEST',  offsetKm:  38,speedKmh:67,status:'moving', cargo:'Çimento & Yapı Malz.', driver:'Mehmet K.'},
+  {plate:'07 GLZ 03',route:'EAST',  offsetKm: 174,speedKmh:63,status:'moving', cargo:'Gıda & İçecek',        driver:'Hasan A.'},
+  {plate:'07 GLZ 06',route:'NORTH', offsetKm:  92,speedKmh:70,status:'moving', cargo:'Tekstil Ürünleri',     driver:'Ali D.'},
+  {plate:'07 GLZ 111',route:'NEAST',offsetKm: 255,speedKmh:64,status:'moving', cargo:'Makine Ekipmanı',      driver:'Osman B.'},
+  {plate:'07 GLZ 158',route:'EGE',  offsetKm: 128,speedKmh:72,status:'moving', cargo:'Elektronik Ekipman',   driver:'Yusuf T.'},
+  // ── 2 KAPALI (arıza/bakım) ──
+  {plate:'07 GLZ 98', route:'WEST',  offsetKm: 315,speedKmh:63,status:'offline',offlineSince:6, cargo:'Tarım Ürünleri',  driver:'İbrahim S.'},
+  {plate:'07 ATF 44', route:'EAST',  offsetKm: 150,speedKmh:60,status:'offline',offlineSince:5, cargo:'Kimyasal Madde',  driver:'Ercan M.'},
+  // ── 3 MOLA/YÜKLEME Türkiye ──
+  {plate:'07 TK 658', route:'NORTH', offsetKm: 435,speedKmh:0, status:'mola',   molaStart:1745280000000, cargo:'İnşaat Malz.',  driver:'Serkan Ö.'},
+  {plate:'07 AUC 487',route:'NEAST', offsetKm: 505,speedKmh:0, status:'yukleme',molaStart:1745294400000, cargo:'Cam & Seramik', driver:'Murat C.'},
+  {plate:'07 UP 767', route:'EGE',   offsetKm: 275,speedKmh:0, status:'mola',   molaStart:1745265600000, cargo:'Mobilya',       driver:'Kemal F.'},
+  // ── 4 ULUSLARARASI ──
+  {plate:'07 CCF 336',route:'KRASNODAR',offsetKm:480,speedKmh:70,status:'moving',cargo:'Çelik Konstrüksiyon', driver:'Volkan Ş.',intl:true},
+  {plate:'07 BJV 411',route:'MOSCOW',   offsetKm:670,speedKmh:73,status:'moving',cargo:'Tekstil & Konfeksiyon',driver:'Emre Y.', intl:true},
+  {plate:'07 KZL 71', route:'KAFKAS',   offsetKm:235,speedKmh:0, status:'mola',  molaStart:1745308800000,cargo:'Cam & Optik',    driver:'Ferhat B.',intl:true},
+  {plate:'07 UH 434', route:'BALKAN',   offsetKm:305,speedKmh:68,status:'moving',cargo:'Tarım Ekipmanı',      driver:'Tolga N.',intl:true},
 ];
 
 /* ── Pozisyon hesapla ── */
-function getTruckPos(t, nowMs) {
+function getTruckPos(t,idx,nowMs){
+  let km;
   if(t.status==='offline'){
-    // Kapandığı andaki pozisyon (offlineSince saat önce)
-    const frozenMs = nowMs - t.offlineSince*3600000;
-    const h = (frozenMs - EPOCH)/3600000;
-    return posOnRoute(R[t.route], t.offsetKm + h * 60); // 60 km/h ortalama frozen hız
+    // Kapandığı andaki son konum (frozen)
+    const frozenMs=nowMs-t.offlineSince*3600000;
+    km=t.offsetKm+activeHours(frozenMs)*t.speedKmh;
+  } else if(t.status==='mola'||t.status==='yukleme'){
+    // Mola başladığı andaki konumda dur
+    km=t.offsetKm+activeHours(t.molaStart)*t.speedKmh;
+    const base=posOnPingPong(R[t.route],km);
+    return[base[0]+gpsJitter(idx,nowMs)[0],base[1]+gpsJitter(idx,nowMs)[1]];
+  } else {
+    // Gerçek zamanlı: sadece aktif saatlerde km birikir
+    km=t.offsetKm+activeHours(nowMs)*t.speedKmh;
   }
-  if(t.status==='mola'||t.status==='yukleme'){
-    // Sabit şehir pozisyonu - mola şehrine en yakın rota noktası
-    const h = (nowMs - EPOCH)/3600000;
-    return posOnRoute(R[t.route], t.offsetKm + h * 45);
-    // Düşük hız, sanki yavaş hareket eden
-  }
-  // moving
-  const h = (nowMs - EPOCH)/3600000;
-  const km = t.offsetKm + h * t.speedKmh;
-  return posOnRoute(R[t.route], km);
+  const base=posOnPingPong(R[t.route],km);
+  // Gece ise pozisyon sabit (jitter hariç)
+  const j=gpsJitter(idx,nowMs);
+  return[base[0]+j[0],base[1]+j[1]];
 }
 
-/* ── Hız hesapla (anlık) ── */
-function getTruckSpeed(t, nowMs) {
+/* Anlık hız (gece=0, gündüz=gerçekçi varyasyon) */
+function getTruckSpeed(t,idx,nowMs){
   if(t.status!=='moving') return 0;
-  // Küçük varyasyon: sinüs dalgası
-  const seed = t.plate.charCodeAt(0)*7 + t.plate.charCodeAt(3)*13;
-  const wave = Math.sin(nowMs/1000/60 + seed) * 8;
-  return Math.round(t.speedKmh + wave);
+  if(!isDriving(nowMs,'moving')) return 0;
+  const seed=t.plate.length*7+idx*13;
+  const wave=Math.sin(nowMs/240000+seed)*7;
+  const cityFactor=Math.sin(nowMs/900000+idx)*4; // trafik ışığı efekti
+  return Math.min(79,Math.max(42,Math.round(t.speedKmh+wave+cityFactor)));
 }
 
-/* ── Status rengi ── */
-const STATUS_COLOR = { moving:'#4ade80', offline:'#6b7280', mola:'#fbbf24', yukleme:'#60a5fa' };
-const STATUS_LABEL = { moving:'AKTİF', offline:'KAPALI', mola:'MOLA', yukleme:'YÜKLEME' };
+/* Mevcut durum etiketi (gece ise İSTİRAHAT) */
+function effectiveStatus(t,nowMs){
+  if(t.status==='offline') return 'offline';
+  if(t.status==='mola') return 'mola';
+  if(t.status==='yukleme') return 'yukleme';
+  if(!isDriving(nowMs,t.status)) return 'istirahat';
+  return 'moving';
+}
 
-/* ── Harita değişkenleri ── */
-let atMap = null, atMarkers = {}, atInterval = null, atInited = false;
+/* ── Görsel ── */
+const SC={moving:'#4ade80',offline:'#6b7280',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
+const SL={moving:'AKTİF',offline:'KAPALI',mola:'MOLA',yukleme:'YÜKLEME',istirahat:'İSTİRAHAT'};
 
-function buildIcon(color, moving) {
-  const pulse = moving ? `<div style="position:absolute;inset:-5px;border-radius:50%;background:${color}22;animation:pulse 1.5s infinite;"></div>` : '';
+function buildTruckIcon(eSt){
+  const c=SC[eSt], isAnim=eSt==='moving';
+  const pulse=isAnim?`<div style="position:absolute;inset:-6px;border-radius:50%;background:${c}20;animation:pulse 1.5s infinite;"></div>`:'';
   return L.divIcon({
-    html:`<div style="position:relative;width:14px;height:14px;">
-      ${pulse}
-      <div style="width:14px;height:14px;background:${color};border-radius:50%;
-        border:2px solid rgba(255,255,255,0.8);
-        box-shadow:0 0 ${moving?'10px':' 4px'} ${color};
-        position:relative;z-index:1;"></div>
+    html:`<div style="position:relative;width:14px;height:14px;">${pulse}
+      <div style="width:14px;height:14px;background:${c};border-radius:50%;
+        border:2px solid rgba(255,255,255,0.85);
+        box-shadow:0 0 ${isAnim?'10px':'4px'} ${c};position:relative;z-index:1;"></div>
     </div>`,
-    iconSize:[14,14], iconAnchor:[7,7], className:''
+    iconSize:[14,14],iconAnchor:[7,7],className:''
   });
 }
 
-function buildTruckIcon(truck) {
-  return buildIcon(STATUS_COLOR[truck.status], truck.status==='moving');
-}
+function fmtTime(ms){return new Date(ms).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 
-function formatTime(ms) {
-  const d=new Date(ms);
-  return d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-}
-
-function popupContent(t, pos, spd, nowMs) {
-  const col = STATUS_COLOR[t.status];
-  const lbl = STATUS_LABEL[t.status];
-  const coord = `${pos[0].toFixed(3)}°N, ${pos[1].toFixed(3)}°E`;
-  const offlineTxt = t.status==='offline'
-    ? `<div style="color:#9ca3af;font-size:11px;">⛔ ${t.offlineSince} saat önce kapandı</div>` : '';
-  const spdTxt = t.status==='moving'
-    ? `<div>🚀 Anlık hız: <b>${spd} km/s</b></div>` : '';
-  const routeInfo = t.intl
-    ? `<div>🌍 Uluslararası güzergah</div>` : `<div>🇹🇷 Türkiye iç hat</div>`;
-  return `
-    <div style="font-weight:800;font-size:13px;margin-bottom:4px;color:#fff;">${t.plate}</div>
-    <div style="display:inline-block;background:${col}22;color:${col};border:1px solid ${col}44;
-      border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">${lbl}</div>
+function popupContent(t,idx,nowMs){
+  const eSt=effectiveStatus(t,nowMs);
+  const c=SC[eSt], lbl=SL[eSt];
+  const pos=getTruckPos(t,idx,nowMs);
+  const spd=getTruckSpeed(t,idx,nowMs);
+  const coord=`${pos[0].toFixed(4)}°K, ${pos[1].toFixed(4)}°D`;
+  const spdRow=eSt==='moving'?`<div>🚀 Anlık hız: <b>${spd} km/s</b></div>`:'';
+  const nightRow=eSt==='istirahat'?`<div style="color:#a78bfa;font-size:11px;">🌙 Sürücü istirahat (aktif: 06:00)</div>`:'';
+  const offRow=eSt==='offline'?`<div style="color:#9ca3af;font-size:11px;">⛔ ${t.offlineSince} saat önce kapandı</div>`:'';
+  const flag=t.intl?'🌍 Uluslararası':'🇹🇷 Türkiye iç hat';
+  return `<div style="font-weight:800;font-size:13px;color:#fff;margin-bottom:4px;">${t.plate}</div>
+    <div style="background:${c}22;color:${c};border:1px solid ${c}44;border-radius:6px;
+      padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px;display:inline-block;margin-bottom:8px;">${lbl}</div>
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;">
-    ${spdTxt}
-    ${offlineTxt}
+    ${spdRow}${nightRow}${offRow}
     <div>📦 ${t.cargo}</div>
     <div>👤 Sürücü: ${t.driver}</div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;">📡 ${coord}</div>
-    ${routeInfo}
-  `;
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:5px;">📡 ${coord}</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);">${flag}</div>`;
 }
 
-function updateTrucks(nowMs) {
-  TRUCKS.forEach((t,i) => {
-    const pos = getTruckPos(t, nowMs);
-    const spd = getTruckSpeed(t, nowMs);
-    if(atMarkers[i]) {
+/* ── Harita ── */
+let atMap=null,atMarkers={},atInterval=null,atInited=false;
+
+function updateTrucks(nowMs){
+  TRUCKS.forEach((t,i)=>{
+    const eSt=effectiveStatus(t,nowMs);
+    const pos=getTruckPos(t,i,nowMs);
+    if(atMarkers[i]){
       atMarkers[i].setLatLng(pos);
-      atMarkers[i].setIcon(buildTruckIcon(t));
-      atMarkers[i].getPopup()?.setContent(popupContent(t,pos,spd,nowMs));
+      atMarkers[i].setIcon(buildTruckIcon(eSt));
+      atMarkers[i].getPopup()?.setContent(popupContent(t,i,nowMs));
     }
   });
-  // Sidebar güncelle
   renderSidebar(nowMs);
-  const el = document.getElementById('at-update-time');
-  if(el) el.textContent = `Son güncelleme: ${formatTime(nowMs)}`;
+  const el=document.getElementById('at-update-time');
+  if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
 }
 
-function renderSidebar(nowMs) {
-  const list = document.getElementById('at-truck-list');
+function renderSidebar(nowMs){
+  const list=document.getElementById('at-truck-list');
   if(!list) return;
-  list.innerHTML = TRUCKS.map((t,i) => {
-    const pos = getTruckPos(t, nowMs);
-    const spd = getTruckSpeed(t, nowMs);
-    const col = STATUS_COLOR[t.status];
-    const lbl = STATUS_LABEL[t.status];
-    const spdTxt = t.status==='moving' ? `${spd} km/s` : (t.status==='offline'?`${t.offlineSince}s kapalı`:'durdu');
-    return `<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}">
-      <div class="at-t-dot" style="background:${col};box-shadow:0 0 6px ${col}66;"></div>
-      <div style="flex:1;min-width:0;">
-        <div class="at-t-plate">${t.plate}</div>
-        <div class="at-t-speed">${spdTxt}</div>
-      </div>
-      <div class="at-t-status st-${t.status==='yukleme'?'yükleme':t.status}">${lbl}</div>
+  list.innerHTML=TRUCKS.map((t,i)=>{
+    const eSt=effectiveStatus(t,nowMs);
+    const c=SC[eSt],lbl=SL[eSt];
+    const spd=getTruckSpeed(t,i,nowMs);
+    const sub=eSt==='moving'?`${spd} km/s`:(eSt==='offline'?`${t.offlineSince}s kapalı`:(eSt==='istirahat'?'Gece molası':'Durdu'));
+    return`<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}">
+      <div class="at-t-dot" style="background:${c};box-shadow:0 0 6px ${c}66;"></div>
+      <div style="flex:1;min-width:0;"><div class="at-t-plate">${t.plate}</div><div class="at-t-speed">${sub}</div></div>
+      <div class="at-t-status st-${eSt==='yukleme'?'yükleme':eSt==='istirahat'?'mola':eSt}">${lbl}</div>
     </div>`;
   }).join('');
 }
 
-window.atFocusTruck = function(i) {
+window.atFocusTruck=function(i){
   document.querySelectorAll('.at-truck-item').forEach(el=>el.classList.remove('selected'));
-  const item = document.getElementById('at-item-'+i);
+  const item=document.getElementById('at-item-'+i);
   if(item) item.classList.add('selected');
-  if(atMarkers[i]) {
-    atMap.setView(atMarkers[i].getLatLng(), 8, {animate:true});
-    atMarkers[i].openPopup();
-  }
+  if(atMarkers[i]){atMap.setView(atMarkers[i].getLatLng(),8,{animate:true});atMarkers[i].openPopup();}
 };
 
-function initAtMap() {
+function initAtMap(){
   if(atInited) return;
-  atInited = true;
-
-  atMap = L.map('at-map', {
-    center: [42.5, 35.0], zoom: 5,
-    zoomControl: false, attributionControl: false
-  });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains:'abcd', maxZoom:18
-  }).addTo(atMap);
+  atInited=true;
+  atMap=L.map('at-map',{center:[42.5,35.0],zoom:5,zoomControl:false,attributionControl:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18}).addTo(atMap);
   L.control.zoom({position:'topright'}).addTo(atMap);
-
-  const nowMs = Date.now();
-  TRUCKS.forEach((t,i) => {
-    const pos = getTruckPos(t, nowMs);
-    const spd = getTruckSpeed(t, nowMs);
-    const marker = L.marker(pos, {icon: buildTruckIcon(t)})
-      .bindPopup(popupContent(t,pos,spd,nowMs), {className:'at-popup', maxWidth:230})
+  const nowMs=Date.now();
+  TRUCKS.forEach((t,i)=>{
+    const eSt=effectiveStatus(t,nowMs);
+    const pos=getTruckPos(t,i,nowMs);
+    atMarkers[i]=L.marker(pos,{icon:buildTruckIcon(eSt)})
+      .bindPopup(popupContent(t,i,nowMs),{className:'at-popup',maxWidth:240})
       .addTo(atMap);
-    atMarkers[i] = marker;
   });
-
   renderSidebar(nowMs);
-  const el = document.getElementById('at-update-time');
-  if(el) el.textContent = `Son güncelleme: ${formatTime(nowMs)}`;
-
-  // Güncelleme döngüsü (her 8 saniye)
-  atInterval = setInterval(() => updateTrucks(Date.now()), 8000);
+  const el=document.getElementById('at-update-time');
+  if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
+  atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
 }
 
-window.openAracTakip = function() {
+window.openAracTakip=function(){
   document.getElementById('atOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => {
-    initAtMap();
-    if(atMap) atMap.invalidateSize();
-  }, 100);
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{initAtMap();if(atMap)atMap.invalidateSize();},120);
 };
-
-window.closeAracTakip = function() {
+window.closeAracTakip=function(){
   document.getElementById('atOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  if(atInterval) { clearInterval(atInterval); atInterval = null; atInited = false; atMarkers = {}; atMap?.remove(); atMap = null; }
+  document.body.style.overflow='';
+  if(atInterval){clearInterval(atInterval);atInterval=null;}
+  atInited=false;atMarkers={};
+  if(atMap){atMap.remove();atMap=null;}
 };
-
-// ESC ile kapat
-document.addEventListener('keydown', e => { if(e.key==='Escape') window.closeAracTakip(); });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')window.closeAracTakip();});
 
 })(); // end ARAÇ TAKİP
 
