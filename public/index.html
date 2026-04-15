@@ -320,16 +320,26 @@
     flex-shrink: 0;
   }
   #currentLangFlag {
-    font-size: 20px;
-    line-height: 1;
-    cursor: default;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
     user-select: none;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  }
+  #currentLangFlag img {
+    width: 28px;
+    height: 20px;
+    display: block;
+    object-fit: cover;
+    border-radius: 3px;
   }
   .lang-dots-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 2px 5px;
+    padding: 2px 4px;
     font-size: 11px;
     letter-spacing: 2px;
     color: #1a2d6b;
@@ -349,7 +359,7 @@
     box-shadow: 0 8px 28px rgba(0,0,0,0.18);
     overflow: hidden;
     z-index: 200;
-    min-width: 130px;
+    min-width: 140px;
     border: 1px solid rgba(0,0,0,0.07);
   }
   .lang-dropdown.open { display: block; }
@@ -371,7 +381,12 @@
   }
   .lang-dropdown button:last-child { border-bottom: none; }
   .lang-dropdown button:hover { background: rgba(26,45,107,0.05); }
-  .lang-dropdown button .lf { font-size: 20px; }
+  .lang-dropdown button .lf {
+    width: 26px; height: 18px; display: block;
+    object-fit: cover; border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
 
   @media (max-width: 768px) {
     nav { padding: 14px 20px; position: fixed; }
@@ -517,12 +532,14 @@
       <li><a href="iletisim/index.html" data-i18n="nav.contact">İletişim</a></li>
     </ul>
     <div class="lang-switcher" id="langSwitcher">
-      <span id="currentLangFlag">🇹🇷</span>
-      <button class="lang-dots-btn" id="langDotsBtn" onclick="toggleLangMenu()" aria-label="Dil seç">•••</button>
+      <span id="currentLangFlag" onclick="toggleLangMenu()" title="Dil seç" style="cursor:pointer">
+        <img src="https://flagcdn.com/28x21/tr.png" alt="TR" id="currentFlagImg">
+      </span>
+      <button class="lang-dots-btn" id="langDotsBtn" onclick="toggleLangMenu()" aria-label="Dil seç">▾</button>
       <div class="lang-dropdown" id="langDropdown">
-        <button onclick="setLang('tr')"><span class="lf">🇹🇷</span> Türkçe</button>
-        <button onclick="setLang('en')"><span class="lf">🇺🇸</span> English</button>
-        <button onclick="setLang('ru')"><span class="lf">🇷🇺</span> Русский</button>
+        <button onclick="setLang('tr')"><img class="lf" src="https://flagcdn.com/28x21/tr.png" alt="TR"> Türkçe</button>
+        <button onclick="setLang('en')"><img class="lf" src="https://flagcdn.com/28x21/us.png" alt="US"> English</button>
+        <button onclick="setLang('ru')"><img class="lf" src="https://flagcdn.com/28x21/ru.png" alt="RU"> Русский</button>
       </div>
     </div>
     <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç/kapat">
@@ -861,9 +878,14 @@ function stopTyping() {
 /* ══════════════════════════════════════
    DİL DEĞİŞTİRİCİ
 ══════════════════════════════════════ */
+const LANG_FLAGS = {
+  tr: 'https://flagcdn.com/28x21/tr.png',
+  en: 'https://flagcdn.com/28x21/us.png',
+  ru: 'https://flagcdn.com/28x21/ru.png'
+};
 const LANGS = {
   tr: {
-    flag: '🇹🇷',
+    flag: 'https://flagcdn.com/28x21/tr.png',
     'nav.home':         'Anasayfa',
     'nav.logistics':    'Lojistik',
     'nav.tender':       'Kamu İhalesi',
@@ -907,7 +929,7 @@ const LANGS = {
     'chat.msgPh':       'Mesajınızı yazın...',
   },
   en: {
-    flag: '🇺🇸',
+    flag: 'https://flagcdn.com/28x21/us.png',
     'nav.home':         'Home',
     'nav.logistics':    'Logistics',
     'nav.tender':       'Public Tender',
@@ -951,7 +973,7 @@ const LANGS = {
     'chat.msgPh':       'Type your message...',
   },
   ru: {
-    flag: '🇷🇺',
+    flag: 'https://flagcdn.com/28x21/ru.png',
     'nav.home':         'Главная',
     'nav.logistics':    'Логистика',
     'nav.tender':       'Госзакупки',
@@ -1008,7 +1030,7 @@ function setLang(lang) {
   localStorage.setItem('gt_lang', lang);
 
   // Bayrak güncelle
-  document.getElementById('currentLangFlag').textContent = LANGS[lang].flag;
+  document.getElementById('currentFlagImg').src = LANGS[lang].flag;
 
   // Tüm data-i18n elementlerini güncelle
   document.querySelectorAll('[data-i18n]').forEach(el => {

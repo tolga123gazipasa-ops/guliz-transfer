@@ -106,6 +106,19 @@ footer a:hover{color:#fff;}
   .main-wrap{grid-template-columns:1fr;gap:30px;}
   footer{padding:24px 20px;flex-direction:column;align-items:flex-start;}
 }
+
+/* ── DİL SEÇİCİ ── */
+.lang-switcher{position:relative;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+#currentLangFlag{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.18);}
+#currentLangFlag img{width:28px;height:20px;display:block;object-fit:cover;border-radius:3px;}
+.lang-dots-btn{background:none;border:none;cursor:pointer;padding:2px 4px;font-size:11px;color:#1a2d6b;font-weight:900;border-radius:4px;transition:background 0.2s;line-height:1;}
+.lang-dots-btn:hover{background:rgba(26,45,107,0.08);}
+.lang-dropdown{display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.18);overflow:hidden;z-index:200;min-width:140px;border:1px solid rgba(0,0,0,0.07);}
+.lang-dropdown.open{display:block;}
+.lang-dropdown button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#1a2d6b;font-family:'Montserrat',sans-serif;transition:background 0.15s;border-bottom:1px solid rgba(0,0,0,0.05);}
+.lang-dropdown button:last-child{border-bottom:none;}
+.lang-dropdown button:hover{background:rgba(26,45,107,0.05);}
+.lang-dropdown button .lf{width:26px;height:18px;display:block;object-fit:cover;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.15);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -115,69 +128,80 @@ footer a:hover{color:#fff;}
     <a href="/index.html"><img src="/slider/logo.png" alt="Güliz Şirketler Topluluğu"></a>
   </div>
   <ul>
-    <li><a href="/index.html">Anasayfa</a></li>
-    <li><a href="/lojistik/index.html">Lojistik</a></li>
-    <li><a href="/ihale/index.html">Kamu İhalesi</a></li>
-    <li><a href="/insaat/index.html">İnşaat</a></li>
-    <li><a href="/kurum/index.html">Kurum Girişi</a></li>
-    <li><a href="/ik/index.html">İnsan Kaynakları</a></li>
-    <li><a href="/iletisim/index.html" class="active">İletişim</a></li>
+    <li><a href="/index.html" data-i18n="nav.home">Anasayfa</a></li>
+    <li><a href="/lojistik/index.html" data-i18n="nav.logistics">Lojistik</a></li>
+    <li><a href="/ihale/index.html" data-i18n="nav.tender">Kamu İhalesi</a></li>
+    <li><a href="/insaat/index.html" data-i18n="nav.construction">İnşaat</a></li>
+    <li><a href="/kurum/index.html" data-i18n="nav.login">Kurum Girişi</a></li>
+    <li><a href="/ik/index.html" data-i18n="nav.hr">İnsan Kaynakları</a></li>
+    <li><a href="/iletisim/index.html" class="active" data-i18n="nav.contact">İletişim</a></li>
   </ul>
+  <div class="lang-switcher" id="langSwitcher">
+    <span id="currentLangFlag" onclick="toggleLangMenu()" title="Dil seç">
+      <img src="https://flagcdn.com/28x21/tr.png" alt="TR" id="currentFlagImg">
+    </span>
+    <button class="lang-dots-btn" onclick="toggleLangMenu()" aria-label="Dil seç">▾</button>
+    <div class="lang-dropdown" id="langDropdown">
+      <button onclick="setLang('tr')"><img class="lf" src="https://flagcdn.com/28x21/tr.png" alt="TR"> Türkçe</button>
+      <button onclick="setLang('en')"><img class="lf" src="https://flagcdn.com/28x21/us.png" alt="US"> English</button>
+      <button onclick="setLang('ru')"><img class="lf" src="https://flagcdn.com/28x21/ru.png" alt="RU"> Русский</button>
+    </div>
+  </div>
 </nav>
 
 <div class="hero">
   <div class="hero-eyebrow">
     <div class="dot"></div>
-    <span>Bize Ulaşın</span>
+    <span data-i18n="ct.eyebrow">Bize Ulaşın</span>
   </div>
-  <h1>İletişim &<br><span class="red">Destek</span></h1>
-  <p>Her türlü soru ve talebiniz için bize ulaşabilirsiniz. En kısa sürede geri dönüş yapacağız.</p>
+  <h1><span data-i18n="ct.h1">İletişim &</span><br><span class="red" data-i18n="ct.h1red">Destek</span></h1>
+  <p data-i18n="ct.desc">Her türlü soru ve talebiniz için bize ulaşabilirsiniz. En kısa sürede geri dönüş yapacağız.</p>
 </div>
 
 <div class="main-wrap">
 
   <div class="info-card">
-    <h2>İletişim Bilgileri</h2>
-    <p>Telefon, WhatsApp veya mesaj formu ile bize ulaşabilirsiniz.</p>
+    <h2 data-i18n="ct.infoTitle">İletişim Bilgileri</h2>
+    <p data-i18n="ct.infoDesc">Telefon, WhatsApp veya mesaj formu ile bize ulaşabilirsiniz.</p>
 
     <div class="info-item">
       <div class="info-icon">📞</div>
       <div>
-        <div class="info-label">Telefon</div>
+        <div class="info-label" data-i18n="ct.phone">Telefon</div>
         <div class="info-val"><a href="tel:05448654200">0544 865 42 00</a></div>
       </div>
     </div>
     <div class="info-item">
       <div class="info-icon">📍</div>
       <div>
-        <div class="info-label">Adres</div>
+        <div class="info-label" data-i18n="ct.address">Adres</div>
         <div class="info-val" style="font-size:13px;font-weight:500;line-height:1.5;">Pazarcı Mah. 10003. Sk.<br>No:32/7 Gazipaşa / ANTALYA</div>
       </div>
     </div>
     <div class="info-item">
       <div class="info-icon">📧</div>
       <div>
-        <div class="info-label">E-posta</div>
+        <div class="info-label" data-i18n="ct.email">E-posta</div>
         <div class="info-val"><a href="mailto:gulizlojistik@hotmail.com">gulizlojistik@hotmail.com</a></div>
       </div>
     </div>
     <div class="info-item">
       <div class="info-icon">🕐</div>
       <div>
-        <div class="info-label">Çalışma Saatleri</div>
-        <div class="info-val" style="font-size:13px;font-weight:500;">Hafta içi 08:00 – 18:00<br>Cumartesi 09:00 – 14:00</div>
+        <div class="info-label" data-i18n="ct.hours">Çalışma Saatleri</div>
+        <div class="info-val" style="font-size:13px;font-weight:500;" data-i18n="ct.hoursVal">Hafta içi 08:00 – 18:00<br>Cumartesi 09:00 – 14:00</div>
       </div>
     </div>
 
     <a href="https://wa.me/905448654200" target="_blank" class="wa-btn">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      WhatsApp ile Yazın
+      <span data-i18n="ct.wa">WhatsApp ile Yazın</span>
     </a>
   </div>
 
   <div class="form-card">
-    <h2>Mesaj Gönderin</h2>
-    <p>Formu doldurun, en kısa sürede size dönüş yapalım.</p>
+    <h2 data-i18n="ct.formTitle">Mesaj Gönderin</h2>
+    <p data-i18n="ct.formDesc">Formu doldurun, en kısa sürede size dönüş yapalım.</p>
 
     <div id="ctMsg" class="form-msg"></div>
 
@@ -194,7 +218,7 @@ footer a:hover{color:#fff;}
         <label>Mesajınız *</label>
         <textarea id="ctMesaj" rows="5" placeholder="Nasıl yardımcı olabiliriz?" required></textarea>
       </div>
-      <button type="submit" class="btn-submit">Mesaj Gönder →</button>
+      <button type="submit" class="btn-submit" data-i18n="ct.submit">Mesaj Gönder →</button>
     </form>
   </div>
 
@@ -210,6 +234,59 @@ footer a:hover{color:#fff;}
 </footer>
 
 <script>
+/* ══ DİL SİSTEMİ ══ */
+const CT_LANGS = {
+  tr:{
+    'nav.home':'Anasayfa','nav.logistics':'Lojistik','nav.tender':'Kamu İhalesi',
+    'nav.construction':'İnşaat','nav.login':'Kurum Girişi','nav.hr':'İnsan Kaynakları','nav.contact':'İletişim',
+    'ct.eyebrow':'Bize Ulaşın','ct.h1':'İletişim &','ct.h1red':'Destek',
+    'ct.desc':'Her türlü soru ve talebiniz için bize ulaşabilirsiniz. En kısa sürede geri dönüş yapacağız.',
+    'ct.infoTitle':'İletişim Bilgileri','ct.infoDesc':'Telefon, WhatsApp veya mesaj formu ile bize ulaşabilirsiniz.',
+    'ct.phone':'Telefon','ct.address':'Adres','ct.email':'E-posta',
+    'ct.hours':'Çalışma Saatleri','ct.hoursVal':'Hafta içi 08:00 – 18:00\nCumartesi 09:00 – 14:00',
+    'ct.wa':'WhatsApp ile Yazın',
+    'ct.formTitle':'Mesaj Gönderin','ct.formDesc':'Formu doldurun, en kısa sürede size dönüş yapalım.',
+    'ct.submit':'Mesaj Gönder →'
+  },
+  en:{
+    'nav.home':'Home','nav.logistics':'Logistics','nav.tender':'Public Tender',
+    'nav.construction':'Construction','nav.login':'Login','nav.hr':'Human Resources','nav.contact':'Contact',
+    'ct.eyebrow':'Get in Touch','ct.h1':'Contact &','ct.h1red':'Support',
+    'ct.desc':'You can reach us for any question or request. We will get back to you as soon as possible.',
+    'ct.infoTitle':'Contact Information','ct.infoDesc':'You can reach us by phone, WhatsApp or the contact form.',
+    'ct.phone':'Phone','ct.address':'Address','ct.email':'E-mail',
+    'ct.hours':'Working Hours','ct.hoursVal':'Weekdays 08:00 – 18:00\nSaturday 09:00 – 14:00',
+    'ct.wa':'Chat on WhatsApp',
+    'ct.formTitle':'Send a Message','ct.formDesc':'Fill in the form and we will get back to you shortly.',
+    'ct.submit':'Send Message →'
+  },
+  ru:{
+    'nav.home':'Главная','nav.logistics':'Логистика','nav.tender':'Госзакупки',
+    'nav.construction':'Строительство','nav.login':'Вход','nav.hr':'Персонал','nav.contact':'Контакты',
+    'ct.eyebrow':'Свяжитесь с нами','ct.h1':'Контакты &','ct.h1red':'Поддержка',
+    'ct.desc':'Вы можете обратиться к нам по любому вопросу. Мы ответим вам как можно скорее.',
+    'ct.infoTitle':'Контактная информация','ct.infoDesc':'Вы можете связаться с нами по телефону, WhatsApp или через форму.',
+    'ct.phone':'Телефон','ct.address':'Адрес','ct.email':'E-mail',
+    'ct.hours':'Часы работы','ct.hoursVal':'Будни 08:00 – 18:00\nСуббота 09:00 – 14:00',
+    'ct.wa':'Написать в WhatsApp',
+    'ct.formTitle':'Отправить сообщение','ct.formDesc':'Заполните форму и мы свяжемся с вами.',
+    'ct.submit':'Отправить →'
+  }
+};
+let ctLang = localStorage.getItem('gt_lang') || 'tr';
+function setLang(lang) {
+  if (!CT_LANGS[lang]) return;
+  ctLang = lang; localStorage.setItem('gt_lang', lang);
+  document.getElementById('currentFlagImg').src = {tr:'https://flagcdn.com/28x21/tr.png',en:'https://flagcdn.com/28x21/us.png',ru:'https://flagcdn.com/28x21/ru.png'}[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(CT_LANGS[lang][k])el.textContent=CT_LANGS[lang][k];});
+  document.getElementById('langDropdown').classList.remove('open');
+  document.documentElement.lang = lang;
+}
+function toggleLangMenu(){document.getElementById('langDropdown').classList.toggle('open');}
+document.addEventListener('click',function(e){const sw=document.getElementById('langSwitcher');if(sw&&!sw.contains(e.target))document.getElementById('langDropdown').classList.remove('open');});
+(function(){const u=new URLSearchParams(location.search).get('lang');if(u&&CT_LANGS[u]){ctLang=u;localStorage.setItem('gt_lang',u);}if(ctLang!=='tr')setLang(ctLang);})();
+/* ══ FORM ══ */
+
 async function handleContact(e) {
   e.preventDefault();
   const ad_soyad = document.getElementById('ctAd').value.trim();

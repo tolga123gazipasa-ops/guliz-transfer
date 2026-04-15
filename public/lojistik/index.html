@@ -273,6 +273,19 @@ footer nav ul li a:hover{color:#fff;}
   footer{flex-direction:column;text-align:center;padding:30px 20px;}
   footer nav ul{justify-content:center;}
 }
+
+/* ── DİL SEÇİCİ ── */
+.lang-switcher{position:relative;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+#currentLangFlag{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.18);}
+#currentLangFlag img{width:28px;height:20px;display:block;object-fit:cover;border-radius:3px;}
+.lang-dots-btn{background:none;border:none;cursor:pointer;padding:2px 4px;font-size:11px;color:#1a2d6b;font-weight:900;border-radius:4px;transition:background 0.2s;line-height:1;}
+.lang-dots-btn:hover{background:rgba(26,45,107,0.08);}
+.lang-dropdown{display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.18);overflow:hidden;z-index:200;min-width:140px;border:1px solid rgba(0,0,0,0.07);}
+.lang-dropdown.open{display:block;}
+.lang-dropdown button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#1a2d6b;font-family:'Montserrat',sans-serif;transition:background 0.15s;border-bottom:1px solid rgba(0,0,0,0.05);}
+.lang-dropdown button:last-child{border-bottom:none;}
+.lang-dropdown button:hover{background:rgba(26,45,107,0.05);}
+.lang-dropdown button .lf{width:26px;height:18px;display:block;object-fit:cover;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.15);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -283,27 +296,38 @@ footer nav ul li a:hover{color:#fff;}
     <a href="../index.html"><img src="../slider/logo.png" alt="Güliz"></a>
   </div>
   <ul>
-    <li><a href="../index.html">Anasayfa</a></li>
-    <li><a href="#" class="active">Lojistik</a></li>
-    <li><a href="../ihale/index.html">Kamu İhalesi</a></li>
-    <li><a href="../insaat/index.html">İnşaat</a></li>
-    <li><a href="../kurum/index.html">Kurum Girişi</a></li>
-    <li><a href="../ik/index.html">İnsan Kaynakları</a></li>
-    <li><a href="../iletisim/index.html">İletişim</a></li>
+    <li><a href="../index.html" data-i18n="nav.home">Anasayfa</a></li>
+    <li><a href="#" class="active" data-i18n="nav.logistics">Lojistik</a></li>
+    <li><a href="../ihale/index.html" data-i18n="nav.tender">Kamu İhalesi</a></li>
+    <li><a href="../insaat/index.html" data-i18n="nav.construction">İnşaat</a></li>
+    <li><a href="../kurum/index.html" data-i18n="nav.login">Kurum Girişi</a></li>
+    <li><a href="../ik/index.html" data-i18n="nav.hr">İnsan Kaynakları</a></li>
+    <li><a href="../iletisim/index.html" data-i18n="nav.contact">İletişim</a></li>
   </ul>
+  <div class="lang-switcher" id="langSwitcher">
+    <span id="currentLangFlag" onclick="toggleLangMenu()" title="Dil seç">
+      <img src="https://flagcdn.com/28x21/tr.png" alt="TR" id="currentFlagImg">
+    </span>
+    <button class="lang-dots-btn" onclick="toggleLangMenu()" aria-label="Dil seç">▾</button>
+    <div class="lang-dropdown" id="langDropdown">
+      <button onclick="setLang('tr')"><img class="lf" src="https://flagcdn.com/28x21/tr.png" alt="TR"> Türkçe</button>
+      <button onclick="setLang('en')"><img class="lf" src="https://flagcdn.com/28x21/us.png" alt="US"> English</button>
+      <button onclick="setLang('ru')"><img class="lf" src="https://flagcdn.com/28x21/ru.png" alt="RU"> Русский</button>
+    </div>
+  </div>
 </nav>
 
 <!-- HERO + TAKİP -->
 <div class="hero">
   <div class="hero-eyebrow">
     <div class="dot"></div>
-    <span>Güliz Lojistik · Türkiye & Dünya</span>
+    <span data-i18n="loj.eyebrow">Güliz Lojistik · Türkiye & Dünya</span>
   </div>
-  <h1>Yükünüz Her Zaman<br><span class="red">Güvende</span></h1>
-  <p>Yurt içi ve yurt dışı taşımacılıkta zamanında, güvenli ve şeffaf lojistik hizmeti. Gönderinizi canlı olarak takip edin.</p>
+  <h1><span data-i18n="loj.h1">Yükünüz Her Zaman</span><br><span class="red" data-i18n="loj.h1red">Güvende</span></h1>
+  <p data-i18n="loj.desc">Yurt içi ve yurt dışı taşımacılıkta zamanında, güvenli ve şeffaf lojistik hizmeti. Gönderinizi canlı olarak takip edin.</p>
 
   <div class="track-box">
-    <h2>🔍 Gönderi Takibi</h2>
+    <h2 data-i18n="loj.trackTitle">🔍 Gönderi Takibi</h2>
     <div class="track-row">
       <input class="track-input" id="trackInput" type="text" placeholder="Takip kodunuzu girin (örn: GLZ4F2A1)"
         maxlength="20" onkeydown="if(event.key==='Enter')doTrack()">
@@ -540,6 +564,47 @@ footer nav ul li a:hover{color:#fff;}
 </footer>
 
 <script>
+/* ══ DİL SİSTEMİ ══ */
+const LOJ_LANGS = {
+  tr:{
+    'nav.home':'Anasayfa','nav.logistics':'Lojistik','nav.tender':'Kamu İhalesi',
+    'nav.construction':'İnşaat','nav.login':'Kurum Girişi','nav.hr':'İnsan Kaynakları','nav.contact':'İletişim',
+    'loj.eyebrow':'Güliz Lojistik · Türkiye & Dünya',
+    'loj.h1':'Yükünüz Her Zaman','loj.h1red':'Güvende',
+    'loj.desc':'Yurt içi ve yurt dışı taşımacılıkta zamanında, güvenli ve şeffaf lojistik hizmeti. Gönderinizi canlı olarak takip edin.',
+    'loj.trackTitle':'🔍 Gönderi Takibi'
+  },
+  en:{
+    'nav.home':'Home','nav.logistics':'Logistics','nav.tender':'Public Tender',
+    'nav.construction':'Construction','nav.login':'Login','nav.hr':'Human Resources','nav.contact':'Contact',
+    'loj.eyebrow':'Güliz Logistics · Turkey & World',
+    'loj.h1':'Your Cargo Always','loj.h1red':'Safe',
+    'loj.desc':'Timely, secure and transparent logistics services for domestic and international transport. Track your shipment live.',
+    'loj.trackTitle':'🔍 Shipment Tracking'
+  },
+  ru:{
+    'nav.home':'Главная','nav.logistics':'Логистика','nav.tender':'Госзакупки',
+    'nav.construction':'Строительство','nav.login':'Вход','nav.hr':'Персонал','nav.contact':'Контакты',
+    'loj.eyebrow':'Güliz Логистика · Турция & Мир',
+    'loj.h1':'Ваш груз всегда','loj.h1red':'в безопасности',
+    'loj.desc':'Своевременные, безопасные и прозрачные логистические услуги для внутренних и международных перевозок. Отслеживайте свою посылку в реальном времени.',
+    'loj.trackTitle':'🔍 Отслеживание груза'
+  }
+};
+let lojLang = localStorage.getItem('gt_lang') || 'tr';
+function setLang(lang) {
+  if (!LOJ_LANGS[lang]) return;
+  lojLang = lang; localStorage.setItem('gt_lang', lang);
+  document.getElementById('currentFlagImg').src = {tr:'https://flagcdn.com/28x21/tr.png',en:'https://flagcdn.com/28x21/us.png',ru:'https://flagcdn.com/28x21/ru.png'}[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(LOJ_LANGS[lang][k])el.textContent=LOJ_LANGS[lang][k];});
+  document.getElementById('langDropdown').classList.remove('open');
+  document.documentElement.lang = lang;
+}
+function toggleLangMenu(){document.getElementById('langDropdown').classList.toggle('open');}
+document.addEventListener('click',function(e){const sw=document.getElementById('langSwitcher');if(sw&&!sw.contains(e.target))document.getElementById('langDropdown').classList.remove('open');});
+(function(){const u=new URLSearchParams(location.search).get('lang');if(u&&LOJ_LANGS[u]){lojLang=u;localStorage.setItem('gt_lang',u);}if(lojLang!=='tr')setLang(lojLang);})();
+
+/* ══ HARİTA & TAKİP ══ */
 let shipMap = null;
 let shipMarker = null;
 

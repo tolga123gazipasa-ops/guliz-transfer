@@ -349,6 +349,19 @@ footer a { color: var(--red); text-decoration: none; }
   .projects-grid { padding: 0 16px 60px; grid-template-columns: 1fr; }
   .tab-btn { padding: 12px 18px; font-size: 11px; }
 }
+
+/* ── DİL SEÇİCİ ── */
+.lang-switcher{position:relative;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+#currentLangFlag{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.18);}
+#currentLangFlag img{width:28px;height:20px;display:block;object-fit:cover;border-radius:3px;}
+.lang-dots-btn{background:none;border:none;cursor:pointer;padding:2px 4px;font-size:11px;color:#1a2d6b;font-weight:900;border-radius:4px;transition:background 0.2s;line-height:1;}
+.lang-dots-btn:hover{background:rgba(26,45,107,0.08);}
+.lang-dropdown{display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.18);overflow:hidden;z-index:200;min-width:140px;border:1px solid rgba(0,0,0,0.07);}
+.lang-dropdown.open{display:block;}
+.lang-dropdown button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#1a2d6b;font-family:'Montserrat',sans-serif;transition:background 0.15s;border-bottom:1px solid rgba(0,0,0,0.05);}
+.lang-dropdown button:last-child{border-bottom:none;}
+.lang-dropdown button:hover{background:rgba(26,45,107,0.05);}
+.lang-dropdown button .lf{width:26px;height:18px;display:block;object-fit:cover;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.15);flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -359,14 +372,25 @@ footer a { color: var(--red); text-decoration: none; }
     <a href="../index.html"><img src="../slider/logo.png" alt="Güliz Şirketler Topluluğu"></a>
   </div>
   <ul>
-    <li><a href="../index.html">Anasayfa</a></li>
-    <li><a href="../lojistik/index.html">Lojistik</a></li>
-    <li><a href="../ihale/index.html">Kamu İhalesi</a></li>
-    <li><a href="../insaat/index.html" class="active">İnşaat</a></li>
-    <li><a href="../kurum/index.html">Kurum Girişi</a></li>
-    <li><a href="../ik/index.html">İK</a></li>
-    <li><a href="../iletisim/index.html">İletişim</a></li>
+    <li><a href="../index.html" data-i18n="nav.home">Anasayfa</a></li>
+    <li><a href="../lojistik/index.html" data-i18n="nav.logistics">Lojistik</a></li>
+    <li><a href="../ihale/index.html" data-i18n="nav.tender">Kamu İhalesi</a></li>
+    <li><a href="../insaat/index.html" class="active" data-i18n="nav.construction">İnşaat</a></li>
+    <li><a href="../kurum/index.html" data-i18n="nav.login">Kurum Girişi</a></li>
+    <li><a href="../ik/index.html" data-i18n="nav.hr">İnsan Kaynakları</a></li>
+    <li><a href="../iletisim/index.html" data-i18n="nav.contact">İletişim</a></li>
   </ul>
+  <div class="lang-switcher" id="langSwitcher">
+    <span id="currentLangFlag" onclick="toggleLangMenu()" title="Dil seç">
+      <img src="https://flagcdn.com/28x21/tr.png" alt="TR" id="currentFlagImg">
+    </span>
+    <button class="lang-dots-btn" onclick="toggleLangMenu()" aria-label="Dil seç">▾</button>
+    <div class="lang-dropdown" id="langDropdown">
+      <button onclick="setLang('tr')"><img class="lf" src="https://flagcdn.com/28x21/tr.png" alt="TR"> Türkçe</button>
+      <button onclick="setLang('en')"><img class="lf" src="https://flagcdn.com/28x21/us.png" alt="US"> English</button>
+      <button onclick="setLang('ru')"><img class="lf" src="https://flagcdn.com/28x21/ru.png" alt="RU"> Русский</button>
+    </div>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -376,10 +400,10 @@ footer a { color: var(--red); text-decoration: none; }
   <div class="hero-inner">
     <div class="eyebrow">
       <div class="eyebrow-dot"></div>
-      <span>Güliz İnşaat</span>
+      <span data-i18n="ins.eyebrow">Güliz İnşaat</span>
     </div>
-    <h1>İnşaat <em>Projelerimiz</em></h1>
-    <p>Tamamlanan ve devam eden inşaat projelerimizi keşfedin. Her projede kalite ve güven ön planda.</p>
+    <h1><span data-i18n="ins.h1">İnşaat</span> <em data-i18n="ins.h1em">Projelerimiz</em></h1>
+    <p data-i18n="ins.desc">Tamamlanan ve devam eden inşaat projelerimizi keşfedin. Her projede kalite ve güven ön planda.</p>
   </div>
 </section>
 
@@ -389,21 +413,21 @@ footer a { color: var(--red); text-decoration: none; }
     <div class="stat-icon">🏗️</div>
     <div>
       <div class="stat-num" id="statToplam">—</div>
-      <div class="stat-lbl">Toplam Proje</div>
+      <div class="stat-lbl" data-i18n="ins.statTotal">Toplam Proje</div>
     </div>
   </div>
   <div class="stat-item">
     <div class="stat-icon">✅</div>
     <div>
       <div class="stat-num" id="statTamamlandi">—</div>
-      <div class="stat-lbl">Tamamlanan</div>
+      <div class="stat-lbl" data-i18n="ins.statDone">Tamamlanan</div>
     </div>
   </div>
   <div class="stat-item">
     <div class="stat-icon">🔨</div>
     <div>
       <div class="stat-num" id="statDevam">—</div>
-      <div class="stat-lbl">Devam Eden</div>
+      <div class="stat-lbl" data-i18n="ins.statOngoing">Devam Eden</div>
     </div>
   </div>
 </div>
@@ -413,12 +437,12 @@ footer a { color: var(--red); text-decoration: none; }
   <div class="tabs-header">
     <button class="tab-btn active" id="tabDevam" onclick="switchTab('devam')">
       <span class="tab-dot green"></span>
-      Devam Eden Projeler
+      <span data-i18n="ins.tabOngoing">Devam Eden Projeler</span>
       <span class="tab-count" id="countDevam">0</span>
     </button>
     <button class="tab-btn" id="tabTamamlandi" onclick="switchTab('tamamlandi')">
       <span class="tab-dot blue"></span>
-      Tamamlanan Projeler
+      <span data-i18n="ins.tabDone">Tamamlanan Projeler</span>
       <span class="tab-count" id="countTamamlandi">0</span>
     </button>
   </div>
@@ -446,6 +470,47 @@ footer a { color: var(--red); text-decoration: none; }
 </footer>
 
 <script>
+/* ══ DİL SİSTEMİ ══ */
+const INS_LANGS = {
+  tr:{
+    'nav.home':'Anasayfa','nav.logistics':'Lojistik','nav.tender':'Kamu İhalesi',
+    'nav.construction':'İnşaat','nav.login':'Kurum Girişi','nav.hr':'İnsan Kaynakları','nav.contact':'İletişim',
+    'ins.eyebrow':'Güliz İnşaat','ins.h1':'İnşaat','ins.h1em':'Projelerimiz',
+    'ins.desc':'Tamamlanan ve devam eden inşaat projelerimizi keşfedin. Her projede kalite ve güven ön planda.',
+    'ins.statTotal':'Toplam Proje','ins.statDone':'Tamamlanan','ins.statOngoing':'Devam Eden',
+    'ins.tabOngoing':'Devam Eden Projeler','ins.tabDone':'Tamamlanan Projeler'
+  },
+  en:{
+    'nav.home':'Home','nav.logistics':'Logistics','nav.tender':'Public Tender',
+    'nav.construction':'Construction','nav.login':'Login','nav.hr':'Human Resources','nav.contact':'Contact',
+    'ins.eyebrow':'Güliz Construction','ins.h1':'Construction','ins.h1em':'Projects',
+    'ins.desc':'Discover our completed and ongoing construction projects. Quality and trust come first in every project.',
+    'ins.statTotal':'Total Projects','ins.statDone':'Completed','ins.statOngoing':'Ongoing',
+    'ins.tabOngoing':'Ongoing Projects','ins.tabDone':'Completed Projects'
+  },
+  ru:{
+    'nav.home':'Главная','nav.logistics':'Логистика','nav.tender':'Госзакупки',
+    'nav.construction':'Строительство','nav.login':'Вход','nav.hr':'Персонал','nav.contact':'Контакты',
+    'ins.eyebrow':'Güliz Строительство','ins.h1':'Строительные','ins.h1em':'Проекты',
+    'ins.desc':'Ознакомьтесь с нашими завершёнными и текущими строительными проектами. Качество и надёжность — в каждом проекте.',
+    'ins.statTotal':'Всего проектов','ins.statDone':'Завершено','ins.statOngoing':'В процессе',
+    'ins.tabOngoing':'Текущие проекты','ins.tabDone':'Завершённые проекты'
+  }
+};
+let insLang = localStorage.getItem('gt_lang') || 'tr';
+function setLang(lang) {
+  if (!INS_LANGS[lang]) return;
+  insLang = lang; localStorage.setItem('gt_lang', lang);
+  document.getElementById('currentFlagImg').src = {tr:'https://flagcdn.com/28x21/tr.png',en:'https://flagcdn.com/28x21/us.png',ru:'https://flagcdn.com/28x21/ru.png'}[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(INS_LANGS[lang][k])el.textContent=INS_LANGS[lang][k];});
+  document.getElementById('langDropdown').classList.remove('open');
+  document.documentElement.lang = lang;
+}
+function toggleLangMenu(){document.getElementById('langDropdown').classList.toggle('open');}
+document.addEventListener('click',function(e){const sw=document.getElementById('langSwitcher');if(sw&&!sw.contains(e.target))document.getElementById('langDropdown').classList.remove('open');});
+(function(){const u=new URLSearchParams(location.search).get('lang');if(u&&INS_LANGS[u]){insLang=u;localStorage.setItem('gt_lang',u);}if(insLang!=='tr')setLang(insLang);})();
+
+/* ══ PROJELER ══ */
 let allProjects  = [];
 let activeTab    = 'devam';
 let lbPhotos     = [];
