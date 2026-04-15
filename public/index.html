@@ -951,10 +951,11 @@
 ══════════════════════════════════════════════════════════ */
 (function(){
 
-/* ════════════════════════════
-   ROTA TANIMLARI (tek yön, ping-pong uygulanacak)
-   Gerçek Türk karayolları izlenerek hazırlandı
-════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   ROTA TANIMLARI  –  Anayol şehirleri (fallback)
+   OSRM yüklenince bu noktalar arası koordinatlar
+   gerçek karayolu güzergahıyla değiştirilir.
+════════════════════════════════════════════════════ */
 const R = {
   // Antalya → Afyon → Bursa → İstanbul  (~730 km tek yön → gidiş+dönüş ~1460 km)
   WEST:[
@@ -1097,13 +1098,13 @@ function getTruckPos(t,idx,nowMs){
   } else if(t.status==='mola'||t.status==='yukleme'){
     // Mola başladığı andaki konumda dur
     km=t.offsetKm+activeHours(t.molaStart)*t.speedKmh;
-    const base=posOnPingPong(R[t.route],km);
+    const base=posOnPingPong(getRoutePts(t.route),km);
     return[base[0]+gpsJitter(idx,nowMs)[0],base[1]+gpsJitter(idx,nowMs)[1]];
   } else {
     // Gerçek zamanlı: sadece aktif saatlerde km birikir
     km=t.offsetKm+activeHours(nowMs)*t.speedKmh;
   }
-  const base=posOnPingPong(R[t.route],km);
+  const base=posOnPingPong(getRoutePts(t.route),km);
   // Gece ise pozisyon sabit (jitter hariç)
   const j=gpsJitter(idx,nowMs);
   return[base[0]+j[0],base[1]+j[1]];
@@ -1226,6 +1227,94 @@ function initAtMap(){
   renderSidebar(nowMs);
   const el=document.getElementById('at-update-time');
   if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
+  atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
+}
+
+/* ════════════════════════════════════════════════════
+   OSRM  –  Gerçek karayolu koordinatları
+   • router.project-osrm.org  (ücretsiz, key gerekmez)
+   • localStorage'da 7 gün önbellek
+   • İlk açılışta arka planda yüklenir, tırlar hemen
+     görünür; rotalar hazır olunca karayoluna oturur
+════════════════════════════════════════════════════ */
+const OSRM_BASE = 'https://router.project-osrm.org/route/v1/driving/';
+const CACHE_KEY = 'guliz_road_v4';
+const CACHE_TTL = 7 * 86400000;
+let ROAD = {}; // key → [[lat,lng], ...]  (dense road coords)
+let roadReady = false;
+
+async function loadRoadRoutes() {
+  /* 1 – önbellek dene */
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    if (c.ts && Date.now()-c.ts < CACHE_TTL && c.d) {
+      ROAD = c.d; roadReady = true; return;
+    }
+  } catch(e){}
+
+  /* 2 – OSRM'dan çek */
+  const keys = [...new Set(TRUCKS.map(t=>t.route))];
+  const out = {};
+  for (const key of keys) {
+    try {
+      const pts = R[key];
+      const coords = pts.map(([la,lo])=>`${lo.toFixed(5)},${la.toFixed(5)}`).join(';');
+      const res = await fetch(
+        `${OSRM_BASE}${coords}?overview=full&geometries=geojson`,
+        {signal: AbortSignal.timeout(9000)}
+      );
+      const js = await res.json();
+      if (js.routes?.[0]?.geometry?.coordinates) {
+        const raw = js.routes[0].geometry.coordinates;
+        // Her 4. noktayı al → ~250 pt / rota  (yeterli hassasiyet)
+        out[key] = raw.filter((_,i)=>i%4===0||i===raw.length-1).map(([lo,la])=>[la,lo]);
+      }
+    } catch(e){ /* OSRM erişilemez → fallback */ }
+    await new Promise(r=>setTimeout(r,350)); // hız limiti koru
+  }
+  ROAD = out;
+  roadReady = Object.keys(out).length > 0;
+
+  /* 3 – önbelleğe yaz */
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ts:Date.now(), d:out})); } catch(e){}
+}
+
+/* Kullanılacak rota noktaları: OSRM varsa yol üzerinde, yoksa düz çizgi */
+function getRoutePts(key){ return (ROAD[key]?.length>5) ? ROAD[key] : R[key]; }
+
+/* initAtMap içinde tiles değişti → Google Maps */
+function initAtMap(){
+  if(atInited) return;
+  atInited=true;
+  atMap=L.map('at-map',{center:[39.5,33.5],zoom:6,zoomControl:false,attributionControl:false});
+
+  /* Google Maps standart yol haritası */
+  L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+    subdomains:['0','1','2','3'],
+    maxZoom:20,
+    attribution:'© Google Maps'
+  }).addTo(atMap);
+
+  L.control.zoom({position:'topright'}).addTo(atMap);
+
+  const nowMs=Date.now();
+  TRUCKS.forEach((t,i)=>{
+    const eSt=effectiveStatus(t,nowMs);
+    const pos=getTruckPos(t,i,nowMs);
+    atMarkers[i]=L.marker(pos,{icon:buildTruckIcon(eSt)})
+      .bindPopup(popupContent(t,i,nowMs),{className:'at-popup',maxWidth:240})
+      .addTo(atMap);
+  });
+
+  renderSidebar(nowMs);
+  const el=document.getElementById('at-update-time');
+  if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
+
+  /* Yol rotalarını arka planda yükle */
+  loadRoadRoutes().then(()=>{
+    if(roadReady) updateTrucks(Date.now()); // rotalar hazır → yeniden çiz
+  });
+
   atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
 }
 
