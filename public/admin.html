@@ -351,6 +351,27 @@ tr:hover td{background:rgba(26,45,107,0.02)}
   .search-input{min-width:0;width:100%}
   .page{padding:16px 12px 32px}
 }
+/* ── Sevkiyat tablosu mobil: 3→6. kolonları gizle, kebab göster ── */
+@media(max-width:700px){
+  #page-sevkiyatlar table th:nth-child(3),
+  #page-sevkiyatlar table th:nth-child(4),
+  #page-sevkiyatlar table th:nth-child(6),
+  #page-sevkiyatlar table td:nth-child(3),
+  #page-sevkiyatlar table td:nth-child(4),
+  #page-sevkiyatlar table td:nth-child(6){display:none}
+  .sevk-desktop-actions{display:none!important}
+  .sevk-kebab{display:inline-block!important}
+}
+@media(min-width:701px){
+  .sevk-kebab{display:none!important}
+}
+.sevk-kebab{position:relative;display:none}
+.sevk-kebab-btn{background:none;border:0.5px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--navy);font-size:1.1rem;line-height:1}
+.sevk-kebab-menu{display:none;position:absolute;right:0;top:110%;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:200;min-width:130px;overflow:hidden}
+.sevk-kebab-menu.open{display:block}
+.sevk-kebab-menu button{display:block;width:100%;padding:9px 16px;background:none;border:none;text-align:left;cursor:pointer;font-size:0.82rem;color:var(--navy);white-space:nowrap}
+.sevk-kebab-menu button:hover{background:rgba(0,0,0,0.04)}
+.sevk-kebab-menu button.danger{color:#f87171}
 </style>
 </head>
 <body>
@@ -2399,7 +2420,9 @@ async function loadSevkiyatlar() {
     const rows = await api('/api/takip');
     const tbody = document.getElementById('sevkBody');
     document.getElementById('sevkCount').textContent = rows.length + ' sevkiyat';
-    tbody.innerHTML = rows.map(s => `
+    tbody.innerHTML = rows.map(s => {
+      const sq = JSON.stringify(s).replace(/"/g,'&quot;');
+      return `
       <tr>
         <td><code style="font-size:0.78rem;color:var(--gold)">${s.takip_kodu}</code></td>
         <td>${s.musteri_adi}<br><span style="font-size:0.72rem;color:var(--muted)">${s.musteri_tel||''}</span></td>
@@ -2408,11 +2431,39 @@ async function loadSevkiyatlar() {
         <td>${DURUM_BADGE[s.durum]||s.durum}</td>
         <td style="font-size:0.82rem">${s.mevcut_konum_adi||'—'}</td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="editSevk(${JSON.stringify(s).replace(/"/g,'&quot;')})">Güncelle</button>
-          <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:0.5px solid rgba(248,113,113,.3);margin-left:4px" onclick="deleteSevk(${s.id},'${s.takip_kodu}')">Sil</button>
+          <span class="sevk-desktop-actions">
+            <button class="btn btn-outline btn-sm" onclick="editSevk(${sq})">Güncelle</button>
+            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:0.5px solid rgba(248,113,113,.3);margin-left:4px" onclick="deleteSevk(${s.id},'${s.takip_kodu}')">Sil</button>
+          </span>
+          <span class="sevk-kebab">
+            <button class="sevk-kebab-btn" onclick="toggleSevkKebab(this)" aria-label="İşlemler">⋮</button>
+            <div class="sevk-kebab-menu">
+              <button onclick="toggleSevkKebab(this.closest('.sevk-kebab').querySelector('.sevk-kebab-btn'));editSevk(${sq})">✏️ Güncelle</button>
+              <button class="danger" onclick="toggleSevkKebab(this.closest('.sevk-kebab').querySelector('.sevk-kebab-btn'));deleteSevk(${s.id},'${s.takip_kodu}')">🗑 Sil</button>
+            </div>
+          </span>
         </td>
-      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Henüz sevkiyat yok.</td></tr>';
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Henüz sevkiyat yok.</td></tr>';
   } catch(e) { console.error(e); }
+}
+
+function toggleSevkKebab(btn) {
+  const menu = btn.nextElementSibling;
+  const isOpen = menu.classList.contains('open');
+  // Tüm açık menüleri kapat
+  document.querySelectorAll('.sevk-kebab-menu.open').forEach(m => m.classList.remove('open'));
+  if (!isOpen) {
+    menu.classList.add('open');
+    setTimeout(() => {
+      document.addEventListener('click', function close(e) {
+        if (!btn.closest('.sevk-kebab').contains(e.target)) {
+          menu.classList.remove('open');
+        }
+        document.removeEventListener('click', close);
+      });
+    }, 0);
+  }
 }
 
 function openSevkModal() {
