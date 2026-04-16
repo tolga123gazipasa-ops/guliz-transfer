@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../models/db');
 const auth    = require('../middleware/auth');
+const { tgSevkiyatYolda, tgSevkiyatTeslim } = require('../services/telegram');
 
 const DURUM_LABEL = {
   beklemede:     'Beklemede',
@@ -99,6 +100,10 @@ router.put('/:id', auth, async (req, res) => {
           musteri_adi, musteri_tel, kalkis, varis } = req.body;
   const mKonum = mevcut_konum !== undefined ? mevcut_konum : mevcut_konum2;
   try {
+    // Bildirim için eski durumu önce al
+    const { rows: eski } = await db.query('SELECT durum FROM sevkiyatlar WHERE id=$1', [req.params.id]);
+    const eskiDurum = eski[0]?.durum;
+
     const { rows } = await db.query(
       `UPDATE sevkiyatlar SET
          durum=$1, arac_plaka=$2, surucu_adi=$3,
@@ -126,7 +131,15 @@ router.put('/:id', auth, async (req, res) => {
        req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı.' });
-    res.json(rows[0]);
+    const guncellenen = rows[0];
+
+    // Durum değiştiyse Telegram bildirimi gönder
+    if (durum && durum !== eskiDurum) {
+      if (durum === 'yolda')         tgSevkiyatYolda(guncellenen).catch(() => {});
+      if (durum === 'teslim_edildi') tgSevkiyatTeslim(guncellenen).catch(() => {});
+    }
+
+    res.json(guncellenen);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

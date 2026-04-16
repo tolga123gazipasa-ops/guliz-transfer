@@ -443,4 +443,36 @@ function tgVisitorOnline(name, page, extra) {
   );
 }
 
-module.exports = { tg, tgNewBooking, tgPayment, tgNewUser, tgUserLogin, tgAdminLogin, tgChatMessage, tgVisitorOnline, initBot };
+/* ── Sevkiyat Yola Çıktı ── */
+function tgSevkiyatYolda(s) {
+  const mesafe = s.mesafe_km ? `\n📏 Mesafe: ${s.mesafe_km} km` : '';
+  const sure   = s.sure_dakika ? (() => { const h=Math.floor(s.sure_dakika/60),m=s.sure_dakika%60; return `\n⏱ Tahmini Süre: ${h>0?h+'s ':''}${m}dk`; })() : '';
+  const eta    = s.tahmini_teslim
+    ? `\n🏁 Tahmini Varış: ${new Date(s.tahmini_teslim).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}`
+    : '';
+  return tg(
+    `🚛 <b>SEVKİYAT YOLA ÇIKTI</b>\n` +
+    `📦 Takip Kodu: <code>${s.takip_kodu}</code>\n` +
+    `👤 Müşteri: ${s.musteri_adi}${s.musteri_tel ? ' · ' + s.musteri_tel : ''}\n` +
+    `📍 Güzergah: ${s.kalkis} → ${s.varis}\n` +
+    `🚗 Araç: ${s.arac_plaka || '—'}${s.surucu_adi ? ' / ' + s.surucu_adi : ''}` +
+    (s.yuk_cinsi ? `\n📦 Yük: ${s.yuk_cinsi}` : '') +
+    mesafe + sure + eta
+  );
+}
+
+/* ── Sevkiyat Teslim Edildi ── */
+function tgSevkiyatTeslim(s) {
+  const sure = s.sure_dakika ? (() => { const h=Math.floor(s.sure_dakika/60),m=s.sure_dakika%60; return ` (${h>0?h+'s ':''}${m}dk)`;})() : '';
+  return tg(
+    `✅ <b>TESLİMAT TAMAMLANDI</b>\n` +
+    `📦 Takip Kodu: <code>${s.takip_kodu}</code>\n` +
+    `👤 Müşteri: ${s.musteri_adi}${s.musteri_tel ? ' · ' + s.musteri_tel : ''}\n` +
+    `📍 Güzergah: ${s.kalkis} → ${s.varis}\n` +
+    `🚗 Araç: ${s.arac_plaka || '—'}${s.surucu_adi ? ' / ' + s.surucu_adi : ''}` +
+    (s.yuk_cinsi ? `\n📦 Yük: ${s.yuk_cinsi}` : '') +
+    `\n🕐 Teslim: ${new Date().toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}${sure}`
+  );
+}
+
+module.exports = { tg, tgNewBooking, tgPayment, tgNewUser, tgUserLogin, tgAdminLogin, tgChatMessage, tgVisitorOnline, initBot, tgSevkiyatYolda, tgSevkiyatTeslim };
