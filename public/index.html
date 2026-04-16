@@ -838,28 +838,6 @@
     </div>
   </div>
 
-  <!-- ŞİFRE EKRANI -->
-  <div id="atPwOverlay" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(3,10,31,0.97);backdrop-filter:blur(16px);align-items:center;justify-content:center;flex-direction:column;gap:0;">
-    <div style="text-align:center;padding:40px 32px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:16px;max-width:340px;width:90%;">
-      <div style="font-size:36px;margin-bottom:16px;">🔒</div>
-      <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:.3px;">Oturum Süresi Doldu</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:28px;line-height:1.6;">Devam etmek için yönetici şifresi girin</div>
-      <input id="atPwInput" type="password" maxlength="10" placeholder="Şifre"
-        style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 16px;font-size:16px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;text-align:center;letter-spacing:4px;margin-bottom:8px;"
-        onkeydown="if(event.key==='Enter')checkAtPassword()"
-        onfocus="this.style.borderColor='rgba(232,25,44,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
-      <div id="atPwErr" style="display:none;color:#ff6b6b;font-size:11px;margin-bottom:12px;">⚠ Hatalı şifre. ESC ile çıkabilirsiniz.</div>
-      <button onclick="checkAtPassword()" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:8px;padding:13px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#bf0e20'" onmouseout="this.style.background='#e8192c'">Devam Et →</button>
-      <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:16px;">ESC ile çıkabilirsiniz</div>
-    </div>
-  </div>
-
-  <!-- KARANLIK EKRAN (yanlış şifre) -->
-  <div id="atDarkOverlay" style="display:none;position:absolute;inset:0;z-index:200;background:#000;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-    <div style="font-size:48px;">🔒</div>
-    <div style="color:rgba(255,255,255,0.4);font-size:15px;font-weight:700;">Erişim Engellendi</div>
-    <div style="color:rgba(255,255,255,0.2);font-size:11px;">ESC tuşuna basarak çıkın</div>
-  </div>
 </div>
 
 
@@ -1201,7 +1179,7 @@ function renderSidebar(nowMs){
     return`<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}" style="border-left:3px solid ${bc};">
       <div class="at-t-dot" style="background:${c};box-shadow:0 0 6px ${c}66;flex-shrink:0;"></div>
       <div style="flex:1;min-width:0;overflow:hidden;"><div class="at-t-plate" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.plate}</div><div class="at-t-speed">${sub}</div></div>
-      <div class="at-t-status st-${eSt==='yukleme'?'yükleme':eSt==='istirahat'?'mola':eSt}" style="flex-shrink:0;">${lbl}</div>
+      <div class="at-t-status st-${{moving:'aktif',offline:'kapali',mola:'mola',yukleme:'yükleme',istirahat:'mola'}[eSt]||eSt}" style="flex-shrink:0;">${lbl}</div>
     </div>`;
   }).join('');
 }
@@ -2033,5 +2011,29 @@ if (currentLang !== 'tr') setLang(currentLang);
 
 </script>
 <script src="/tracker.js"></script>
+
+<!-- ŞİFRE EKRANI — position:fixed, Leaflet ve tüm katmanların üstünde -->
+<div id="atPwOverlay" style="display:none;position:fixed;inset:0;z-index:1050;background:rgba(3,10,31,0.97);backdrop-filter:blur(16px);align-items:center;justify-content:center;flex-direction:column;">
+  <div style="text-align:center;padding:40px 32px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:16px;max-width:360px;width:90%;box-shadow:0 24px 80px rgba(0,0,0,0.7);">
+    <div style="font-size:42px;margin-bottom:16px;">🔒</div>
+    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:10px;letter-spacing:.3px;font-family:'Montserrat',sans-serif;">Oturum Süresi Doldu</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:28px;line-height:1.65;font-family:'Montserrat',sans-serif;">Devam etmek için yönetici şifrenizi girin</div>
+    <input id="atPwInput" type="password" maxlength="10" placeholder="• • • • •"
+      style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:14px 16px;font-size:22px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;text-align:center;letter-spacing:6px;margin-bottom:10px;transition:border-color .2s;"
+      onkeydown="if(event.key==='Enter')checkAtPassword()"
+      onfocus="this.style.borderColor='rgba(232,25,44,0.7)'" onblur="this.style.borderColor='rgba(255,255,255,0.18)'">
+    <div id="atPwErr" style="display:none;color:#ff6b6b;font-size:12px;margin-bottom:12px;font-family:'Montserrat',sans-serif;">⚠ Hatalı şifre — erişim engellendi.</div>
+    <button onclick="checkAtPassword()" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:700;letter-spacing:1.2px;cursor:pointer;transition:background .2s;font-family:'Montserrat',sans-serif;" onmouseover="this.style.background='#bf0e20'" onmouseout="this.style.background='#e8192c'">DEVAM ET →</button>
+    <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:16px;font-family:'Montserrat',sans-serif;">ESC ile çıkabilirsiniz</div>
+  </div>
+</div>
+
+<!-- KARANLIK EKRAN — yanlış şifre girildi -->
+<div id="atDarkOverlay" style="display:none;position:fixed;inset:0;z-index:1050;background:#000;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div style="font-size:52px;">🔒</div>
+  <div style="color:rgba(255,255,255,0.45);font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;">Erişim Engellendi</div>
+  <div style="color:rgba(255,255,255,0.2);font-size:11px;font-family:'Montserrat',sans-serif;">ESC tuşuna basarak çıkın</div>
+</div>
+
 </body>
 </html>
