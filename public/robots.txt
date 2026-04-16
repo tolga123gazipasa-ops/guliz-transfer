@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /kurum/
+Disallow: /api
 Disallow: /api/
+Disallow: /users/
+Disallow: /cdn-cgi/
 
 Sitemap: https://gulizlojistik.com/sitemap.xml

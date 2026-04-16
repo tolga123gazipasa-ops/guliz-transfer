@@ -41,6 +41,16 @@ const server = http.createServer(app);
 const io     = new Server(server, { cors: { origin: '*' } });
 
 app.set('trust proxy', 1);
+
+/* ── www → non-www yönlendirmesi (SEO: tek canonical domain) ── */
+app.use((req, res, next) => {
+  if (req.hostname && req.hostname.startsWith('www.')) {
+    const nonWww = req.hostname.slice(4);
+    return res.redirect(301, `https://${nonWww}${req.originalUrl}`);
+  }
+  next();
+});
+
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
