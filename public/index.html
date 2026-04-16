@@ -1299,77 +1299,107 @@ function initAtMap(){
   atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
 }
 
-let atPwTimer=null;
+/* ── Erişim anahtarları (localStorage) ── */
+const AT_FREE_KEY    = 'at_free_expires';   // 45 sn ücretsiz sürenin bitiş zamanı
+const AT_ACCESS_KEY  = 'at_access_until';   // doğru şifre sonrası 1 saatlik erişim bitiş zamanı
+const AT_FREE_MS     = 45 * 1000;           // 45 saniye
+const AT_SESSION_MS  = 3600 * 1000;         // 1 saat
 
-window.openAracTakip=function(){
+let atPwTimer = null;
+
+/* Şifre ekranını göster */
+function showAtPwScreen(){
+  const overlay = document.getElementById('atOverlay');
+  if(!overlay || !overlay.classList.contains('open')) return;
+  document.getElementById('atPwOverlay').style.display = 'flex';
+  setTimeout(()=>{ const i=document.getElementById('atPwInput'); if(i){i.value='';i.focus();} },100);
+}
+
+window.openAracTakip = function(){
   document.getElementById('atOverlay').classList.add('open');
-  document.getElementById('atPwOverlay').style.display='none';
-  document.getElementById('atDarkOverlay').style.display='none';
-  document.body.style.overflow='hidden';
-  setTimeout(()=>{initAtMap();if(atMap)atMap.invalidateSize();},120);
+  document.getElementById('atPwOverlay').style.display = 'none';
+  document.getElementById('atDarkOverlay').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+  setTimeout(()=>{ initAtMap(); if(atMap) atMap.invalidateSize(); }, 120);
 
-  // Sohbet penceresini aç → admin Telegram bildirimi alır
+  /* Sohbet aç → Telegram bildirimi */
   if(!chatOpen){
-    // z-index'i araç takip modalının üstüne çıkar
-    document.querySelector('.chat-btn').style.zIndex='1100';
-    document.getElementById('chatBox').style.zIndex='1100';
+    document.querySelector('.chat-btn').style.zIndex = '1100';
+    document.getElementById('chatBox').style.zIndex  = '1100';
     toggleChat();
   }
-  // Socket ile yöneticiye bildirim gönder
-  if(typeof chatSocket!=='undefined'){
-    chatSocket.emit('visitor:action',{sessionId:chatSessionId,action:'arac_takip_acildi',detail:'Araç Takip Sistemi açıldı'});
+  if(typeof chatSocket !== 'undefined'){
+    chatSocket.emit('visitor:action',{ sessionId:chatSessionId, action:'arac_takip_acildi', detail:'Araç Takip Sistemi açıldı' });
   }
 
-  // 30 saniye sonra şifre ekranı
-  if(atPwTimer) clearTimeout(atPwTimer);
-  atPwTimer=setTimeout(()=>{
-    const pw=document.getElementById('atPwOverlay');
-    const dk=document.getElementById('atDarkOverlay');
-    if(pw&&dk&&document.getElementById('atOverlay').classList.contains('open')){
-      pw.style.display='flex';
-      setTimeout(()=>{const i=document.getElementById('atPwInput');if(i)i.focus();},100);
-    }
-  },30000); // ilk açılışta 30 saniye ücretsiz izleme
-};
+  if(atPwTimer){ clearTimeout(atPwTimer); atPwTimer = null; }
 
-window.closeAracTakip=function(){
-  if(atPwTimer){clearTimeout(atPwTimer);atPwTimer=null;}
-  document.getElementById('atOverlay').classList.remove('open');
-  document.getElementById('atPwOverlay').style.display='none';
-  document.getElementById('atDarkOverlay').style.display='none';
-  document.body.style.overflow='';
-  // Chat z-index'ini geri al
-  document.querySelector('.chat-btn').style.zIndex='';
-  document.getElementById('chatBox').style.zIndex='';
-  if(atInterval){clearInterval(atInterval);atInterval=null;}
-  atInited=false;atMarkers={};
-  if(atMap){atMap.remove();atMap=null;}
-};
+  const now = Date.now();
 
-window.checkAtPassword=function(){
-  const pw=document.getElementById('atPwInput').value;
-  if(pw==='1453'){
-    document.getElementById('atPwOverlay').style.display='none';
-    document.getElementById('atDarkOverlay').style.display='none';
-    document.getElementById('atPwInput').value='';
-    // 1 saatlik oturum başlat
-    if(atPwTimer) clearTimeout(atPwTimer);
-    atPwTimer=setTimeout(()=>{
-      if(document.getElementById('atOverlay').classList.contains('open')){
-        document.getElementById('atPwOverlay').style.display='flex';
-        setTimeout(()=>{const i=document.getElementById('atPwInput');if(i)i.focus();},100);
-      }
-    },3600000); // 1 saat = 3600000 ms
+  /* 1) Geçerli 1 saatlik oturum var mı? */
+  const accessUntil = parseInt(localStorage.getItem(AT_ACCESS_KEY) || '0');
+  if(accessUntil > now){
+    const remaining = accessUntil - now;
+    atPwTimer = setTimeout(showAtPwScreen, remaining);
+    return; // serbest
+  }
+
+  /* 2) 45 saniyelik ücretsiz süre hâlâ geçerli mi? */
+  const freeExpires = parseInt(localStorage.getItem(AT_FREE_KEY) || '0');
+  if(freeExpires === 0){
+    /* İlk kez açıldı — 45 sn ücretsiz süre başlat */
+    const exp = now + AT_FREE_MS;
+    localStorage.setItem(AT_FREE_KEY, exp.toString());
+    atPwTimer = setTimeout(showAtPwScreen, AT_FREE_MS);
+    return;
+  }
+
+  const freeLeft = freeExpires - now;
+  if(freeLeft > 0){
+    /* Ücretsiz süre bitmemiş, kalanı sayıyoruz */
+    atPwTimer = setTimeout(showAtPwScreen, freeLeft);
   } else {
-    // Yanlış şifre → direkt karanlık ekrana geç, geri dönüş yok
-    document.getElementById('atPwInput').value='';
-    document.getElementById('atPwOverlay').style.display='none';
-    document.getElementById('atDarkOverlay').style.display='flex';
+    /* Ücretsiz süre dolmuş — hemen şifre iste */
+    showAtPwScreen();
   }
 };
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape') window.closeAracTakip();
+window.closeAracTakip = function(){
+  if(atPwTimer){ clearTimeout(atPwTimer); atPwTimer = null; }
+  document.getElementById('atOverlay').classList.remove('open');
+  document.getElementById('atPwOverlay').style.display = 'none';
+  document.getElementById('atDarkOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+  document.querySelector('.chat-btn').style.zIndex = '';
+  document.getElementById('chatBox').style.zIndex  = '';
+  if(atInterval){ clearInterval(atInterval); atInterval = null; }
+  atInited = false; atMarkers = {};
+  if(atMap){ atMap.remove(); atMap = null; }
+};
+
+window.checkAtPassword = function(){
+  const pw = document.getElementById('atPwInput').value;
+  const errEl = document.getElementById('atPwErr');
+  if(pw === '1453'){
+    /* Doğru şifre → 1 saatlik oturum kaydet */
+    const until = Date.now() + AT_SESSION_MS;
+    localStorage.setItem(AT_ACCESS_KEY, until.toString());
+    document.getElementById('atPwOverlay').style.display = 'none';
+    document.getElementById('atDarkOverlay').style.display = 'none';
+    document.getElementById('atPwInput').value = '';
+    errEl.style.display = 'none';
+    if(atPwTimer) clearTimeout(atPwTimer);
+    atPwTimer = setTimeout(showAtPwScreen, AT_SESSION_MS);
+  } else {
+    /* Yanlış şifre → hata mesajı göster, ekranda kal */
+    errEl.style.display = 'block';
+    document.getElementById('atPwInput').value = '';
+    document.getElementById('atPwInput').focus();
+  }
+};
+
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') window.closeAracTakip();
 });
 
 })(); // end ARAÇ TAKİP
@@ -2022,7 +2052,7 @@ if (currentLang !== 'tr') setLang(currentLang);
       style="width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;padding:14px 16px;font-size:22px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;text-align:center;letter-spacing:6px;margin-bottom:10px;transition:border-color .2s;"
       onkeydown="if(event.key==='Enter')checkAtPassword()"
       onfocus="this.style.borderColor='rgba(232,25,44,0.7)'" onblur="this.style.borderColor='rgba(255,255,255,0.18)'">
-    <div id="atPwErr" style="display:none;color:#ff6b6b;font-size:12px;margin-bottom:12px;font-family:'Montserrat',sans-serif;">⚠ Hatalı şifre — erişim engellendi.</div>
+    <div id="atPwErr" style="display:none;color:#ff6b6b;font-size:12px;margin-bottom:12px;font-family:'Montserrat',sans-serif;background:rgba(232,25,44,0.1);border:1px solid rgba(232,25,44,0.3);border-radius:8px;padding:8px 12px;">⚠ Şifre hatalı, tekrar deneyin.</div>
     <button onclick="checkAtPassword()" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:700;letter-spacing:1.2px;cursor:pointer;transition:background .2s;font-family:'Montserrat',sans-serif;" onmouseover="this.style.background='#bf0e20'" onmouseout="this.style.background='#e8192c'">DEVAM ET →</button>
     <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:16px;font-family:'Montserrat',sans-serif;">ESC ile çıkabilirsiniz</div>
   </div>
