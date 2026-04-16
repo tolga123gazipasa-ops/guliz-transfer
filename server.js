@@ -33,6 +33,7 @@ const kurumRoutes    = require('./routes/kurumlar');
 const ihalelerRoutes = require('./routes/ihaleler');
 const insaatRoutes   = require('./routes/insaat');
 const takipRoutes    = require('./routes/takip');
+const araclarRoutes  = require('./routes/araclar');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
 const db = require('./models/db');
 
@@ -86,6 +87,12 @@ app.use('/api/kurumlar', kurumRoutes);
 app.use('/api/ihaleler', ihalelerRoutes);
 app.use('/api/insaat',   insaatRoutes);
 app.use('/api/takip',   takipRoutes);
+app.use('/api/araclar', araclarRoutes);
+
+app.get('/api/config.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.send(`window.GMAPS_KEY = "${process.env.GOOGLE_MAPS_API_KEY || ''}";\nwindow.API_BASE = "";`);
+});
 
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
@@ -807,6 +814,20 @@ db.query(`
     updated_at        TIMESTAMPTZ  DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS idx_sevkiyatlar_kod ON sevkiyatlar(takip_kodu);
+  CREATE TABLE IF NOT EXISTS araclar (
+    id          SERIAL PRIMARY KEY,
+    plaka       VARCHAR(20) NOT NULL,
+    marka_model VARCHAR(100),
+    arac_tipi   VARCHAR(50) NOT NULL DEFAULT 'kamyon',
+    yuk_cinsi   VARCHAR(100),
+    kapasite    VARCHAR(50),
+    surucu_adi  VARCHAR(100),
+    surucu_tel  VARCHAR(20),
+    durum       VARCHAR(20) NOT NULL DEFAULT 'musait'
+                  CHECK (durum IN ('musait','seferde','bakim')),
+    notlar      TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  );
   CREATE TABLE IF NOT EXISTS yuk_bildirimleri (
     id         SERIAL PRIMARY KEY,
     ad_soyad   VARCHAR(100) NOT NULL,
@@ -848,6 +869,18 @@ db.query(`
   -- Mevcut tabloya CV kolonlarını ekle (zaten varsa hata vermez)
   ALTER TABLE is_basvurulari ADD COLUMN IF NOT EXISTS cv_path VARCHAR(255);
   ALTER TABLE is_basvurulari ADD COLUMN IF NOT EXISTS cv_original_name VARCHAR(255);
+  -- Sevkiyatlar tablosuna yeni kolon ekle
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kalkis_lat    DOUBLE PRECISION;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kalkis_lng    DOUBLE PRECISION;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS varis_lat     DOUBLE PRECISION;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS varis_lng     DOUBLE PRECISION;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS mevcut_lat    DOUBLE PRECISION;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS mevcut_lng    DOUBLE PRECISION;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS rota_polyline TEXT;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS mesafe_km     NUMERIC(8,2);
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS sure_dakika   INTEGER;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS arac_id       INTEGER REFERENCES araclar(id) ON DELETE SET NULL;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS yuk_cinsi     VARCHAR(100);
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');

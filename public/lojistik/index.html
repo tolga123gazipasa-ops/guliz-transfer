@@ -12,6 +12,7 @@
 <title>Lojistik Hizmetleri – Güliz Şirketler Topluluğu</title>
 <meta name="description" content="Güliz Lojistik — Yurt içi ve yurt dışı taşımacılık, canlı gönderi takibi. Gazipaşa, Alanya, Antalya ve tüm Türkiye.">
 <link rel="canonical" href="https://gulizlojistik.com/lojistik/">
+<script src="/api/config.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -986,9 +987,21 @@ function showResult(d) {
   document.getElementById('rPlaka').textContent  = d.arac_plaka  || '—';
   document.getElementById('rSurucu').textContent = d.surucu_adi  || '—';
   document.getElementById('rKonum').textContent  = d.mevcut_konum_adi || '—';
-  document.getElementById('rTeslim').textContent = d.tahmini_teslim
-    ? new Date(d.tahmini_teslim).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
-    : '—';
+
+  const teslimEl = document.getElementById('rTeslim');
+  if (d.tahmini_teslim) {
+    const eta = new Date(d.tahmini_teslim);
+    const kalan = Math.round((eta - Date.now()) / 60000);
+    const etaStr = eta.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    if (kalan > 0) {
+      const h = Math.floor(kalan/60), m = kalan%60;
+      teslimEl.innerHTML = etaStr + `<br><span style="font-size:0.72rem;color:#4ade80">≈ ${h>0?h+'s ':''}${m}dk kaldı</span>`;
+    } else {
+      teslimEl.textContent = etaStr;
+    }
+  } else {
+    teslimEl.textContent = '—';
+  }
 
   const sb = document.getElementById('rStatus');
   const cls = { beklemede:'beklemede', yolda:'yolda', teslim_edildi:'teslim_edildi', iptal:'iptal' };
@@ -1000,8 +1013,25 @@ function showResult(d) {
   result.style.display = 'block';
   result.scrollIntoView({ behavior:'smooth', block:'nearest' });
 
+  // Mesafe/süre
+  if (d.mesafe_km) {
+    let mesafeEl = document.getElementById('rMesafe');
+    if (!mesafeEl) {
+      mesafeEl = document.createElement('div');
+      mesafeEl.id = 'rMesafe';
+      mesafeEl.style.cssText = 'font-size:0.78rem;color:rgba(255,255,255,0.6);margin-top:4px';
+      const konumEl = document.getElementById('rKonum');
+      if (konumEl && konumEl.parentElement) konumEl.parentElement.appendChild(mesafeEl);
+    }
+    mesafeEl.textContent = `📏 Toplam mesafe: ${d.mesafe_km} km`;
+  }
+
   // Harita
-  initMap(d.mevcut_konum, d.mevcut_konum_adi || d.kalkis);
+  if (d.mevcut_lat && d.mevcut_lng) {
+    initMapGoogleOrLeaflet(d);
+  } else if (d.mevcut_konum) {
+    initMap(d.mevcut_konum, d.mevcut_konum_adi || d.kalkis);
+  }
 }
 
 function initMap(konum, label) {
@@ -1031,6 +1061,83 @@ function initMap(konum, label) {
   if (shipMarker) shipMap.removeLayer(shipMarker);
   shipMarker = L.marker([lat, lng], { icon }).addTo(shipMap);
   shipMarker.bindPopup('<strong>' + label + '</strong>').openPopup();
+}
+
+function initMapGoogleOrLeaflet(d) {
+  const mapEl = document.getElementById('shipMap');
+  if (!mapEl) return;
+
+  if (window.GMAPS_KEY && window.google && window.google.maps) {
+    initGoogleMap(d);
+  } else if (window.GMAPS_KEY) {
+    if (!document.getElementById('gm-script')) {
+      const s = document.createElement('script');
+      s.id = 'gm-script';
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${window.GMAPS_KEY}&libraries=geometry&language=tr&callback=_gmLoadedLojistik`;
+      s.async = true; s.defer = true;
+      window._pendingMapData = d;
+      document.head.appendChild(s);
+    }
+  } else {
+    initMap(d.mevcut_konum, d.mevcut_konum_adi);
+  }
+}
+
+window._gmLoadedLojistik = function() {
+  if (window._pendingMapData) initGoogleMap(window._pendingMapData);
+};
+
+function initGoogleMap(d) {
+  const mapEl = document.getElementById('shipMap');
+  if (!mapEl || !window.google) return;
+
+  const lat = d.mevcut_lat || 37.0;
+  const lng = d.mevcut_lng || 35.3;
+
+  const map = new google.maps.Map(mapEl, {
+    center: { lat, lng }, zoom: 7,
+    mapTypeControl: false, streetViewControl: false
+  });
+
+  // Kalkış marker
+  if (d.kalkis_lat && d.kalkis_lng) {
+    new google.maps.Marker({
+      position: { lat: d.kalkis_lat, lng: d.kalkis_lng }, map,
+      title: 'Kalkış: ' + d.kalkis,
+      icon: { url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' }
+    });
+  }
+
+  // Varış marker
+  if (d.varis_lat && d.varis_lng) {
+    new google.maps.Marker({
+      position: { lat: d.varis_lat, lng: d.varis_lng }, map,
+      title: 'Varış: ' + d.varis,
+      icon: { url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }
+    });
+  }
+
+  // Rota polyline
+  if (d.rota_polyline) {
+    try {
+      const path = google.maps.geometry.encoding.decodePath(d.rota_polyline);
+      new google.maps.Polyline({
+        path, map,
+        strokeColor: '#1d4ed8', strokeOpacity: 0.8, strokeWeight: 4
+      });
+    } catch(_) {}
+  }
+
+  // Araç konumu için marker
+  const infoWindow = new google.maps.InfoWindow({
+    content: `<div style="font-size:13px"><strong>🚛 ${d.arac_plaka || 'Araç'}</strong><br>${d.mevcut_konum_adi || 'Konum bilgisi yok'}<br><span style="color:#16a34a">${d.durum_label || d.durum}</span></div>`
+  });
+  const vehicleMarker = new google.maps.Marker({
+    position: { lat, lng }, map,
+    title: d.mevcut_konum_adi,
+    zIndex: 10
+  });
+  vehicleMarker.addListener('click', () => infoWindow.open(map, vehicleMarker));
 }
 </script>
 

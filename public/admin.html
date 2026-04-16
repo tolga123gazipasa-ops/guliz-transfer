@@ -372,6 +372,9 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 .sevk-kebab-menu button{display:block;width:100%;padding:9px 16px;background:none;border:none;text-align:left;cursor:pointer;font-size:0.82rem;color:var(--navy);white-space:nowrap}
 .sevk-kebab-menu button:hover{background:rgba(0,0,0,0.04)}
 .sevk-kebab-menu button.danger{color:#f87171}
+.gm-map-box{width:100%;height:300px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;margin-top:8px}
+.gm-map-sm{width:100%;height:220px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;margin-top:8px}
+.place-autocomplete-wrap{position:relative}
 </style>
 </head>
 <body>
@@ -432,6 +435,9 @@ tr:hover td{background:rgba(26,45,107,0.02)}
       </div>
       <div class="nav-item" onclick="showPage('drivers')">
         <span class="nav-icon">🚐</span> Sürücüler
+      </div>
+      <div class="nav-item" onclick="showPage('araclar')">
+        <span class="nav-icon">🚛</span> Araç Filosu
       </div>
       <div class="nav-item" onclick="showPage('routes')">
         <span class="nav-icon">📍</span> Rotalar & Fiyatlar
@@ -560,6 +566,77 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         <table><thead><tr>
           <th>Ad Soyad</th><th>Telefon</th><th>Plaka</th><th>Durum</th><th>İşlem</th>
         </tr></thead><tbody id="driversTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ARAÇLAR -->
+    <div class="page" id="page-araclar">
+      <div class="section-head">
+        <h2>Araç Filosu</h2>
+        <button class="btn btn-gold btn-sm" onclick="openAracModal()">+ Araç Ekle</button>
+      </div>
+
+      <!-- Modal -->
+      <div id="aracModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#1a1a2e;border:0.5px solid var(--border);border-radius:12px;padding:2rem;width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+            <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)" id="aracModalTitle">🚛 Yeni Araç</div>
+            <button onclick="closeAracModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer">×</button>
+          </div>
+          <input type="hidden" id="arac-edit-id">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Plaka *</label><input type="text" id="arac-plaka" placeholder="07 ABC 123"></div>
+            <div class="form-group"><label>Marka / Model</label><input type="text" id="arac-marka" placeholder="Mercedes Actros"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Araç Tipi *</label>
+              <select id="arac-tip" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+                <option value="tır">Tır (Tenteli)</option>
+                <option value="kamyon">Kamyon</option>
+                <option value="platform">Platform</option>
+                <option value="frigorifik">Frigorifik</option>
+                <option value="tanker">Tanker</option>
+                <option value="konteyner">Konteyner</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Kapasite</label><input type="text" id="arac-kapasite" placeholder="25 ton"></div>
+          </div>
+          <div style="margin-bottom:1rem">
+            <div class="form-group"><label>Yük Cinsi</label><input type="text" id="arac-yuk" placeholder="Kuru yük, soğuk zincir, dökme vb."></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group"><label>Sürücü Adı</label><input type="text" id="arac-surucu" placeholder="Mehmet Yılmaz"></div>
+            <div class="form-group"><label>Sürücü Tel</label><input type="text" id="arac-tel" placeholder="05xx xxx xx xx"></div>
+          </div>
+          <div style="margin-bottom:1.5rem">
+            <div class="form-group"><label>Durum</label>
+              <select id="arac-durum" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+                <option value="musait">Müsait</option>
+                <option value="seferde">Seferde</option>
+                <option value="bakim">Bakımda</option>
+              </select>
+            </div>
+          </div>
+          <p id="aracFormMsg" style="font-size:0.78rem;margin-bottom:1rem;display:none"></p>
+          <div style="display:flex;gap:0.8rem">
+            <button class="btn btn-gold" style="flex:1;padding:0.75rem" onclick="saveArac()">Kaydet</button>
+            <button class="btn btn-outline" style="padding:0.75rem 1.5rem" onclick="closeAracModal()">İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tablo -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Filodaki Araçlar</h3>
+          <span id="aracCount" style="font-size:0.78rem;color:var(--muted)"></span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Plaka</th><th>Marka/Model</th><th>Araç Tipi</th><th>Yük Cinsi</th><th>Kapasite</th><th>Sürücü</th><th>Durum</th><th>İşlem</th>
+          </tr></thead>
+          <tbody id="araclarTable"></tbody>
+        </table>
       </div>
     </div>
 
@@ -884,13 +961,56 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <div class="form-group"><label>Müşteri Adı *</label><input type="text" id="sevk-musteri" placeholder="Ad Soyad"></div>
             <div class="form-group"><label>Telefon</label><input type="text" id="sevk-tel" placeholder="05xx xxx xx xx"></div>
           </div>
+          <!-- Araç seçimi -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-            <div class="form-group"><label>Kalkış *</label><input type="text" id="sevk-kalkis" placeholder="İstanbul, Türkiye"></div>
-            <div class="form-group"><label>Varış *</label><input type="text" id="sevk-varis" placeholder="Ankara, Türkiye"></div>
+            <div class="form-group">
+              <label>Araç Seç</label>
+              <select id="sevk-arac-id" onchange="onSevkAracChange()" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+                <option value="">— Araç seçin —</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Yük Cinsi</label><input type="text" id="sevk-yuk-cinsi" placeholder="Kuru yük, soğuk zincir vb."></div>
           </div>
+          <!-- Araç plakası + sürücü (otomatik dolar ama elle değiştirilebilir) -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div class="form-group"><label>Araç Plakası</label><input type="text" id="sevk-plaka" placeholder="01 ABC 123"></div>
             <div class="form-group"><label>Sürücü Adı</label><input type="text" id="sevk-surucu" placeholder="Mehmet Yılmaz"></div>
+          </div>
+          <!-- Kalkış / Varış - Google Maps Autocomplete -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0.5rem">
+            <div class="form-group">
+              <label>Kalkış *</label>
+              <input type="text" id="sevk-kalkis" placeholder="İstanbul, Türkiye" autocomplete="off">
+              <input type="hidden" id="sevk-kalkis-lat">
+              <input type="hidden" id="sevk-kalkis-lng">
+            </div>
+            <div class="form-group">
+              <label>Varış *</label>
+              <input type="text" id="sevk-varis" placeholder="Ankara, Türkiye" autocomplete="off">
+              <input type="hidden" id="sevk-varis-lat">
+              <input type="hidden" id="sevk-varis-lng">
+            </div>
+          </div>
+          <div style="margin-bottom:1rem">
+            <button type="button" class="btn btn-outline btn-sm" onclick="calcSevkRoute()" id="sevk-calc-btn">📍 Güzergahı Hesapla (Google Maps)</button>
+            <div id="sevk-rota-info" style="display:none;margin-top:8px;padding:8px 12px;background:rgba(201,168,76,0.08);border:0.5px solid rgba(201,168,76,0.2);border-radius:6px;font-size:0.8rem;color:var(--gold)"></div>
+          </div>
+          <!-- Mevcut Konum -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0.5rem">
+            <div class="form-group">
+              <label>Mevcut Konum (Adres)</label>
+              <input type="text" id="sevk-konum-adi" placeholder="Şehir veya adres" autocomplete="off">
+            </div>
+            <div class="form-group" style="align-self:end">
+              <button type="button" class="btn btn-outline btn-sm" onclick="toggleSevkKonumMap()" style="width:100%">🗺 Haritadan Seç</button>
+            </div>
+          </div>
+          <input type="hidden" id="sevk-konum">
+          <input type="hidden" id="sevk-konum-lat">
+          <input type="hidden" id="sevk-konum-lng">
+          <div id="sevk-konum-map-wrap" style="display:none;margin-bottom:1rem">
+            <div id="sevk-konum-map" style="width:100%;height:250px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden"></div>
+            <p style="font-size:0.72rem;color:var(--muted);margin-top:4px">Haritaya tıklayarak aracın şu anki konumunu işaretleyin</p>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div class="form-group"><label>Durum</label>
@@ -902,10 +1022,6 @@ tr:hover td{background:rgba(26,45,107,0.02)}
               </select>
             </div>
             <div class="form-group"><label>Tahmini Teslim</label><input type="datetime-local" id="sevk-teslim"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-            <div class="form-group"><label>Konum (lat,lng)</label><input type="text" id="sevk-konum" placeholder="37.0, 35.3"></div>
-            <div class="form-group"><label>Konum Adı</label><input type="text" id="sevk-konum-adi" placeholder="Konya, Türkiye"></div>
           </div>
           <div class="form-group" style="margin-bottom:1.5rem"><label>Notlar</label><textarea id="sevk-notlar" rows="2" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans);resize:vertical" placeholder="İç notlar..."></textarea></div>
           <p id="sevkFormMsg" style="font-size:0.78rem;margin-bottom:1rem;display:none"></p>
@@ -1636,9 +1752,9 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','routes','stats','support','ihaleler','insaat','kurumlar','sevkiyatlar','yukbildirim','iletisim','ik','teklifler','settings'];
+  const pages = ['dashboard','bookings','drivers','araclar','routes','stats','support','ihaleler','insaat','kurumlar','sevkiyatlar','yukbildirim','iletisim','ik','teklifler','settings'];
   document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
-  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',sevkiyatlar:'Sevkiyat Takip',yukbildirim:'Yük Bildirimleri',iletisim:'İletişim Mesajları',ik:'İK Başvuruları',teklifler:'Teklif Talepleri',settings:'Ayarlar'};
+  const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',araclar:'Araç Filosu',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',sevkiyatlar:'Sevkiyat Takip',yukbildirim:'Yük Bildirimleri',iletisim:'İletişim Mesajları',ik:'İK Başvuruları',teklifler:'Teklif Talepleri',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
   closeMobileSidebar();
   if (name === 'bookings')    loadBookings();
@@ -1647,6 +1763,7 @@ function showPage(name) {
   if (name === 'kurumlar')    loadKurumlar();
   if (name === 'ihaleler')    loadIhaleler();
   if (name === 'insaat')      loadInsaat();
+  if (name === 'araclar')     loadAraclar();
   if (name === 'sevkiyatlar') loadSevkiyatlar();
   if (name === 'yukbildirim') loadYukBildirimleri();
   if (name === 'iletisim')    loadIletisim();
@@ -2469,11 +2586,14 @@ function toggleSevkKebab(btn) {
 function openSevkModal() {
   document.getElementById('sevk-edit-id').value = '';
   document.getElementById('sevkModalTitle').textContent = '🚚 Yeni Sevkiyat';
-  ['sevk-musteri','sevk-tel','sevk-kalkis','sevk-varis','sevk-plaka','sevk-surucu','sevk-konum','sevk-konum-adi','sevk-teslim','sevk-notlar'].forEach(id => {
+  ['sevk-musteri','sevk-tel','sevk-kalkis','sevk-varis','sevk-plaka','sevk-surucu','sevk-konum','sevk-konum-adi','sevk-teslim','sevk-notlar','sevk-kalkis-lat','sevk-kalkis-lng','sevk-varis-lat','sevk-varis-lng','sevk-konum-lat','sevk-konum-lng','sevk-yuk-cinsi'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('sevk-durum').value = 'beklemede';
+  if (document.getElementById('sevk-arac-id')) document.getElementById('sevk-arac-id').value = '';
   document.getElementById('sevkFormMsg').style.display = 'none';
+  loadAraclar();
+  setTimeout(initSevkAutocomplete, 100);
   const m = document.getElementById('sevkModal'); m.style.display = 'flex';
 }
 
@@ -2491,12 +2611,36 @@ function editSevk(s) {
   document.getElementById('sevk-konum-adi').value      = s.mevcut_konum_adi || '';
   document.getElementById('sevk-teslim').value         = s.tahmini_teslim ? s.tahmini_teslim.substring(0,16) : '';
   document.getElementById('sevk-notlar').value         = s.notlar || '';
+  document.getElementById('sevk-kalkis-lat').value     = s.kalkis_lat || '';
+  document.getElementById('sevk-kalkis-lng').value     = s.kalkis_lng || '';
+  document.getElementById('sevk-varis-lat').value      = s.varis_lat  || '';
+  document.getElementById('sevk-varis-lng').value      = s.varis_lng  || '';
+  document.getElementById('sevk-konum-lat').value      = s.mevcut_lat || '';
+  document.getElementById('sevk-konum-lng').value      = s.mevcut_lng || '';
+  if (document.getElementById('sevk-yuk-cinsi')) document.getElementById('sevk-yuk-cinsi').value = s.yuk_cinsi || '';
+  if (document.getElementById('sevk-arac-id')) document.getElementById('sevk-arac-id').value = s.arac_id || '';
+  setOrCreate('sevk-rota-polyline', s.rota_polyline || '');
+  setOrCreate('sevk-mesafe-km',     s.mesafe_km     || '');
+  setOrCreate('sevk-sure-dakika',   s.sure_dakika   || '');
+  if (s.mesafe_km && s.sure_dakika) {
+    const h = Math.floor(s.sure_dakika/60), m = s.sure_dakika%60;
+    const info = document.getElementById('sevk-rota-info');
+    info.style.display = 'block';
+    info.innerHTML = `✅ <strong>${s.mesafe_km} km</strong> · <strong>${h > 0 ? h + 's ' : ''}${m}dk</strong>`;
+  }
   document.getElementById('sevkFormMsg').style.display = 'none';
+  setTimeout(initSevkAutocomplete, 100);
+  loadAraclar();
   document.getElementById('sevkModal').style.display   = 'flex';
 }
 
 function closeSevkModal() {
   document.getElementById('sevkModal').style.display = 'none';
+  const mapWrap = document.getElementById('sevk-konum-map-wrap');
+  if (mapWrap) mapWrap.style.display = 'none';
+  const rotaInfo = document.getElementById('sevk-rota-info');
+  if (rotaInfo) rotaInfo.style.display = 'none';
+  _sevkKonumMap = null; _sevkKonumMarker = null; _sevkKalkisAC = null; _sevkVarisAC = null; _sevkKonumAC = null;
 }
 
 async function saveSevk() {
@@ -2522,6 +2666,17 @@ async function saveSevk() {
     mevcut_konum_adi: document.getElementById('sevk-konum-adi').value.trim(),
     tahmini_teslim:   document.getElementById('sevk-teslim').value || null,
     notlar:           document.getElementById('sevk-notlar').value.trim(),
+    arac_id:          parseInt(document.getElementById('sevk-arac-id')?.value) || null,
+    yuk_cinsi:        document.getElementById('sevk-yuk-cinsi')?.value || null,
+    kalkis_lat:       parseFloat(document.getElementById('sevk-kalkis-lat').value) || null,
+    kalkis_lng:       parseFloat(document.getElementById('sevk-kalkis-lng').value) || null,
+    varis_lat:        parseFloat(document.getElementById('sevk-varis-lat').value) || null,
+    varis_lng:        parseFloat(document.getElementById('sevk-varis-lng').value) || null,
+    mevcut_lat:       parseFloat(document.getElementById('sevk-konum-lat').value) || null,
+    mevcut_lng:       parseFloat(document.getElementById('sevk-konum-lng').value) || null,
+    rota_polyline:    document.getElementById('sevk-rota-polyline')?.value || null,
+    mesafe_km:        parseFloat(document.getElementById('sevk-mesafe-km')?.value) || null,
+    sure_dakika:      parseInt(document.getElementById('sevk-sure-dakika')?.value) || null,
   };
 
   try {
@@ -2547,6 +2702,262 @@ async function deleteSevk(id, kod) {
     await api('/api/takip/' + id, { method:'DELETE' });
     loadSevkiyatlar();
   } catch(e) { alert(e.message); }
+}
+
+/* ═══════════════════════════════════════
+   GOOGLE MAPS — Admin Panel
+═══════════════════════════════════════ */
+let _mapsReady = false;
+let _sevkKalkisAC, _sevkVarisAC, _sevkKonumAC;
+let _sevkKonumMap, _sevkKonumMarker;
+
+function initAdminMaps() {
+  _mapsReady = true;
+}
+
+function initSevkAutocomplete() {
+  if (!_mapsReady || _sevkKalkisAC) return;
+  const opts = { componentRestrictions:{ country:[] }, fields:['formatted_address','geometry','name'] };
+
+  const kalkisEl = document.getElementById('sevk-kalkis');
+  const varisEl  = document.getElementById('sevk-varis');
+  const konumEl  = document.getElementById('sevk-konum-adi');
+  if (!kalkisEl || !varisEl) return;
+
+  _sevkKalkisAC = new google.maps.places.Autocomplete(kalkisEl, opts);
+  _sevkKalkisAC.addListener('place_changed', () => {
+    const p = _sevkKalkisAC.getPlace();
+    if (p.geometry) {
+      document.getElementById('sevk-kalkis-lat').value = p.geometry.location.lat();
+      document.getElementById('sevk-kalkis-lng').value = p.geometry.location.lng();
+    }
+    if (p.name || p.formatted_address) kalkisEl.value = p.name || p.formatted_address;
+  });
+
+  _sevkVarisAC = new google.maps.places.Autocomplete(varisEl, opts);
+  _sevkVarisAC.addListener('place_changed', () => {
+    const p = _sevkVarisAC.getPlace();
+    if (p.geometry) {
+      document.getElementById('sevk-varis-lat').value = p.geometry.location.lat();
+      document.getElementById('sevk-varis-lng').value = p.geometry.location.lng();
+    }
+    if (p.name || p.formatted_address) varisEl.value = p.name || p.formatted_address;
+  });
+
+  if (konumEl) {
+    _sevkKonumAC = new google.maps.places.Autocomplete(konumEl, opts);
+    _sevkKonumAC.addListener('place_changed', () => {
+      const p = _sevkKonumAC.getPlace();
+      if (p.geometry) {
+        const lat = p.geometry.location.lat();
+        const lng = p.geometry.location.lng();
+        document.getElementById('sevk-konum-lat').value = lat;
+        document.getElementById('sevk-konum-lng').value = lng;
+        document.getElementById('sevk-konum').value = lat + ',' + lng;
+        if (_sevkKonumMarker) {
+          _sevkKonumMarker.setPosition({ lat, lng });
+          _sevkKonumMap.setCenter({ lat, lng });
+        }
+      }
+      if (p.name || p.formatted_address) konumEl.value = p.name || p.formatted_address;
+    });
+  }
+}
+
+function toggleSevkKonumMap() {
+  const wrap = document.getElementById('sevk-konum-map-wrap');
+  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  if (wrap.style.display === 'block' && _mapsReady && !_sevkKonumMap) {
+    const lat = parseFloat(document.getElementById('sevk-konum-lat').value) || 37.0;
+    const lng = parseFloat(document.getElementById('sevk-konum-lng').value) || 35.3;
+    _sevkKonumMap = new google.maps.Map(document.getElementById('sevk-konum-map'), {
+      center: { lat, lng }, zoom: 7,
+      mapTypeControl: false, streetViewControl: false, fullscreenControl: false
+    });
+    _sevkKonumMarker = new google.maps.Marker({ map: _sevkKonumMap, position: { lat, lng }, draggable: true, title: 'Araç Konumu' });
+
+    const updateFromMarker = (pos) => {
+      const lt = pos.lat(); const ln = pos.lng();
+      document.getElementById('sevk-konum-lat').value = lt;
+      document.getElementById('sevk-konum-lng').value = ln;
+      document.getElementById('sevk-konum').value = lt + ',' + ln;
+      new google.maps.Geocoder().geocode({ location: { lat: lt, lng: ln } }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          document.getElementById('sevk-konum-adi').value = results[0].formatted_address;
+        }
+      });
+    };
+
+    _sevkKonumMarker.addListener('dragend', (e) => updateFromMarker(e.latLng));
+    _sevkKonumMap.addListener('click', (e) => {
+      _sevkKonumMarker.setPosition(e.latLng);
+      updateFromMarker(e.latLng);
+    });
+  }
+}
+
+function calcSevkRoute() {
+  if (!_mapsReady) { alert('Google Maps yüklenmedi. API key kontrol edin.'); return; }
+  const kLat = parseFloat(document.getElementById('sevk-kalkis-lat').value);
+  const kLng = parseFloat(document.getElementById('sevk-kalkis-lng').value);
+  const vLat = parseFloat(document.getElementById('sevk-varis-lat').value);
+  const vLng = parseFloat(document.getElementById('sevk-varis-lng').value);
+  if (!kLat || !vLat) { alert('Önce kalkış ve varış noktalarını Google Maps\'tan seçin.'); return; }
+
+  const info = document.getElementById('sevk-rota-info');
+  info.style.display = 'block';
+  info.textContent = '⏳ Güzergah hesaplanıyor...';
+
+  const svc = new google.maps.DirectionsService();
+  svc.route({
+    origin: { lat: kLat, lng: kLng },
+    destination: { lat: vLat, lng: vLng },
+    travelMode: google.maps.TravelMode.DRIVING
+  }, (result, status) => {
+    if (status !== 'OK') { info.textContent = '⚠️ Güzergah hesaplanamadı: ' + status; return; }
+    const leg = result.routes[0].legs[0];
+    const km  = Math.round(leg.distance.value / 1000);
+    const min = Math.round(leg.duration.value / 60);
+    const polyline = google.maps.geometry.encoding.encodePath(result.routes[0].overview_path);
+
+    document.getElementById('sevk-konum').value = document.getElementById('sevk-konum').value || (kLat + ',' + kLng);
+    document.getElementById('sevk-konum-lat').value = document.getElementById('sevk-konum-lat').value || kLat;
+    document.getElementById('sevk-konum-lng').value = document.getElementById('sevk-konum-lng').value || kLng;
+
+    setOrCreate('sevk-rota-polyline', polyline);
+    setOrCreate('sevk-mesafe-km', km);
+    setOrCreate('sevk-sure-dakika', min);
+
+    const h = Math.floor(min/60), m = min%60;
+    info.innerHTML = `✅ <strong>${km} km</strong> · <strong>${h > 0 ? h + 's ' : ''}${m}dk</strong> · ${leg.distance.text} / ${leg.duration.text}`;
+
+    if (!document.getElementById('sevk-teslim').value) {
+      const eta = new Date(Date.now() + min * 60000);
+      document.getElementById('sevk-teslim').value = eta.toISOString().slice(0,16);
+    }
+  });
+}
+
+function setOrCreate(id, value) {
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('input');
+    el.type = 'hidden'; el.id = id;
+    document.getElementById('sevkModal').appendChild(el);
+  }
+  el.value = value;
+}
+
+function onSevkAracChange() {
+  const sel = document.getElementById('sevk-arac-id');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) return;
+  const plaka  = opt.dataset.plaka  || '';
+  const surucu = opt.dataset.surucu || '';
+  const yuk    = opt.dataset.yuk    || '';
+  document.getElementById('sevk-plaka').value   = plaka;
+  document.getElementById('sevk-surucu').value  = surucu;
+  if (yuk) document.getElementById('sevk-yuk-cinsi').value = yuk;
+}
+
+/* ═══════════════════════════════════════
+   ARAÇLAR CRUD
+═══════════════════════════════════════ */
+let allAraclar = [];
+
+async function loadAraclar() {
+  try {
+    allAraclar = await api('/api/araclar');
+    const tbody = document.getElementById('araclarTable');
+    const countEl = document.getElementById('aracCount');
+    if (countEl) countEl.textContent = allAraclar.length + ' araç';
+
+    const DURUM_ARAC = { musait:'<span style="background:rgba(74,222,128,.15);color:#4ade80;padding:2px 8px;border-radius:12px;font-size:0.72rem">✅ Müsait</span>', seferde:'<span style="background:rgba(251,191,36,.15);color:#fbbf24;padding:2px 8px;border-radius:12px;font-size:0.72rem">🚛 Seferde</span>', bakim:'<span style="background:rgba(248,113,113,.15);color:#f87171;padding:2px 8px;border-radius:12px;font-size:0.72rem">🔧 Bakım</span>' };
+
+    if (tbody) {
+      tbody.innerHTML = allAraclar.map(a => `
+        <tr>
+          <td><strong style="color:var(--navy)">${a.plaka}</strong></td>
+          <td style="font-size:0.82rem">${a.marka_model||'—'}</td>
+          <td style="font-size:0.82rem">${a.arac_tipi||'—'}</td>
+          <td style="font-size:0.82rem">${a.yuk_cinsi||'—'}</td>
+          <td style="font-size:0.82rem">${a.kapasite||'—'}</td>
+          <td style="font-size:0.82rem">${a.surucu_adi||'—'}<br><span style="color:var(--muted);font-size:0.72rem">${a.surucu_tel||''}</span></td>
+          <td>${DURUM_ARAC[a.durum]||a.durum}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="editArac(${JSON.stringify(a).replace(/"/g,'&quot;')})">Düzenle</button>
+            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:0.5px solid rgba(248,113,113,.3);margin-left:4px" onclick="deleteArac(${a.id})">Sil</button>
+          </td>
+        </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Henüz araç eklenmemiş.</td></tr>';
+    }
+
+    // Sevkiyat modal araç dropdown'ını doldur
+    const sel = document.getElementById('sevk-arac-id');
+    if (sel) {
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">— Araç seçin —</option>' +
+        allAraclar.map(a => `<option value="${a.id}" data-plaka="${a.plaka}" data-surucu="${a.surucu_adi||''}" data-yuk="${a.yuk_cinsi||''}" ${a.id==cur?'selected':''}>${a.plaka}${a.marka_model?' - '+a.marka_model:''} (${a.arac_tipi})</option>`).join('');
+    }
+  } catch(e) { console.error(e); }
+}
+
+function openAracModal() {
+  document.getElementById('arac-edit-id').value = '';
+  document.getElementById('aracModalTitle').textContent = '🚛 Yeni Araç';
+  ['arac-plaka','arac-marka','arac-yuk','arac-kapasite','arac-surucu','arac-tel'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('arac-tip').value   = 'tır';
+  document.getElementById('arac-durum').value = 'musait';
+  document.getElementById('aracFormMsg').style.display = 'none';
+  document.getElementById('aracModal').style.display = 'flex';
+}
+
+function closeAracModal() {
+  document.getElementById('aracModal').style.display = 'none';
+}
+
+function editArac(a) {
+  document.getElementById('arac-edit-id').value  = a.id;
+  document.getElementById('aracModalTitle').textContent = '✏️ Araç Düzenle';
+  document.getElementById('arac-plaka').value    = a.plaka || '';
+  document.getElementById('arac-marka').value    = a.marka_model || '';
+  document.getElementById('arac-tip').value      = a.arac_tipi || 'tır';
+  document.getElementById('arac-yuk').value      = a.yuk_cinsi || '';
+  document.getElementById('arac-kapasite').value = a.kapasite || '';
+  document.getElementById('arac-surucu').value   = a.surucu_adi || '';
+  document.getElementById('arac-tel').value      = a.surucu_tel || '';
+  document.getElementById('arac-durum').value    = a.durum || 'musait';
+  document.getElementById('aracFormMsg').style.display = 'none';
+  document.getElementById('aracModal').style.display = 'flex';
+}
+
+async function saveArac() {
+  const id    = document.getElementById('arac-edit-id').value;
+  const body  = {
+    plaka:       document.getElementById('arac-plaka').value.trim(),
+    marka_model: document.getElementById('arac-marka').value.trim(),
+    arac_tipi:   document.getElementById('arac-tip').value,
+    yuk_cinsi:   document.getElementById('arac-yuk').value.trim(),
+    kapasite:    document.getElementById('arac-kapasite').value.trim(),
+    surucu_adi:  document.getElementById('arac-surucu').value.trim(),
+    surucu_tel:  document.getElementById('arac-tel').value.trim(),
+    durum:       document.getElementById('arac-durum').value,
+  };
+  const msg = document.getElementById('aracFormMsg');
+  if (!body.plaka) { msg.style.display='block'; msg.textContent='Plaka zorunludur.'; return; }
+  try {
+    if (id) await api('/api/araclar/' + id, { method:'PUT',  body: JSON.stringify(body) });
+    else    await api('/api/araclar',        { method:'POST', body: JSON.stringify(body) });
+    closeAracModal();
+    loadAraclar();
+  } catch(e) { msg.style.display='block'; msg.textContent='Hata: ' + e.message; }
+}
+
+async function deleteArac(id) {
+  if (!confirm('Bu aracı silmek istediğinizden emin misiniz?')) return;
+  try { await api('/api/araclar/' + id, { method:'DELETE' }); loadAraclar(); }
+  catch(e) { alert('Silinemedi: ' + e.message); }
 }
 
 /* ── YÜK BİLDİRİMLERİ ── */
@@ -2815,6 +3226,16 @@ async function saveNewBooking() {
   }
 }
 
+</script>
+<script src="/api/config.js"></script>
+<script>
+(function(){
+  if(!window.GMAPS_KEY) return;
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${window.GMAPS_KEY}&libraries=places,geometry&language=tr&callback=initAdminMaps`;
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
