@@ -866,6 +866,21 @@ db.query(`
     created_at       TIMESTAMPTZ  DEFAULT NOW()
   );
   CREATE INDEX IF NOT EXISTS idx_is_basvuru_tarih ON is_basvurulari(created_at DESC);
+  CREATE TABLE IF NOT EXISTS teklifler (
+    id             SERIAL PRIMARY KEY,
+    ad_soyad       VARCHAR(100) NOT NULL,
+    telefon        VARCHAR(30)  NOT NULL,
+    kalkis         TEXT,
+    varis          TEXT,
+    mesafe_km      NUMERIC(8,2),
+    arac_tipi      VARCHAR(50),
+    yuk_tipi       VARCHAR(100),
+    fiyat_tahmini  NUMERIC(10,2),
+    ip             VARCHAR(50),
+    okundu         BOOLEAN     DEFAULT FALSE,
+    created_at     TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_teklifler_tarih ON teklifler(created_at DESC);
   -- Mevcut tabloya CV kolonlarını ekle (zaten varsa hata vermez)
   ALTER TABLE is_basvurulari ADD COLUMN IF NOT EXISTS cv_path VARCHAR(255);
   ALTER TABLE is_basvurulari ADD COLUMN IF NOT EXISTS cv_original_name VARCHAR(255);
