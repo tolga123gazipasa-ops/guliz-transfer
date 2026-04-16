@@ -789,6 +789,9 @@
       <a class="badge" href="insaat/index.html">
         <span class="icon">🏛️</span><span data-i18n="badge.construction">İnşaat</span>
       </a>
+      <a class="badge" href="#" onclick="openAracTakip();return false;">
+        <span class="icon">📡</span><span>Araç Takip Sis.</span>
+      </a>
     </div>
 
     <div class="cta">
@@ -840,28 +843,31 @@
       <div class="at-footer" id="at-update-time">Son güncelleme: —</div>
     </div>
   </div>
-</div>
 
-<!-- CANLI SEVKİYAT HARİTASI -->
-<section class="map-section">
-  <div class="map-inner">
-    <div class="map-head">
-      <div class="map-eyebrow">
-        <div class="map-eyebrow-dot"></div>
-        <span>Canlı Takip</span>
-      </div>
-      <h2 class="map-title">Canlı Sevkiyat <em>Operasyonları</em></h2>
-      <p class="map-subtitle">Türkiye'nin dört bir yanından Gazipaşa merkezimize akan lojistik hareketleri gerçek zamanlı takip edin.</p>
-    </div>
-    <div class="map-wrap">
-      <div id="sevkiyat-map"></div>
-      <canvas id="sevkiyat-canvas"></canvas>
-    </div>
-    <div class="map-legend" id="sevkiyat-legend">
-      <div style="font-size:11px;color:rgba(255,255,255,0.3);">Yükleniyor...</div>
+  <!-- ŞİFRE EKRANI -->
+  <div id="atPwOverlay" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(3,10,31,0.97);backdrop-filter:blur(16px);align-items:center;justify-content:center;flex-direction:column;gap:0;">
+    <div style="text-align:center;padding:40px 32px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:16px;max-width:340px;width:90%;">
+      <div style="font-size:36px;margin-bottom:16px;">🔒</div>
+      <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:.3px;">Oturum Süresi Doldu</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:28px;line-height:1.6;">Devam etmek için yönetici şifresi girin</div>
+      <input id="atPwInput" type="password" maxlength="10" placeholder="Şifre"
+        style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 16px;font-size:16px;color:#fff;font-family:'Montserrat',sans-serif;outline:none;text-align:center;letter-spacing:4px;margin-bottom:8px;"
+        onkeydown="if(event.key==='Enter')checkAtPassword()"
+        onfocus="this.style.borderColor='rgba(232,25,44,0.6)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'">
+      <div id="atPwErr" style="display:none;color:#ff6b6b;font-size:11px;margin-bottom:12px;">⚠ Hatalı şifre. ESC ile çıkabilirsiniz.</div>
+      <button onclick="checkAtPassword()" style="width:100%;background:#e8192c;color:#fff;border:none;border-radius:8px;padding:13px;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#bf0e20'" onmouseout="this.style.background='#e8192c'">Devam Et →</button>
+      <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:16px;">ESC ile çıkabilirsiniz</div>
     </div>
   </div>
-</section>
+
+  <!-- KARANLIK EKRAN (yanlış şifre) -->
+  <div id="atDarkOverlay" style="display:none;position:absolute;inset:0;z-index:200;background:#000;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+    <div style="font-size:48px;">🔒</div>
+    <div style="color:rgba(255,255,255,0.4);font-size:15px;font-weight:700;">Erişim Engellendi</div>
+    <div style="color:rgba(255,255,255,0.2);font-size:11px;">ESC tuşuna basarak çıkın</div>
+  </div>
+</div>
+
 
 <!-- YÜK BİLDİRİMİ MODAL -->
 <div id="yukModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(5,13,40,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
@@ -1069,23 +1075,23 @@ function gpsJitter(idx,nowMs){
 ════════════════════════════ */
 const TRUCKS=[
   // ── 5 AKTİF Türkiye ──
-  {plate:'07 GLZ 01',route:'WEST',  offsetKm:  38,speedKmh:67,status:'moving', cargo:'Çimento & Yapı Malz.', driver:'Mehmet K.'},
-  {plate:'07 GLZ 03',route:'EAST',  offsetKm: 174,speedKmh:63,status:'moving', cargo:'Gıda & İçecek',        driver:'Hasan A.'},
-  {plate:'07 GLZ 06',route:'NORTH', offsetKm:  92,speedKmh:70,status:'moving', cargo:'Tekstil Ürünleri',     driver:'Ali D.'},
-  {plate:'07 GLZ 111',route:'NEAST',offsetKm: 255,speedKmh:64,status:'moving', cargo:'Makine Ekipmanı',      driver:'Osman B.'},
-  {plate:'07 GLZ 158',route:'EGE',  offsetKm: 128,speedKmh:72,status:'moving', cargo:'Elektronik Ekipman',   driver:'Yusuf T.'},
+  {plate:'07 GLZ 01',route:'WEST',  offsetKm:  38,speedKmh:67,status:'moving', cargo:'Sebze', driver:'Mehmet K.'},
+  {plate:'07 GLZ 03',route:'EAST',  offsetKm: 174,speedKmh:63,status:'moving', cargo:'Sebze', driver:'Hasan A.'},
+  {plate:'07 GLZ 06',route:'NORTH', offsetKm:  92,speedKmh:70,status:'moving', cargo:'Sebze', driver:'Ali D.'},
+  {plate:'07 GLZ 111',route:'NEAST',offsetKm: 255,speedKmh:64,status:'moving', cargo:'Sebze', driver:'Osman B.'},
+  {plate:'07 GLZ 158',route:'EGE',  offsetKm: 128,speedKmh:72,status:'moving', cargo:'Sebze', driver:'Yusuf T.'},
   // ── 2 KAPALI (arıza/bakım) ──
-  {plate:'07 GLZ 98', route:'WEST',  offsetKm: 315,speedKmh:63,status:'offline',offlineSince:6, cargo:'Tarım Ürünleri',  driver:'İbrahim S.'},
-  {plate:'07 ATF 44', route:'EAST',  offsetKm: 150,speedKmh:60,status:'offline',offlineSince:5, cargo:'Kimyasal Madde',  driver:'Ercan M.'},
+  {plate:'07 GLZ 98', route:'WEST',  offsetKm: 315,speedKmh:63,status:'offline',offlineSince:6, cargo:'Sebze', driver:'İbrahim S.'},
+  {plate:'07 ATF 44', route:'EAST',  offsetKm: 150,speedKmh:60,status:'offline',offlineSince:5, cargo:'Sebze', driver:'Ercan M.'},
   // ── 3 MOLA/YÜKLEME Türkiye ──
-  {plate:'07 TK 658', route:'NORTH', offsetKm: 435,speedKmh:0, status:'mola',   molaStart:1745280000000, cargo:'İnşaat Malz.',  driver:'Serkan Ö.'},
-  {plate:'07 AUC 487',route:'NEAST', offsetKm: 505,speedKmh:0, status:'yukleme',molaStart:1745294400000, cargo:'Cam & Seramik', driver:'Murat C.'},
-  {plate:'07 UP 767', route:'EGE',   offsetKm: 275,speedKmh:0, status:'mola',   molaStart:1745265600000, cargo:'Mobilya',       driver:'Kemal F.'},
+  {plate:'07 TK 658', route:'NORTH', offsetKm: 435,speedKmh:0, status:'mola',   molaStart:1745280000000, cargo:'Sebze', driver:'Serkan Ö.'},
+  {plate:'07 AUC 487',route:'NEAST', offsetKm: 505,speedKmh:0, status:'yukleme',molaStart:1745294400000, cargo:'Sebze', driver:'Murat C.'},
+  {plate:'07 UP 767', route:'EGE',   offsetKm: 275,speedKmh:0, status:'mola',   molaStart:1745265600000, cargo:'Sebze', driver:'Kemal F.'},
   // ── 4 ULUSLARARASI ──
-  {plate:'07 CCF 336',route:'KRASNODAR',offsetKm:480,speedKmh:70,status:'moving',cargo:'Çelik Konstrüksiyon', driver:'Volkan Ş.',intl:true},
-  {plate:'07 BJV 411',route:'MOSCOW',   offsetKm:670,speedKmh:73,status:'moving',cargo:'Tekstil & Konfeksiyon',driver:'Emre Y.', intl:true},
-  {plate:'07 KZL 71', route:'KAFKAS',   offsetKm:235,speedKmh:0, status:'mola',  molaStart:1745308800000,cargo:'Cam & Optik',    driver:'Ferhat B.',intl:true},
-  {plate:'07 UH 434', route:'BALKAN',   offsetKm:305,speedKmh:68,status:'moving',cargo:'Tarım Ekipmanı',      driver:'Tolga N.',intl:true},
+  {plate:'07 CCF 336',route:'KRASNODAR',offsetKm:480,speedKmh:70,status:'moving',cargo:'Sebze', driver:'Volkan Ş.',intl:true},
+  {plate:'07 BJV 411',route:'MOSCOW',   offsetKm:670,speedKmh:73,status:'moving',cargo:'Sebze', driver:'Emre Y.', intl:true},
+  {plate:'07 KZL 71', route:'KAFKAS',   offsetKm:235,speedKmh:0, status:'mola',  molaStart:1745308800000,cargo:'Sebze', driver:'Ferhat B.',intl:true},
+  {plate:'07 UH 434', route:'BALKAN',   offsetKm:305,speedKmh:68,status:'moving',cargo:'Sebze', driver:'Tolga N.',intl:true},
 ];
 
 /* ── Pozisyon hesapla ── */
@@ -1155,7 +1161,7 @@ function popupContent(t,idx,nowMs){
   const spd=getTruckSpeed(t,idx,nowMs);
   const coord=`${pos[0].toFixed(4)}°K, ${pos[1].toFixed(4)}°D`;
   const spdRow=eSt==='moving'?`<div>🚀 Anlık hız: <b>${spd} km/s</b></div>`:'';
-  const nightRow=eSt==='istirahat'?`<div style="color:#a78bfa;font-size:11px;">🌙 Sürücü istirahat (aktif: 06:00)</div>`:'';
+  const nightRow=eSt==='istirahat'?`<div style="color:#a78bfa;font-size:11px;">🌙 Sürücü İstirahat</div>`:'';
   const offRow=eSt==='offline'?`<div style="color:#9ca3af;font-size:11px;">⛔ ${t.offlineSince} saat önce kapandı</div>`:'';
   const flag=t.intl?'🌍 Uluslararası':'🇹🇷 Türkiye iç hat';
   return `<div style="font-weight:800;font-size:13px;color:#fff;margin-bottom:4px;">${t.plate}</div>
@@ -1164,7 +1170,7 @@ function popupContent(t,idx,nowMs){
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;">
     ${spdRow}${nightRow}${offRow}
     <div>📦 ${t.cargo}</div>
-    <div>👤 Sürücü: ${t.driver}</div>
+    <div>👤 Sürücü: <span style="letter-spacing:2px;">******</span> <span style="font-size:9px;color:#fbbf24;">(SADECE YÖNETİCİ)</span></div>
     <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:5px;">📡 ${coord}</div>
     <div style="font-size:10px;color:rgba(255,255,255,0.3);">${flag}</div>`;
 }
@@ -1190,15 +1196,18 @@ function updateTrucks(nowMs){
 function renderSidebar(nowMs){
   const list=document.getElementById('at-truck-list');
   if(!list) return;
+  // Sol çerçeve renkleri: aktif=yeşil, kapalı=kırmızı, mola=sarı, yükleme=mavi, istirahat=mor
+  const BORDER={moving:'#4ade80',offline:'#e8192c',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
   list.innerHTML=TRUCKS.map((t,i)=>{
     const eSt=effectiveStatus(t,nowMs);
     const c=SC[eSt],lbl=SL[eSt];
+    const bc=BORDER[eSt]||c;
     const spd=getTruckSpeed(t,i,nowMs);
-    const sub=eSt==='moving'?`${spd} km/s`:(eSt==='offline'?`${t.offlineSince}s kapalı`:(eSt==='istirahat'?'Gece molası':'Durdu'));
-    return`<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}">
-      <div class="at-t-dot" style="background:${c};box-shadow:0 0 6px ${c}66;"></div>
-      <div style="flex:1;min-width:0;"><div class="at-t-plate">${t.plate}</div><div class="at-t-speed">${sub}</div></div>
-      <div class="at-t-status st-${eSt==='yukleme'?'yükleme':eSt==='istirahat'?'mola':eSt}">${lbl}</div>
+    const sub=eSt==='moving'?`${spd} km/s`:(eSt==='offline'?`${t.offlineSince}s kapalı`:(eSt==='istirahat'?'İstirahat':'Durdu'));
+    return`<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}" style="border-left:3px solid ${bc};">
+      <div class="at-t-dot" style="background:${c};box-shadow:0 0 6px ${c}66;flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;overflow:hidden;"><div class="at-t-plate" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.plate}</div><div class="at-t-speed">${sub}</div></div>
+      <div class="at-t-status st-${eSt==='yukleme'?'yükleme':eSt==='istirahat'?'mola':eSt}" style="flex-shrink:0;">${lbl}</div>
     </div>`;
   }).join('');
 }
@@ -1318,29 +1327,86 @@ function initAtMap(){
   atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
 }
 
+let atPwTimer=null;
+
 window.openAracTakip=function(){
   document.getElementById('atOverlay').classList.add('open');
+  document.getElementById('atPwOverlay').style.display='none';
+  document.getElementById('atDarkOverlay').style.display='none';
   document.body.style.overflow='hidden';
   setTimeout(()=>{initAtMap();if(atMap)atMap.invalidateSize();},120);
+
+  // Sohbet penceresini aç → admin Telegram bildirimi alır
+  if(!chatOpen){
+    // z-index'i araç takip modalının üstüne çıkar
+    document.querySelector('.chat-btn').style.zIndex='1100';
+    document.getElementById('chatBox').style.zIndex='1100';
+    toggleChat();
+  }
+  // Socket ile yöneticiye bildirim gönder
+  if(typeof chatSocket!=='undefined'){
+    chatSocket.emit('visitor:action',{sessionId:chatSessionId,action:'arac_takip_acildi',detail:'Araç Takip Sistemi açıldı'});
+  }
+
+  // 30 saniye sonra şifre ekranı
+  if(atPwTimer) clearTimeout(atPwTimer);
+  atPwTimer=setTimeout(()=>{
+    const pw=document.getElementById('atPwOverlay');
+    const dk=document.getElementById('atDarkOverlay');
+    if(pw&&dk&&document.getElementById('atOverlay').classList.contains('open')){
+      pw.style.display='flex';
+      setTimeout(()=>{const i=document.getElementById('atPwInput');if(i)i.focus();},100);
+    }
+  },30000); // ilk açılışta 30 saniye ücretsiz izleme
 };
+
 window.closeAracTakip=function(){
+  if(atPwTimer){clearTimeout(atPwTimer);atPwTimer=null;}
   document.getElementById('atOverlay').classList.remove('open');
+  document.getElementById('atPwOverlay').style.display='none';
+  document.getElementById('atDarkOverlay').style.display='none';
   document.body.style.overflow='';
+  // Chat z-index'ini geri al
+  document.querySelector('.chat-btn').style.zIndex='';
+  document.getElementById('chatBox').style.zIndex='';
   if(atInterval){clearInterval(atInterval);atInterval=null;}
   atInited=false;atMarkers={};
   if(atMap){atMap.remove();atMap=null;}
 };
-document.addEventListener('keydown',e=>{if(e.key==='Escape')window.closeAracTakip();});
+
+window.checkAtPassword=function(){
+  const pw=document.getElementById('atPwInput').value;
+  if(pw==='1453'){
+    document.getElementById('atPwOverlay').style.display='none';
+    document.getElementById('atDarkOverlay').style.display='none';
+    document.getElementById('atPwInput').value='';
+    // 1 saatlik oturum başlat
+    if(atPwTimer) clearTimeout(atPwTimer);
+    atPwTimer=setTimeout(()=>{
+      if(document.getElementById('atOverlay').classList.contains('open')){
+        document.getElementById('atPwOverlay').style.display='flex';
+        setTimeout(()=>{const i=document.getElementById('atPwInput');if(i)i.focus();},100);
+      }
+    },3600000); // 1 saat = 3600000 ms
+  } else {
+    // Yanlış şifre → direkt karanlık ekrana geç, geri dönüş yok
+    document.getElementById('atPwInput').value='';
+    document.getElementById('atPwOverlay').style.display='none';
+    document.getElementById('atDarkOverlay').style.display='flex';
+  }
+};
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') window.closeAracTakip();
+});
 
 })(); // end ARAÇ TAKİP
 
 </script>
 
 <script>
-/* ══════════════════════════════════════
-   CANLI SEVKİYAT HARİTASI
-══════════════════════════════════════ */
-(function() {
+/* CANLI SEVKİYAT HARİTASI silindi */
+if(false)(function() {
   const DEST = { lat: 36.897, lng: 30.713 };
 
   const ALL_CITIES = [
