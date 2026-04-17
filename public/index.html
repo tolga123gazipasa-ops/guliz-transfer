@@ -835,6 +835,7 @@
       <div class="at-sidebar-head">14 Araç · Filo Durumu</div>
       <div id="at-truck-list"></div>
       <div class="at-footer" id="at-update-time">Son güncelleme: —</div>
+      <div class="at-footer" id="at-pw-countdown" style="color:#fbbf24;margin-top:2px"></div>
     </div>
   </div>
 
@@ -1417,13 +1418,19 @@ window.openAracTakip = function(){
   /* 1) Geçerli 1 saatlik oturum var mı? */
   const accessUntil = parseInt(localStorage.getItem(AT_ACCESS_KEY) || '0');
   if(accessUntil > now){
-    /* Her 3 sn'de kontrol — oturum süresi dolunca şifre iste */
+    /* Her saniye kontrol — oturum süresi dolunca şifre iste */
     atPwTimer = setInterval(()=>{
-      if(Date.now() > parseInt(localStorage.getItem(AT_ACCESS_KEY)||'0')) {
+      const acc = parseInt(localStorage.getItem(AT_ACCESS_KEY)||'0');
+      const cdEl = document.getElementById('at-pw-countdown');
+      if(Date.now() > acc){
+        if(cdEl) cdEl.textContent = '';
         clearInterval(atPwTimer); atPwTimer = null;
         showAtPwScreen();
+        return;
       }
-    }, 3000);
+      const left = Math.ceil((acc - Date.now())/1000);
+      if(cdEl) cdEl.textContent = `🔓 Oturum: ${Math.floor(left/60)}dk ${left%60}sn`;
+    }, 1000);
     return;
   }
 
@@ -1440,16 +1447,25 @@ window.openAracTakip = function(){
     return;
   }
 
-  /* Her 3 sn'de kontrol — 45 sn dolunca şifre iste */
+  /* Her saniye kontrol + geri sayım göster */
   atPwTimer = setInterval(()=>{
     const exp = parseInt(localStorage.getItem(AT_FREE_KEY)||'0');
     const acc = parseInt(localStorage.getItem(AT_ACCESS_KEY)||'0');
-    if(acc > Date.now()) return; // şifre girildi, oturum aktif
-    if(Date.now() >= exp){
+    const cdEl = document.getElementById('at-pw-countdown');
+    if(acc > Date.now()){
+      const left = Math.ceil((acc - Date.now())/1000);
+      if(cdEl) cdEl.textContent = `🔓 Oturum: ${Math.floor(left/60)}dk ${left%60}sn`;
+      return;
+    }
+    const left = Math.ceil((exp - Date.now())/1000);
+    if(left > 0){
+      if(cdEl) cdEl.textContent = `⏱ Ücretsiz süre: ${left}sn`;
+    } else {
+      if(cdEl) cdEl.textContent = '';
       clearInterval(atPwTimer); atPwTimer = null;
       showAtPwScreen();
     }
-  }, 3000);
+  }, 1000);
 };
 
 window.closeAracTakip = function(){
