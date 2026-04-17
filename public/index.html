@@ -1446,18 +1446,9 @@ window.openAracTakip = function(){
     return;
   }
 
-  /* 2) 45 saniyelik ücretsiz süre */
-  let freeExpires = parseInt(localStorage.getItem(AT_FREE_KEY) || '0');
-  if(freeExpires === 0){
-    freeExpires = now + AT_FREE_MS;
-    localStorage.setItem(AT_FREE_KEY, freeExpires.toString());
-  }
-
-  const freeLeft = freeExpires - now;
-  if(freeLeft <= 0){
-    showAtPwScreen();
-    return;
-  }
+  /* 2) 45 saniyelik ücretsiz süre — her açılışta taze başlar */
+  const freeExpires = now + AT_FREE_MS;
+  localStorage.setItem(AT_FREE_KEY, freeExpires.toString());
 
   /* Her saniye kontrol + geri sayım göster */
   atPwTimer = setInterval(()=>{
