@@ -3739,13 +3739,18 @@ async function saveNewBooking() {
 (function loadMapsWhenReady(){
   const key = window.GMAPS_KEY;
   if (!key) {
-    // config.js henüz yüklenmemiş olabilir — 300ms bekle
-    setTimeout(loadMapsWhenReady, 300);
+    setTimeout(loadMapsWhenReady, 400);
     return;
   }
   const s = document.createElement('script');
   s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,geometry&language=tr&callback=initAdminMaps`;
   s.async = true; s.defer = true;
+  s.onerror = function() {
+    console.error('Google Maps yüklenemedi — API key geçersiz veya API aktif değil.');
+    document.querySelectorAll('[id$="Harita"],[id$="harita"],[id="filoHarita"],[id="konumModalMap"],[id="sevk-konum-map"]').forEach(el => {
+      el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:#f87171;font-size:0.8rem;text-align:center;padding:1rem">⚠️ Google Maps yüklenemedi.<br><span style="color:var(--muted);font-size:0.72rem">API key\'in Maps JavaScript API, Places API ve Geometry Library etkinleştirilmiş olmalı.</span></div>';
+    });
+  };
   document.head.appendChild(s);
 })();
 </script>

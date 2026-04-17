@@ -3,12 +3,31 @@ const router  = express.Router();
 const db      = require('../models/db');
 const auth    = require('../middleware/auth');
 
-/* ── Public: seferdeki araçlar (hassas bilgi yok) ── */
+/* ── Public: tüm araçlar — konum + sefer bilgisiyle (hassas bilgi yok) ── */
 router.get('/public', async (req, res) => {
   try {
-    const { rows } = await db.query(
-      `SELECT id, plaka, arac_tipi, durum FROM araclar WHERE durum='seferde' ORDER BY plaka`
-    );
+    const { rows } = await db.query(`
+      SELECT a.id, a.plaka, a.arac_tipi, a.durum, a.yuk_cinsi,
+        COALESCE(s.mevcut_lat,  a.son_lat)       AS lat,
+        COALESCE(s.mevcut_lng,  a.son_lng)       AS lng,
+        COALESCE(s.mevcut_konum_adi, a.son_konum_adi) AS konum_adi,
+        s.kalkis_lat, s.kalkis_lng,
+        s.varis_lat,  s.varis_lng,
+        s.kalkis      AS sevk_kalkis,
+        s.varis       AS sevk_varis,
+        s.tahmini_teslim,
+        s.created_at  AS sevk_baslangic
+      FROM araclar a
+      LEFT JOIN LATERAL (
+        SELECT mevcut_lat, mevcut_lng, mevcut_konum_adi,
+               kalkis_lat, kalkis_lng, varis_lat, varis_lng,
+               kalkis, varis, tahmini_teslim, created_at
+        FROM sevkiyatlar
+        WHERE arac_id = a.id AND durum = 'yolda'
+        ORDER BY updated_at DESC LIMIT 1
+      ) s ON true
+      ORDER BY a.created_at DESC
+    `);
     res.json(rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

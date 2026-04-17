@@ -1035,101 +1035,77 @@ function isDriving(nowMs,truckStatus){
   return h>=DRIVE_START&&h<DRIVE_END;
 }
 
-/* Deterministic GPS jitter (±80m, 30sn'de bir değişir, tekrar edilebilir) */
+/* Deterministic GPS jitter — seferdeki araçlar için küçük titreme */
 function noise(seed){const x=Math.sin(seed)*43758.5453;return x-Math.floor(x);}
 function gpsJitter(idx,nowMs){
   const slot=Math.floor(nowMs/30000);
-  return[(noise(idx*9.12+slot*1.78)-0.5)*0.0014,(noise(idx*17.34+slot*2.56)-0.5)*0.0014];
-}
-
-// Gerçek araç verilerini API'den yükle ve haritada göster (admin'den girilen veriler)
-async function loadRealVehicles() {
-  try {
-    const [araclar, sevkiyatlar] = await Promise.all([
-      fetch('/api/araclar/public').then(r => r.ok ? r.json() : []),
-      fetch('/api/takip/aktif').then(r => r.ok ? r.json() : [])
-    ]);
-    // Seferdeki araçları haritada göster
-    sevkiyatlar.forEach(s => {
-      if (!s.mevcut_lat || !s.mevcut_lng) return;
-      if (typeof tkMap !== 'undefined' && tkMap) {
-        L.marker([s.mevcut_lat, s.mevcut_lng], {
-          icon: L.divIcon({ html:`<div style="background:#e8192c;color:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);">🚛</div>`, className:'', iconSize:[30,30], iconAnchor:[15,15] })
-        }).addTo(tkMap).bindPopup(`<b>${s.arac_plaka||'Araç'}</b><br>${s.mevcut_konum_adi||''}<br>${s.kalkis} → ${s.varis}`);
-      }
-    });
-  } catch(_) {}
-}
-// Harita hazır olduğunda çağır (mevcut animasyon döngüsünden sonra)
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => setTimeout(loadRealVehicles, 2000));
-} else {
-  setTimeout(loadRealVehicles, 2000);
+  return[(noise(idx*9.12+slot*1.78)-0.5)*0.0007,(noise(idx*17.34+slot*2.56)-0.5)*0.0007];
 }
 
 /* ════════════════════════════
-   ARAÇ TANIMLAMALARI
+   ARAÇ VERİSİ — Admin panelinden
 ════════════════════════════ */
-const TRUCKS=[
-  // ── 5 AKTİF Türkiye ──
-  {plate:'07 GLZ 01',route:'WEST',  offsetKm:  38,speedKmh:67,status:'moving', cargo:'Sebze', driver:'Mehmet K.'},
-  {plate:'07 GLZ 03',route:'EAST',  offsetKm: 174,speedKmh:63,status:'moving', cargo:'Sebze', driver:'Hasan A.'},
-  {plate:'07 GLZ 06',route:'NORTH', offsetKm:  92,speedKmh:70,status:'moving', cargo:'Sebze', driver:'Ali D.'},
-  {plate:'07 GLZ 111',route:'NEAST',offsetKm: 255,speedKmh:64,status:'moving', cargo:'Sebze', driver:'Osman B.'},
-  {plate:'07 GLZ 158',route:'EGE',  offsetKm: 128,speedKmh:72,status:'moving', cargo:'Sebze', driver:'Yusuf T.'},
-  // ── 2 KAPALI (arıza/bakım) ──
-  {plate:'07 GLZ 98', route:'WEST',  offsetKm: 315,speedKmh:63,status:'offline',offlineSince:6, cargo:'Sebze', driver:'İbrahim S.'},
-  {plate:'07 ATF 44', route:'EAST',  offsetKm: 150,speedKmh:60,status:'offline',offlineSince:5, cargo:'Sebze', driver:'Ercan M.'},
-  // ── 3 MOLA/YÜKLEME Türkiye ──
-  {plate:'07 TK 658', route:'NORTH', offsetKm: 435,speedKmh:0, status:'mola',   molaStart:1745280000000, cargo:'Sebze', driver:'Serkan Ö.'},
-  {plate:'07 AUC 487',route:'NEAST', offsetKm: 505,speedKmh:0, status:'yukleme',molaStart:1745294400000, cargo:'Sebze', driver:'Murat C.'},
-  {plate:'07 UP 767', route:'EGE',   offsetKm: 275,speedKmh:0, status:'mola',   molaStart:1745265600000, cargo:'Sebze', driver:'Kemal F.'},
-  // ── 4 ULUSLARARASI ──
-  {plate:'07 CCF 336',route:'KRASNODAR',offsetKm:480,speedKmh:70,status:'moving',cargo:'Sebze', driver:'Volkan Ş.',intl:true},
-  {plate:'07 BJV 411',route:'MOSCOW',   offsetKm:670,speedKmh:73,status:'moving',cargo:'Sebze', driver:'Emre Y.', intl:true},
-  {plate:'07 KZL 71', route:'KAFKAS',   offsetKm:235,speedKmh:0, status:'mola',  molaStart:1745308800000,cargo:'Sebze', driver:'Ferhat B.',intl:true},
-  {plate:'07 UH 434', route:'BALKAN',   offsetKm:305,speedKmh:68,status:'moving',cargo:'Sebze', driver:'Tolga N.',intl:true},
-];
+let TRUCKS = []; // Admin panelinden yüklenir
+const BASE = [36.27, 32.30]; // Gazipaşa (araç koordinatı yoksa burada göster)
 
-/* ── Pozisyon hesapla ── */
-function getTruckPos(t,idx,nowMs){
-  let km;
-  if(t.status==='offline'){
-    // Kapandığı andaki son konum (frozen)
-    const frozenMs=nowMs-t.offlineSince*3600000;
-    km=t.offsetKm+activeHours(frozenMs)*t.speedKmh;
-  } else if(t.status==='mola'||t.status==='yukleme'){
-    // Mola başladığı andaki konumda dur
-    km=t.offsetKm+activeHours(t.molaStart)*t.speedKmh;
-    const base=posOnPingPong(getRoutePts(t.route),km);
-    return[base[0]+gpsJitter(idx,nowMs)[0],base[1]+gpsJitter(idx,nowMs)[1]];
-  } else {
-    // Gerçek zamanlı: sadece aktif saatlerde km birikir
-    km=t.offsetKm+activeHours(nowMs)*t.speedKmh;
+async function loadVehiclesFromAPI() {
+  try {
+    const data = await fetch('/api/araclar/public').then(r => r.ok ? r.json() : []);
+    TRUCKS = data.map((a, i) => ({
+      ...a,
+      _idx: i,
+      lat:  a.lat  ? parseFloat(a.lat)  : null,
+      lng:  a.lng  ? parseFloat(a.lng)  : null,
+      kalkis_lat:  a.kalkis_lat  ? parseFloat(a.kalkis_lat)  : null,
+      kalkis_lng:  a.kalkis_lng  ? parseFloat(a.kalkis_lng)  : null,
+      varis_lat:   a.varis_lat   ? parseFloat(a.varis_lat)   : null,
+      varis_lng:   a.varis_lng   ? parseFloat(a.varis_lng)   : null,
+      sevk_start:  a.sevk_baslangic ? new Date(a.sevk_baslangic).getTime() : null,
+      sevk_eta:    a.tahmini_teslim  ? new Date(a.tahmini_teslim).getTime()  : null,
+    }));
+    return true;
+  } catch(e) { return false; }
+}
+
+/* ── Pozisyon hesapla (admin paneli verilerinden) ── */
+function getTruckPos(t, idx, nowMs) {
+  // Seferde + tam rota verisi var → başlangıç→varış arası interpolasyon
+  if (t.durum === 'seferde' && t.kalkis_lat && t.varis_lat && t.sevk_start) {
+    const eta = t.sevk_eta || (t.sevk_start + 10 * 3600000);
+    const progress = Math.min(1, Math.max(0, (nowMs - t.sevk_start) / (eta - t.sevk_start)));
+    const lat = t.kalkis_lat + (t.varis_lat - t.kalkis_lat) * progress;
+    const lng = t.kalkis_lng + (t.varis_lng - t.kalkis_lng) * progress;
+    const j = gpsJitter(idx, nowMs);
+    return [lat + j[0], lng + j[1]];
   }
-  const base=posOnPingPong(getRoutePts(t.route),km);
-  // Gece ise pozisyon sabit (jitter hariç)
-  const j=gpsJitter(idx,nowMs);
-  return[base[0]+j[0],base[1]+j[1]];
+  // Bilinen konum var (admin'den girilmiş)
+  if (t.lat && t.lng) {
+    const j = t.durum === 'seferde' ? gpsJitter(idx, nowMs) : [0, 0];
+    return [t.lat + j[0], t.lng + j[1]];
+  }
+  // Koordinat yok → şirket merkezi yakınında göster
+  return [BASE[0] + (idx % 5) * 0.015, BASE[1] + Math.floor(idx / 5) * 0.015];
 }
 
-/* Anlık hız (gece=0, gündüz=gerçekçi varyasyon) */
-function getTruckSpeed(t,idx,nowMs){
-  if(t.status!=='moving') return 0;
-  if(!isDriving(nowMs,'moving')) return 0;
-  const seed=t.plate.length*7+idx*13;
-  const wave=Math.sin(nowMs/240000+seed)*7;
-  const cityFactor=Math.sin(nowMs/900000+idx)*4; // trafik ışığı efekti
-  return Math.min(79,Math.max(42,Math.round(t.speedKmh+wave+cityFactor)));
+/* Anlık hız tahmini */
+function getTruckSpeed(t, idx, nowMs) {
+  if (t.durum !== 'seferde') return 0;
+  const h = new Date(nowMs).getHours();
+  if (h < 6 || h >= 22) return 0; // gece istirahat
+  const seed = (t.plaka||'').length * 7 + idx * 13;
+  const wave = Math.sin(nowMs / 240000 + seed) * 7;
+  return Math.min(79, Math.max(42, Math.round(72 + wave)));
 }
 
-/* Mevcut durum etiketi (gece ise İSTİRAHAT) */
-function effectiveStatus(t,nowMs){
-  if(t.status==='offline') return 'offline';
-  if(t.status==='mola') return 'mola';
-  if(t.status==='yukleme') return 'yukleme';
-  if(!isDriving(nowMs,t.status)) return 'istirahat';
-  return 'moving';
+/* Durum etiketi */
+function effectiveStatus(t, nowMs) {
+  if (t.durum === 'bakim')   return 'offline';
+  if (t.durum === 'musait')  return 'mola';
+  if (t.durum === 'seferde') {
+    const h = new Date(nowMs).getHours();
+    return (h >= 6 && h < 22) ? 'moving' : 'istirahat';
+  }
+  return 'mola';
 }
 
 /* ── Görsel ── */
@@ -1158,25 +1134,25 @@ function buildTruckIcon(eSt,rot){
 
 function fmtTime(ms){return new Date(ms).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 
-function popupContent(t,idx,nowMs){
-  const eSt=effectiveStatus(t,nowMs);
-  const c=SC[eSt], lbl=SL[eSt];
-  const pos=getTruckPos(t,idx,nowMs);
-  const spd=getTruckSpeed(t,idx,nowMs);
-  const coord=`${pos[0].toFixed(4)}°K, ${pos[1].toFixed(4)}°D`;
-  const spdRow=eSt==='moving'?`<div>🚀 Anlık hız: <b>${spd} km/s</b></div>`:'';
-  const nightRow=eSt==='istirahat'?`<div style="color:#a78bfa;font-size:11px;">🌙 Sürücü İstirahat</div>`:'';
-  const offRow=eSt==='offline'?`<div style="color:#9ca3af;font-size:11px;">⛔ ${t.offlineSince} saat önce kapandı</div>`:'';
-  const flag=t.intl?'🌍 Uluslararası':'🇹🇷 Türkiye iç hat';
-  return `<div style="font-weight:800;font-size:13px;color:#fff;margin-bottom:4px;">${t.plate}</div>
+function popupContent(t, idx, nowMs) {
+  const eSt = effectiveStatus(t, nowMs);
+  const c = SC[eSt], lbl = SL[eSt];
+  const pos = getTruckPos(t, idx, nowMs);
+  const spd = getTruckSpeed(t, idx, nowMs);
+  const coord = `${pos[0].toFixed(4)}°K, ${pos[1].toFixed(4)}°D`;
+  const spdRow = eSt === 'moving' ? `<div>🚀 Anlık hız: <b>${spd} km/s</b></div>` : '';
+  const nightRow = eSt === 'istirahat' ? `<div style="color:#a78bfa;font-size:11px;">🌙 Sürücü İstirahat</div>` : '';
+  const routeRow = (t.sevk_kalkis && t.sevk_varis)
+    ? `<div style="font-size:11px;color:#94a3b8;">🗺 ${t.sevk_kalkis} → ${t.sevk_varis}</div>` : '';
+  const konumRow = t.konum_adi ? `<div style="font-size:11px;color:#94a3b8;">📍 ${t.konum_adi}</div>` : '';
+  const cargoRow = t.yuk_cinsi ? `<div>📦 ${t.yuk_cinsi}</div>` : '';
+  return `<div style="font-weight:800;font-size:13px;color:#fff;margin-bottom:4px;">${t.plaka}</div>
     <div style="background:${c}22;color:${c};border:1px solid ${c}44;border-radius:6px;
       padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px;display:inline-block;margin-bottom:8px;">${lbl}</div>
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;">
-    ${spdRow}${nightRow}${offRow}
-    <div>📦 ${t.cargo}</div>
-    <div>👤 Sürücü: <span style="letter-spacing:2px;">******</span> <span style="font-size:9px;color:#fbbf24;">(SADECE YÖNETİCİ)</span></div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:5px;">📡 ${coord}</div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.3);">${flag}</div>`;
+    ${spdRow}${nightRow}${routeRow}${konumRow}${cargoRow}
+    <div>🚛 ${t.arac_tipi || 'Araç'}</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:5px;">📡 ${coord}</div>`;
 }
 
 /* ── Harita ── */
@@ -1220,20 +1196,28 @@ function updateTrucks(nowMs){
 }
 
 function renderSidebar(nowMs){
-  const list=document.getElementById('at-truck-list');
-  if(!list) return;
-  // Sol çerçeve renkleri: aktif=yeşil, kapalı=kırmızı, mola=sarı, yükleme=mavi, istirahat=mor
-  const BORDER={moving:'#4ade80',offline:'#e8192c',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
-  list.innerHTML=TRUCKS.map((t,i)=>{
-    const eSt=effectiveStatus(t,nowMs);
-    const c=SC[eSt],lbl=SL[eSt];
-    const bc=BORDER[eSt]||c;
-    const spd=getTruckSpeed(t,i,nowMs);
-    const sub=eSt==='moving'?`${spd} km/s`:(eSt==='offline'?`${t.offlineSince}s kapalı`:(eSt==='istirahat'?'İstirahat':'Durdu'));
-    return`<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}" style="border-left:3px solid ${bc};">
+  const list = document.getElementById('at-truck-list');
+  if (!list) return;
+  const head = document.querySelector('.at-sidebar-head');
+  if (head) head.textContent = `${TRUCKS.length} Araç · Filo Durumu`;
+  const BORDER = {moving:'#4ade80',offline:'#e8192c',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
+  if (!TRUCKS.length) {
+    list.innerHTML = '<div style="padding:1rem;color:rgba(255,255,255,0.3);font-size:12px;text-align:center">Araç verisi yükleniyor...</div>';
+    return;
+  }
+  list.innerHTML = TRUCKS.map((t, i) => {
+    const eSt = effectiveStatus(t, nowMs);
+    const c = SC[eSt], lbl = SL[eSt];
+    const bc = BORDER[eSt] || c;
+    const spd = getTruckSpeed(t, i, nowMs);
+    const sub = eSt === 'moving' ? `${spd} km/s` : (eSt === 'offline' ? 'Bakımda' : (eSt === 'istirahat' ? 'İstirahat' : 'Bekliyor'));
+    return `<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}" style="border-left:3px solid ${bc};">
       <div class="at-t-dot" style="background:${c};box-shadow:0 0 6px ${c}66;flex-shrink:0;"></div>
-      <div style="flex:1;min-width:0;overflow:hidden;"><div class="at-t-plate" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.plate}</div><div class="at-t-speed">${sub}</div></div>
-      <div class="at-t-status st-${{moving:'aktif',offline:'kapali',mola:'mola',yukleme:'yükleme',istirahat:'mola'}[eSt]||eSt}" style="flex-shrink:0;">${lbl}</div>
+      <div style="flex:1;min-width:0;overflow:hidden;">
+        <div class="at-t-plate" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.plaka}</div>
+        <div class="at-t-speed">${sub}</div>
+      </div>
+      <div class="at-t-status st-${{moving:'aktif',offline:'kapali',mola:'mola',istirahat:'mola'}[eSt]||eSt}" style="flex-shrink:0;">${lbl}</div>
     </div>`;
   }).join('');
 }
@@ -1245,12 +1229,16 @@ window.atFocusTruck=function(i){
   if(atMarkers[i]){atMap.setView(atMarkers[i].getLatLng(),8,{animate:true});atMarkers[i].openPopup();}
 };
 
-function initAtMap(){
+async function initAtMap(){
   if(atInited) return;
   atInited=true;
   atMap=L.map('at-map',{center:[39.5,33.5],zoom:6,zoomControl:false,attributionControl:false});
   L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{subdomains:['0','1','2','3'],maxZoom:20,attribution:'© Google Maps'}).addTo(atMap);
   L.control.zoom({position:'topright'}).addTo(atMap);
+
+  // Admin panelinden araç verilerini yükle
+  await loadVehiclesFromAPI();
+
   const nowMs=Date.now();
   TRUCKS.forEach((t,i)=>{
     const eSt=effectiveStatus(t,nowMs);
@@ -1260,14 +1248,36 @@ function initAtMap(){
       .bindPopup(popupContent(t,i,nowMs),{className:'at-popup',maxWidth:240})
       .addTo(atMap);
   });
+
+  // Araçları olan bölgeye zoom yap
+  const withCoord = TRUCKS.filter(t=>t.lat||t.kalkis_lat);
+  if (withCoord.length > 1) {
+    const bounds = L.latLngBounds(TRUCKS.map((_,i)=>getTruckPos(TRUCKS[i],i,nowMs)));
+    atMap.fitBounds(bounds.pad(0.2));
+  }
+
   renderSidebar(nowMs);
   const el=document.getElementById('at-update-time');
   if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
-  // Yol rotalarını arka planda yükle
-  loadRoadRoutes().then(()=>{ if(roadReady) updateTrucks(Date.now()); });
+
   // 2.5 sn'de bir pozisyon güncelle + RAF ile smooth hareket
   atLastTick=nowMs;
   atInterval=setInterval(()=>updateTrucks(Date.now()),2500);
+  // 30 sn'de bir API'dan taze veri al
+  setInterval(async()=>{
+    await loadVehiclesFromAPI();
+    updateTrucks(Date.now());
+    // Yeni araç varsa marker ekle
+    TRUCKS.forEach((t,i)=>{
+      if(!atMarkers[i]){
+        const pos=getTruckPos(t,i,Date.now());
+        atPrev[i]=pos; atTarget[i]=pos;
+        atMarkers[i]=L.marker(pos,{icon:buildTruckIcon(effectiveStatus(t,Date.now()),0)})
+          .bindPopup(popupContent(t,i,Date.now()),{className:'at-popup',maxWidth:240})
+          .addTo(atMap);
+      }
+    });
+  }, 30000);
   if(atRaf) cancelAnimationFrame(atRaf);
   atRaf=requestAnimationFrame(atAnimFrame);
 }
