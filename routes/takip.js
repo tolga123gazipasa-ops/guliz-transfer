@@ -43,15 +43,24 @@ router.get('/sorgula/:kod', async (req, res) => {
   }
 });
 
-/* ── Admin: tüm sevkiyatlar ── */
+/* ── Admin: tüm sevkiyatlar (sürücü adı ve telefonu JOIN ile) ── */
 router.get('/', auth, async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT * FROM sevkiyatlar ORDER BY created_at DESC'
+      `SELECT s.*, d.name AS driver_name, d.phone AS driver_phone, d.plate AS driver_plate
+       FROM sevkiyatlar s
+       LEFT JOIN drivers d ON s.driver_id = d.id
+       ORDER BY s.created_at DESC`
     );
     res.json(rows);
   } catch (e) {
-    res.status(500).json({ error: "İşlem başarısız oldu." });
+    // driver_id kolonu henüz yoksa sadece sevkiyatları dön
+    try {
+      const { rows } = await db.query('SELECT * FROM sevkiyatlar ORDER BY created_at DESC');
+      res.json(rows);
+    } catch(e2) {
+      res.status(500).json({ error: "İşlem başarısız oldu." });
+    }
   }
 });
 
@@ -61,7 +70,7 @@ router.post('/', auth, async (req, res) => {
           surucu_adi, mevcut_konum, mevcut_konum_adi, tahmini_teslim, notlar,
           kalkis_lat, kalkis_lng, varis_lat, varis_lng, mevcut_lat, mevcut_lng,
           rota_polyline, mesafe_km, sure_dakika, arac_id, yuk_cinsi,
-          kalkis_zamani, kurum_id } = req.body;
+          kalkis_zamani, kurum_id, driver_id } = req.body;
 
   if (!musteri_adi || !kalkis || !varis)
     return res.status(400).json({ error: 'Müşteri adı, kalkış ve varış zorunlu.' });
@@ -85,11 +94,11 @@ router.post('/', auth, async (req, res) => {
        arac_id||null, yuk_cinsi||null]
     );
     const sevk = rows[0];
-    // kalkis_zamani / kurum_id — migration sonrası sütunlar, yoksa sessizce geç
-    if (kalkis_zamani || kurum_id) {
+    // kalkis_zamani / kurum_id / driver_id — migration sonrası sütunlar, yoksa sessizce geç
+    if (kalkis_zamani || kurum_id || driver_id) {
       await db.query(
-        `UPDATE sevkiyatlar SET kalkis_zamani=$1, kurum_id=$2 WHERE id=$3`,
-        [kalkis_zamani||null, kurum_id||null, sevk.id]
+        `UPDATE sevkiyatlar SET kalkis_zamani=$1, kurum_id=$2, driver_id=$3 WHERE id=$4`,
+        [kalkis_zamani||null, kurum_id||null, driver_id||null, sevk.id]
       ).catch(() => {});
     }
     res.status(201).json(sevk);
@@ -106,7 +115,7 @@ router.put('/:id', auth, async (req, res) => {
           kalkis_lat, kalkis_lng, varis_lat, varis_lng,
           rota_polyline, mesafe_km, sure_dakika, arac_id, yuk_cinsi,
           musteri_adi, musteri_tel, kalkis, varis,
-          kalkis_zamani, kurum_id } = req.body;
+          kalkis_zamani, kurum_id, driver_id } = req.body;
   const mKonum = mevcut_konum !== undefined ? mevcut_konum : mevcut_konum2;
   try {
     // Bildirim için eski durumu önce al
@@ -142,14 +151,15 @@ router.put('/:id', auth, async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı.' });
     let guncellenen = rows[0];
 
-    // kalkis_zamani ve kurum_id — migration sonrası sütunlar var
-    if (kalkis_zamani !== undefined || kurum_id !== undefined) {
+    // kalkis_zamani / kurum_id / driver_id — migration sonrası sütunlar
+    if (kalkis_zamani !== undefined || kurum_id !== undefined || driver_id !== undefined) {
       await db.query(
         `UPDATE sevkiyatlar SET
            kalkis_zamani=COALESCE($1, kalkis_zamani),
-           kurum_id=$2
-         WHERE id=$3`,
-        [kalkis_zamani||null, kurum_id||null, req.params.id]
+           kurum_id=$2,
+           driver_id=$3
+         WHERE id=$4`,
+        [kalkis_zamani||null, kurum_id||null, driver_id||null, req.params.id]
       ).catch(() => {});
     }
 

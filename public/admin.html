@@ -1106,7 +1106,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <div class="form-group"><label>Müşteri Adı *</label><input type="text" id="sevk-musteri" placeholder="Ad Soyad"></div>
             <div class="form-group"><label>Telefon</label><input type="text" id="sevk-tel" placeholder="05xx xxx xx xx"></div>
           </div>
-          <!-- Araç seçimi -->
+          <!-- Araç + Sürücü seçimi -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div class="form-group">
               <label>Araç Seç</label>
@@ -1114,6 +1114,14 @@ tr:hover td{background:rgba(26,45,107,0.02)}
                 <option value="">— Araç seçin —</option>
               </select>
             </div>
+            <div class="form-group">
+              <label>Sürücü Seç <span style="font-size:0.7rem;color:var(--muted)">(Transfer sürücüleri)</span></label>
+              <select id="sevk-driver-id" onchange="onSevkDriverChange()" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+                <option value="">— Sürücü seçin —</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div class="form-group"><label>Yük Cinsi</label><input type="text" id="sevk-yuk-cinsi" placeholder="Kuru yük, soğuk zincir vb."></div>
           </div>
           <!-- Araç plakası + sürücü (otomatik dolar ama elle değiştirilebilir) -->
@@ -2812,7 +2820,10 @@ function renderSevkTable(rows) {
         <td><code style="font-size:0.78rem;color:var(--gold)">${s.takip_kodu}</code></td>
         <td>${s.musteri_adi}<br><span style="font-size:0.72rem;color:var(--muted)">${s.musteri_tel||''}</span></td>
         <td style="font-size:0.82rem">${s.kalkis}<br><span style="color:var(--muted)">→ ${s.varis}</span></td>
-        <td style="font-size:0.82rem">${s.arac_plaka||'—'}<br><span style="color:var(--muted)">${s.surucu_adi||''}</span></td>
+        <td style="font-size:0.82rem">${s.arac_plaka||'—'}<br>
+          <span style="color:var(--muted)">${s.driver_name || s.surucu_adi || '—'}</span>
+          ${s.driver_phone ? `<br><span style="font-size:0.68rem;color:var(--muted)">${s.driver_phone}</span>` : ''}
+        </td>
         <td>
           ${DURUM_BADGE[s.durum]||s.durum}
           ${(()=>{
@@ -3124,8 +3135,10 @@ function openSevkModal() {
   });
   document.getElementById('sevk-durum').value = 'beklemede';
   if (document.getElementById('sevk-arac-id')) document.getElementById('sevk-arac-id').value = '';
+  if (document.getElementById('sevk-driver-id')) document.getElementById('sevk-driver-id').value = '';
   if (document.getElementById('sevk-kurum-id')) document.getElementById('sevk-kurum-id').value = '';
   loadKurumlarSelect();
+  loadDriversSelect();
   document.getElementById('sevkFormMsg').style.display = 'none';
   loadAraclar();
   setTimeout(initSevkAutocomplete, 100);
@@ -3155,6 +3168,7 @@ function editSevk(s) {
   if (document.getElementById('sevk-yuk-cinsi')) document.getElementById('sevk-yuk-cinsi').value = s.yuk_cinsi || '';
   document.getElementById('sevk-kalkis-zamani').value = s.kalkis_zamani ? s.kalkis_zamani.substring(0,16) : '';
   loadKurumlarSelect(s.kurum_id);
+  loadDriversSelect(s.driver_id);
   if (document.getElementById('sevk-arac-id')) document.getElementById('sevk-arac-id').value = s.arac_id || '';
   setOrCreate('sevk-rota-polyline', s.rota_polyline || '');
   setOrCreate('sevk-mesafe-km',     s.mesafe_km     || '');
@@ -3279,6 +3293,7 @@ async function saveSevk() {
     tahmini_teslim:   document.getElementById('sevk-teslim').value || null,
     notlar:           document.getElementById('sevk-notlar').value.trim(),
     arac_id:          parseInt(document.getElementById('sevk-arac-id')?.value) || null,
+    driver_id:        parseInt(document.getElementById('sevk-driver-id')?.value) || null,
     yuk_cinsi:        document.getElementById('sevk-yuk-cinsi')?.value || null,
     kalkis_zamani:    document.getElementById('sevk-kalkis-zamani').value || null,
     kurum_id:         parseInt(document.getElementById('sevk-kurum-id').value) || null,
@@ -3472,8 +3487,42 @@ function onSevkAracChange() {
   const surucu = opt.dataset.surucu || '';
   const yuk    = opt.dataset.yuk    || '';
   document.getElementById('sevk-plaka').value   = plaka;
-  document.getElementById('sevk-surucu').value  = surucu;
+  // Araçtan gelen sürücü adını doldur (driver seçili değilse)
+  const driverSel = document.getElementById('sevk-driver-id');
+  if (!driverSel || !driverSel.value) {
+    document.getElementById('sevk-surucu').value = surucu;
+  }
   if (yuk) document.getElementById('sevk-yuk-cinsi').value = yuk;
+}
+
+function onSevkDriverChange() {
+  const sel = document.getElementById('sevk-driver-id');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) return;
+  const name  = opt.dataset.name  || '';
+  const plate = opt.dataset.plate || '';
+  document.getElementById('sevk-surucu').value = name;
+  // Plakayı sadece araç seçili değilse doldur
+  const aracSel = document.getElementById('sevk-arac-id');
+  if (!aracSel || !aracSel.value) {
+    document.getElementById('sevk-plaka').value = plate;
+  }
+}
+
+async function loadDriversSelect(selectedId) {
+  try {
+    const drivers = await api('/api/drivers');
+    const sel = document.getElementById('sevk-driver-id');
+    if (!sel) return;
+    const cur = selectedId || sel.value;
+    sel.innerHTML = '<option value="">— Sürücü seçin —</option>' +
+      drivers.map(d =>
+        `<option value="${d.id}" data-name="${d.name}" data-plate="${d.plate||''}"
+          ${d.id == cur ? 'selected' : ''}>
+          ${d.name}${d.plate ? ' — ' + d.plate : ''} (${d.status === 'available' ? 'Müsait' : 'Meşgul'})
+        </option>`
+      ).join('');
+  } catch(_) {}
 }
 
 /* ═══════════════════════════════════════

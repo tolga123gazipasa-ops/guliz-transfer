@@ -1066,6 +1066,7 @@ app.use((err, req, res, _next) => {
     `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kalkis_zamani TIMESTAMPTZ`,
     `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kurum_id INTEGER REFERENCES kurumlar(id) ON DELETE SET NULL`,
     `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS son_konum_adi TEXT`,
+    `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS driver_id INTEGER REFERENCES drivers(id) ON DELETE SET NULL`,
   ];
   for (const sql of cols) {
     await db.query(sql).catch(e => console.warn('Migration uyarısı:', e.message));

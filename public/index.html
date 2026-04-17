@@ -1195,11 +1195,24 @@ function popupContent(t, idx, nowMs) {
     ? `<div style="font-size:11px;color:#94a3b8;">🗺 ${t.sevk_kalkis} → ${t.sevk_varis}</div>` : '';
   const konumRow = t.konum_adi ? `<div style="font-size:11px;color:#94a3b8;">📍 ${t.konum_adi}</div>` : '';
   const cargoRow = t.yuk_cinsi ? `<div>📦 ${t.yuk_cinsi}</div>` : '';
+  let progressRow = '';
+  if (t.sevk_start && t.sevk_eta && (eSt === 'moving' || eSt === 'istirahat')) {
+    const pct = Math.min(100, Math.max(0, Math.round((nowMs - t.sevk_start) / (t.sevk_eta - t.sevk_start) * 100)));
+    const kalanMs = Math.max(0, t.sevk_eta - nowMs);
+    const kalanDk = Math.round(kalanMs / 60000);
+    const kalanStr = kalanDk > 60 ? Math.round(kalanDk / 60) + 's' : kalanDk + 'dk';
+    progressRow = `<div style="margin:5px 0 2px;">
+      <div style="background:rgba(255,255,255,0.1);border-radius:4px;height:5px;width:100%">
+        <div style="background:#f59e0b;height:5px;border-radius:4px;width:${pct}%"></div>
+      </div>
+      <span style="font-size:10px;color:#f59e0b;">%${pct} tamamlandı · ${kalanDk > 0 ? kalanStr + ' kaldı' : 'Süre doldu'}</span>
+    </div>`;
+  }
   return `<div style="font-weight:800;font-size:13px;color:#fff;margin-bottom:4px;">${t.plaka}</div>
     <div style="background:${c}22;color:${c};border:1px solid ${c}44;border-radius:6px;
       padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px;display:inline-block;margin-bottom:8px;">${lbl}</div>
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;">
-    ${spdRow}${nightRow}${routeRow}${konumRow}${cargoRow}
+    ${spdRow}${nightRow}${routeRow}${konumRow}${cargoRow}${progressRow}
     <div>🚛 ${t.arac_tipi || 'Araç'}</div>
     <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:5px;">📡 ${coord}</div>`;
 }
@@ -1260,11 +1273,20 @@ function renderSidebar(nowMs){
     const bc = BORDER[eSt] || c;
     const spd = getTruckSpeed(t, i, nowMs);
     const sub = eSt === 'moving' ? `${spd} km/s` : (eSt === 'offline' ? 'Bakımda' : (eSt === 'istirahat' ? 'İstirahat' : 'Bekliyor'));
+    let sidebarProgress = '';
+    if (t.sevk_start && t.sevk_eta && (eSt === 'moving' || eSt === 'istirahat')) {
+      const pct = Math.min(100, Math.max(0, Math.round((nowMs - t.sevk_start) / (t.sevk_eta - t.sevk_start) * 100)));
+      sidebarProgress = `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:3px;height:3px;width:100%">
+        <div style="background:#f59e0b;height:3px;border-radius:3px;width:${pct}%"></div>
+      </div>
+      <div style="font-size:9px;color:#f59e0b;margin-top:1px;">%${pct}</div>`;
+    }
     return `<div class="at-truck-item" onclick="atFocusTruck(${i})" id="at-item-${i}" style="border-left:3px solid ${bc};">
       <div class="at-t-dot" style="background:${c};box-shadow:0 0 6px ${c}66;flex-shrink:0;"></div>
       <div style="flex:1;min-width:0;overflow:hidden;">
         <div class="at-t-plate" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.plaka}</div>
         <div class="at-t-speed">${sub}</div>
+        ${sidebarProgress}
       </div>
       <div class="at-t-status st-${{moving:'aktif',offline:'kapali',mola:'mola',istirahat:'mola'}[eSt]||eSt}" style="flex-shrink:0;">${lbl}</div>
     </div>`;
