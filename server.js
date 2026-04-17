@@ -460,7 +460,7 @@ function broadcastVisitors() {
     exitIntents: v.exitIntents || 0,
     funnelSteps: v.funnelSteps || {},
     formFields:  v.formFields  || [],
-    hasReplay:   (v.rrwebEvents || []).length > 0,
+    hasReplay:   !!v.rrwebFullSnapshot,
     pageHistory: v.pageHistory,
     activity:    v.activity,
     messages:    v.messages,
@@ -790,25 +790,36 @@ io.on('connection', (socket) => {
     if (!isValidSessionId(sessionId)) return;
     const v = visitors.get(sessionId);
     if (!v) return;
-    if (!v.rrwebEvents) v.rrwebEvents = [];
-    v.rrwebEvents.push(event);
-    if (v.rrwebEvents.length > 400) v.rrwebEvents.shift(); // circular buffer
+    // type=2: FullSnapshot — ayrı tut, her zaman replay başlangıcı olacak
+    if (event && event.type === 2) {
+      v.rrwebFullSnapshot = event;
+      v.rrwebEvents = []; // snapshot sonrası eventi sıfırla
+    } else {
+      if (!v.rrwebEvents) v.rrwebEvents = [];
+      v.rrwebEvents.push(event);
+      if (v.rrwebEvents.length > 500) v.rrwebEvents.shift();
+    }
     // Canlı izleyen adminlere aktar
     if (v._watchers && v._watchers.size > 0) {
       io.to([...v._watchers]).emit('rrweb:event', { sessionId, event });
     }
   });
 
+  /* ── Snapshot + sonraki eventleri birleştir ── */
+  function buildReplayEvents(v) {
+    if (!v.rrwebFullSnapshot) return [];
+    return [v.rrwebFullSnapshot, ...(v.rrwebEvents || [])];
+  }
+
   /* ── Admin canlı izleme başlat ── */
   socket.on('admin:watch_live', ({ sessionId }) => {
     const v = visitors.get(sessionId);
-    if (!v) return;
+    if (!v) { socket.emit('rrweb:snapshot', { sessionId, events: [] }); return; }
     if (!v._watchers) v._watchers = new Set();
     v._watchers.add(socket.id);
-    // Mevcut bufferi önce gönder (bağlam için)
-    if (v.rrwebEvents && v.rrwebEvents.length) {
-      socket.emit('rrweb:snapshot', { sessionId, events: v.rrwebEvents });
-    }
+    // Mevcut bufferi snapshot ile birlikte gönder
+    const events = buildReplayEvents(v);
+    socket.emit('rrweb:snapshot', { sessionId, events, live: true });
   });
 
   /* ── Admin canlı izlemeyi durdur ── */
@@ -817,14 +828,11 @@ io.on('connection', (socket) => {
     if (v && v._watchers) v._watchers.delete(socket.id);
   });
 
-  /* ── Admin replay iste (tüm bufferi gönder) ── */
+  /* ── Admin replay iste ── */
   socket.on('admin:get_replay', ({ sessionId }) => {
     const v = visitors.get(sessionId);
-    if (!v || !v.rrwebEvents || !v.rrwebEvents.length) {
-      socket.emit('rrweb:snapshot', { sessionId, events: [] });
-      return;
-    }
-    socket.emit('rrweb:snapshot', { sessionId, events: v.rrwebEvents });
+    const events = v ? buildReplayEvents(v) : [];
+    socket.emit('rrweb:snapshot', { sessionId, events });
   });
 
   /* ── Form alan yakalama ── */

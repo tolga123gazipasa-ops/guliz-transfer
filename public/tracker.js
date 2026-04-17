@@ -205,13 +205,15 @@
   }
 
   function loadRrweb() {
-    if (window.rrweb) { startRrweb(); return; }
+    if (window.rrweb && window.rrweb.record) { startRrweb(); return; }
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.13/dist/rrweb.min.js';
+    // Sadece stabil v1 — player ile uyumlu
+    s.src = 'https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js';
     s.onload = startRrweb;
     s.onerror = function () {
+      // Fallback: unpkg
       const s2 = document.createElement('script');
-      s2.src = 'https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js';
+      s2.src = 'https://unpkg.com/rrweb@1.1.3/dist/rrweb.min.js';
       s2.onload = startRrweb;
       document.head.appendChild(s2);
     };

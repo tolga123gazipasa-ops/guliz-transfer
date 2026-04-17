@@ -2901,92 +2901,133 @@ function renderFunnelSteps(v) {
 /* ══════════════════════════════════════
    SCREEN WATCH / SESSION REPLAY
 ══════════════════════════════════════ */
-let _screenMode = null;
-let _rrwebPlayerInstance = null;
+let _screenMode     = null;
+let _liveReplayer   = null;  // rrweb.Replayer — live mod
+let _replayPlayer   = null;  // rrwebPlayer    — replay mod
 
 function openScreenModal(mode) {
   _screenMode = mode;
-  const modal = document.getElementById('screenModal');
   const v = allVisitorsData.find(x => x.sessionId === activeSessionId);
   if (!v) return;
-  document.getElementById('screenModalMeta').textContent = v.name + (v.phone ? ' · ' + v.phone : '');
-  document.getElementById('screenLiveDot').style.display   = mode === 'live' ? 'block' : 'none';
-  document.getElementById('screenLiveLabel').style.display = mode === 'live' ? 'block' : 'none';
-  document.getElementById('screenModalTitle').textContent  = mode === 'live' ? '📺 Canlı İzle' : '▶ Tekrar Oynat';
+  document.getElementById('screenModalMeta').textContent  = v.name + (v.phone ? ' · ' + v.phone : '');
+  document.getElementById('screenLiveDot').style.display   = mode === 'live'   ? 'block' : 'none';
+  document.getElementById('screenLiveLabel').style.display = mode === 'live'   ? 'block' : 'none';
+  document.getElementById('screenModalTitle').textContent  = mode === 'live'   ? '📺 Canlı İzle' : '▶ Tekrar Oynat';
   document.getElementById('screenNoData').style.display    = 'none';
-  document.getElementById('rrwebPlayerInner').innerHTML    = '';
-  modal.style.display = 'flex';
+  document.getElementById('rrwebPlayerInner').innerHTML    = '<div style="color:#94a3b8;font-size:.8rem;padding:1rem">Yükleniyor...</div>';
+  document.getElementById('screenModal').style.display    = 'flex';
 
-  // rrweb-player CSS + JS yükle
+  // İstenen olayı sunucuya gönder
+  const evName = mode === 'live' ? 'admin:watch_live' : 'admin:get_replay';
+  supportSocket.emit(evName, { sessionId: activeSessionId });
+
+  // Yanıt bekle (once — tek seferlik)
+  supportSocket.once('rrweb:snapshot', function ({ events, live }) {
+    if (!events || events.length < 2) {
+      document.getElementById('rrwebPlayerInner').innerHTML = '';
+      document.getElementById('screenNoData').style.display = 'block';
+      return;
+    }
+    if (mode === 'live') {
+      _loadRrwebThenLive(events);
+    } else {
+      _loadRrwebPlayerThenReplay(events);
+    }
+  });
+}
+
+/* ── Canlı mod: rrweb.Replayer (liveMode) ── */
+function _loadRrwebThenLive(initialEvents) {
+  const doStart = () => {
+    const wrap = document.getElementById('rrwebPlayerInner');
+    wrap.innerHTML = '';
+    try {
+      _liveReplayer = new rrweb.Replayer(initialEvents, {
+        root       : wrap,
+        liveMode   : true,
+        skipInactive: false,
+        showWarning: false,
+      });
+      _liveReplayer.startLive(initialEvents[0].timestamp);
+
+      // Yeni gelen eventleri replayer'a besle
+      supportSocket.on('rrweb:event', function ({ sessionId, event }) {
+        if (sessionId !== activeSessionId || _screenMode !== 'live') return;
+        _liveReplayer.addEvent(event);
+      });
+    } catch(e) {
+      wrap.innerHTML = `<div style="color:#f87171;padding:2rem">Hata: ${e.message}</div>`;
+    }
+  };
+
+  if (window.rrweb && window.rrweb.Replayer) { doStart(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js';
+  s.onload = doStart;
+  s.onerror = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/rrweb@1.1.3/dist/rrweb.min.js';
+    s2.onload = doStart;
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
+/* ── Replay modu: rrwebPlayer (timeline + hız kontrolü) ── */
+function _loadRrwebPlayerThenReplay(events) {
+  // CSS
   if (!document.getElementById('rrwebPlayerCss')) {
     const css = document.createElement('link');
-    css.id   = 'rrwebPlayerCss';
-    css.rel  = 'stylesheet';
+    css.id = 'rrwebPlayerCss';
+    css.rel = 'stylesheet';
     css.href = 'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0/dist/style.css';
     document.head.appendChild(css);
   }
 
-  const loadPlayer = () => {
-    if (mode === 'live') {
-      supportSocket.emit('admin:watch_live', { sessionId: activeSessionId });
-      supportSocket.once('rrweb:snapshot', ({ events }) => {
-        if (!events || !events.length) {
-          document.getElementById('screenNoData').style.display = 'block';
-          return;
+  const doStart = () => {
+    const wrap = document.getElementById('rrwebPlayerInner');
+    wrap.innerHTML = '';
+    const target = document.createElement('div');
+    wrap.appendChild(target);
+    try {
+      _replayPlayer = new rrwebPlayer({
+        target,
+        props: {
+          events,
+          autoPlay       : true,
+          showController : true,
+          width          : Math.min(window.innerWidth  - 80, 1200),
+          height         : Math.min(window.innerHeight - 140, 680),
+          speedOption    : [0.5, 1, 1.5, 2, 4],
         }
-        _startRrwebPlayer(events, true);
       });
-    } else {
-      supportSocket.emit('admin:get_replay', { sessionId: activeSessionId });
-      supportSocket.once('rrweb:snapshot', ({ events }) => {
-        if (!events || !events.length) {
-          document.getElementById('screenNoData').style.display = 'block';
-          return;
-        }
-        _startRrwebPlayer(events, false);
-      });
+    } catch(e) {
+      wrap.innerHTML = `<div style="color:#f87171;padding:2rem">Hata: ${e.message}</div>`;
     }
   };
 
-  if (window.rrwebPlayer) { loadPlayer(); return; }
+  if (window.rrwebPlayer) { doStart(); return; }
   const s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0/dist/index.js';
-  s.onload = loadPlayer;
+  s.onload = doStart;
+  s.onerror = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/rrweb-player@1.0.0/dist/index.js';
+    s2.onload = doStart;
+    document.head.appendChild(s2);
+  };
   document.head.appendChild(s);
-}
-
-function _startRrwebPlayer(events, isLive) {
-  const wrap = document.getElementById('rrwebPlayerInner');
-  try {
-    _rrwebPlayerInstance = new rrwebPlayer({
-      target: wrap,
-      props: {
-        events,
-        autoPlay: true,
-        showController: !isLive,
-        width: Math.min(window.innerWidth - 80, 1200),
-        height: Math.min(window.innerHeight - 120, 700),
-        speedOption: [1, 1.5, 2, 4],
-      }
-    });
-    if (isLive) {
-      // Canlı modda yeni event gelince player'a ekle
-      supportSocket.on('rrweb:event', ({ sessionId, event }) => {
-        if (sessionId !== activeSessionId || _screenMode !== 'live') return;
-        _rrwebPlayerInstance?.addEvent?.(event);
-      });
-    }
-  } catch(e) {
-    wrap.innerHTML = `<div style="color:#f87171;padding:2rem">Oynatıcı yüklenemedi: ${e.message}</div>`;
-  }
 }
 
 function closeScreenModal() {
   document.getElementById('screenModal').style.display = 'none';
   if (activeSessionId) supportSocket.emit('admin:stop_watch', { sessionId: activeSessionId });
   supportSocket.off('rrweb:event');
-  _rrwebPlayerInstance = null;
+  try { _liveReplayer?.destroy?.(); } catch(_) {}
+  try { _replayPlayer?.$destroy?.(); } catch(_) {}
+  _liveReplayer = _replayPlayer = null;
   _screenMode = null;
+  document.getElementById('rrwebPlayerInner').innerHTML = '';
 }
 
 /* ══════════════════════════════════════
