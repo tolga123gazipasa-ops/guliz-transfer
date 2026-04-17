@@ -105,8 +105,8 @@ app.post('/api/ai/sevkiyat-parse', async (req, res) => {
   if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: 'AI_DISABLED' });
 
   try {
-    const Anthropic = require('@anthropic-ai/sdk');
-    const client = new Anthropic.default({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const { Anthropic } = require('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const bugun = new Date().toLocaleDateString('tr-TR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     const msg = await client.messages.create({
