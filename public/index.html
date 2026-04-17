@@ -1048,23 +1048,64 @@ function gpsJitter(idx,nowMs){
 let TRUCKS = []; // Admin panelinden yüklenir
 const BASE = [36.27, 32.30]; // Gazipaşa (araç koordinatı yoksa burada göster)
 
+let _routeLines = []; // haritadaki rota çizgileri
+
 async function loadVehiclesFromAPI() {
   try {
-    const data = await fetch('/api/araclar/public').then(r => r.ok ? r.json() : []);
-    TRUCKS = data.map((a, i) => ({
-      ...a,
-      _idx: i,
-      lat:  a.lat  ? parseFloat(a.lat)  : null,
-      lng:  a.lng  ? parseFloat(a.lng)  : null,
-      kalkis_lat:  a.kalkis_lat  ? parseFloat(a.kalkis_lat)  : null,
-      kalkis_lng:  a.kalkis_lng  ? parseFloat(a.kalkis_lng)  : null,
-      varis_lat:   a.varis_lat   ? parseFloat(a.varis_lat)   : null,
-      varis_lng:   a.varis_lng   ? parseFloat(a.varis_lng)   : null,
-      sevk_start:  a.sevk_baslangic ? new Date(a.sevk_baslangic).getTime() : null,
-      sevk_eta:    a.tahmini_teslim  ? new Date(a.tahmini_teslim).getTime()  : null,
-    }));
+    const [araclar, sevkiyatlar] = await Promise.all([
+      fetch('/api/araclar/public').then(r => r.ok ? r.json() : []),
+      fetch('/api/takip/aktif').then(r => r.ok ? r.json() : [])
+    ]);
+
+    // Sevkiyat verisini plakaya göre indexle
+    const sevkMap = {};
+    sevkiyatlar.forEach(s => { if (s.arac_plaka) sevkMap[s.arac_plaka] = s; });
+
+    TRUCKS = araclar.map((a, i) => {
+      const s = sevkMap[a.plaka] || {};
+      return {
+        ...a,
+        _idx: i,
+        lat:  a.lat  ? parseFloat(a.lat)  : (s.mevcut_lat ? parseFloat(s.mevcut_lat) : null),
+        lng:  a.lng  ? parseFloat(a.lng)  : (s.mevcut_lng ? parseFloat(s.mevcut_lng) : null),
+        kalkis_lat:  parseFloat(a.kalkis_lat  || s.kalkis_lat)  || null,
+        kalkis_lng:  parseFloat(a.kalkis_lng  || s.kalkis_lng)  || null,
+        varis_lat:   parseFloat(a.varis_lat   || s.varis_lat)   || null,
+        varis_lng:   parseFloat(a.varis_lng   || s.varis_lng)   || null,
+        sevk_kalkis: a.sevk_kalkis || s.kalkis || null,
+        sevk_varis:  a.sevk_varis  || s.varis  || null,
+        konum_adi:   a.konum_adi   || s.mevcut_konum_adi || null,
+        sevk_start:  (a.sevk_baslangic || s.created_at) ? new Date(a.sevk_baslangic || s.created_at).getTime() : null,
+        sevk_eta:    (a.tahmini_teslim  || s.tahmini_teslim)  ? new Date(a.tahmini_teslim  || s.tahmini_teslim).getTime()  : null,
+      };
+    });
+
+    // Harita açıksa rota çizgilerini güncelle
+    if (atMap) drawRouteLines();
     return true;
   } catch(e) { return false; }
+}
+
+function drawRouteLines() {
+  // Eski çizgileri temizle
+  _routeLines.forEach(l => l.remove());
+  _routeLines = [];
+  TRUCKS.forEach(t => {
+    if (t.durum !== 'seferde' || !t.kalkis_lat || !t.varis_lat) return;
+    const line = L.polyline(
+      [[t.kalkis_lat, t.kalkis_lng], [t.varis_lat, t.varis_lng]],
+      { color: '#f59e0b', weight: 2, opacity: 0.35, dashArray: '6,8' }
+    ).addTo(atMap);
+    // Kalkış noktası
+    L.circleMarker([t.kalkis_lat, t.kalkis_lng], {
+      radius: 5, fillColor: '#22c55e', color: '#fff', weight: 1.5, fillOpacity: 0.9
+    }).bindTooltip(t.sevk_kalkis || 'Kalkış', {permanent: false, direction: 'top'}).addTo(atMap);
+    // Varış noktası
+    L.circleMarker([t.varis_lat, t.varis_lng], {
+      radius: 5, fillColor: '#ef4444', color: '#fff', weight: 1.5, fillOpacity: 0.9
+    }).bindTooltip(t.sevk_varis || 'Varış', {permanent: false, direction: 'top'}).addTo(atMap);
+    _routeLines.push(line);
+  });
 }
 
 /* ── Pozisyon hesapla (admin paneli verilerinden) ── */
@@ -1249,6 +1290,8 @@ async function initAtMap(){
       .addTo(atMap);
   });
 
+  // Rota çizgilerini çiz
+  drawRouteLines();
   // Araçları olan bölgeye zoom yap
   const withCoord = TRUCKS.filter(t=>t.lat||t.kalkis_lat);
   if (withCoord.length > 1) {
@@ -1265,7 +1308,7 @@ async function initAtMap(){
   atInterval=setInterval(()=>updateTrucks(Date.now()),2500);
   // 30 sn'de bir API'dan taze veri al
   setInterval(async()=>{
-    await loadVehiclesFromAPI();
+    await loadVehiclesFromAPI(); // drawRouteLines içinde çağrılıyor
     updateTrucks(Date.now());
     // Yeni araç varsa marker ekle
     TRUCKS.forEach((t,i)=>{
@@ -1409,6 +1452,7 @@ window.closeAracTakip = function(){
   document.getElementById('chatBox').style.zIndex  = '';
   if(atInterval){ clearInterval(atInterval); atInterval = null; }
   if(atRaf){ cancelAnimationFrame(atRaf); atRaf = null; }
+  _routeLines = [];
   atInited = false; atMarkers = {}; atPrev = {}; atTarget = {};
   if(atMap){ atMap.remove(); atMap = null; }
 };

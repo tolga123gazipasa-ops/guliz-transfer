@@ -1000,6 +1000,20 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <button onclick="closeSevkModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">×</button>
           </div>
           <input type="hidden" id="sevk-edit-id">
+
+          <!-- AI Asistan -->
+          <div id="aiAsistanBox" style="background:rgba(139,92,246,0.08);border:0.5px solid rgba(139,92,246,0.35);border-radius:10px;padding:1rem;margin-bottom:1.25rem">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.6rem">
+              <span style="font-size:1rem">🤖</span>
+              <span style="font-size:0.8rem;color:#a78bfa;font-weight:600">AI Asistan — Doğal dilde anlat, formu doldurayım</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <textarea id="aiMetin" rows="2" placeholder='Örn: "Yarın sabah 08:00 Antalya'dan yükleyeceğiz, 12 Mayıs öğleden sonra 14:00 de Samsun'a teslim. Yük: soğuk zincir sebze. Öğle molası ver."' style="flex:1;background:#0f0f1a;border:0.5px solid rgba(139,92,246,0.4);color:#fff;padding:0.55rem 0.75rem;border-radius:8px;font-family:var(--sans);font-size:0.78rem;resize:none;min-height:60px"></textarea>
+              <button onclick="aiSevkiyatParse()" id="aiBtn" style="background:rgba(139,92,246,0.2);border:0.5px solid rgba(139,92,246,0.5);color:#a78bfa;border-radius:8px;padding:0 1rem;font-size:0.78rem;cursor:pointer;white-space:nowrap;min-width:70px">Analiz Et</button>
+            </div>
+            <p id="aiMsg" style="font-size:0.72rem;margin-top:6px;display:none"></p>
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
             <div class="form-group"><label>Müşteri Adı *</label><input type="text" id="sevk-musteri" placeholder="Ad Soyad"></div>
             <div class="form-group"><label>Telefon</label><input type="text" id="sevk-tel" placeholder="05xx xxx xx xx"></div>
@@ -2675,7 +2689,20 @@ function openTakipHarita(s) {
 
   document.getElementById('takipHaritaModal').style.display = 'flex';
 
-  if (!_mapsReady) { document.getElementById('takipHaritaDiv').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">Google Maps API key tanımlı değil. Railway → Variables → GOOGLE_MAPS_API_KEY</div>'; return; }
+  if (!_mapsReady) {
+    const div = document.getElementById('takipHaritaDiv');
+    div.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">🗺 Harita yükleniyor...</div>';
+    let tries = 0;
+    const wait = setInterval(() => {
+      tries++;
+      if (_mapsReady) { clearInterval(wait); openTakipHarita(s); }
+      else if (tries > 15) {
+        clearInterval(wait);
+        div.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:#f87171;font-size:0.8rem;text-align:center;padding:1.5rem">⚠️ Google Maps yüklenemedi.<br><span style="color:var(--muted);font-size:0.72rem">Google Cloud Console → API\'lar → Maps JavaScript API, Places API, Geometry Library aktif olmalı.</span></div>';
+      }
+    }, 500);
+    return;
+  }
 
   setTimeout(() => {
     const lat = s.mevcut_lat || s.kalkis_lat || 37.0;
@@ -2950,6 +2977,52 @@ function closeSevkModal() {
   const rotaInfo = document.getElementById('sevk-rota-info');
   if (rotaInfo) rotaInfo.style.display = 'none';
   _sevkKonumMap = null; _sevkKonumMarker = null; _sevkKalkisAC = null; _sevkVarisAC = null; _sevkKonumAC = null;
+}
+
+async function aiSevkiyatParse() {
+  const metin = document.getElementById('aiMetin').value.trim();
+  const msg   = document.getElementById('aiMsg');
+  const btn   = document.getElementById('aiBtn');
+  if (!metin) return;
+  btn.textContent = '⏳ Analiz...';
+  btn.disabled = true;
+  msg.style.display = 'none';
+  try {
+    const result = await api('/api/ai/sevkiyat-parse', {
+      method: 'POST', body: JSON.stringify({ metin })
+    });
+    if (result.error === 'AI_DISABLED') {
+      msg.style.cssText = 'display:block;color:#f59e0b;font-size:0.72rem';
+      msg.textContent = '⚠️ AI asistan aktif değil. Railway → Variables → ANTHROPIC_API_KEY ekleyin.';
+      return;
+    }
+    // Formu doldur
+    if (result.kalkis)    document.getElementById('sevk-kalkis').value = result.kalkis;
+    if (result.varis)     document.getElementById('sevk-varis').value  = result.varis;
+    if (result.yuk_cinsi) document.getElementById('sevk-yuk-cinsi').value = result.yuk_cinsi;
+    if (result.varis_zaman) {
+      const dt = result.varis_zaman.replace(' ','T').substring(0,16);
+      document.getElementById('sevk-teslim').value = dt;
+    }
+    // Notlar: mola + genel notlar birleştir
+    const notParts = [];
+    if (result.notlar) notParts.push(result.notlar);
+    if (result.tahmini_sure_saat) notParts.push(`Tahmini süre: ${result.tahmini_sure_saat} saat`);
+    if (result.kalkis_zaman) notParts.push(`Kalkış: ${result.kalkis_zaman.replace('T',' ')}`);
+    if (notParts.length) {
+      const mevcut = document.getElementById('sevk-notlar').value;
+      document.getElementById('sevk-notlar').value = (mevcut ? mevcut + '\n' : '') + notParts.join(' | ');
+    }
+    msg.style.cssText = 'display:block;color:#22c55e;font-size:0.72rem';
+    msg.textContent = '✅ Form dolduruldu — kontrol edip kaydedin.';
+    document.getElementById('aiMetin').value = '';
+  } catch(e) {
+    msg.style.cssText = 'display:block;color:#f87171;font-size:0.72rem';
+    msg.textContent = 'Hata: ' + e.message;
+  } finally {
+    btn.textContent = 'Analiz Et';
+    btn.disabled = false;
+  }
 }
 
 async function saveSevk() {

@@ -96,6 +96,48 @@ app.get('/api/config.js', (req, res) => {
 
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
+/* ── AI Asistan: Sevkiyat açıklamasını parse et ── */
+app.post('/api/ai/sevkiyat-parse', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+  const { metin } = req.body;
+  if (!metin) return res.status(400).json({ error: 'metin zorunlu' });
+  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: 'AI_DISABLED' });
+
+  try {
+    const Anthropic = require('@anthropic-ai/sdk');
+    const client = new Anthropic.default({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const bugun = new Date().toLocaleDateString('tr-TR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 512,
+      system: `Sen bir lojistik şirketi için çalışan bir asistansın. Kullanıcının Türkçe sevkiyat açıklamasından yapılandırılmış veri çıkarıyorsun. Bugün: ${bugun}. SADECE JSON döndür, başka metin yok.`,
+      messages: [{
+        role: 'user',
+        content: `Şu sevkiyat açıklamasından bilgileri çıkar: "${metin}"
+
+Döndür (eksik alanlar null olsun):
+{
+  "kalkis": "şehir/yer adı",
+  "varis": "şehir/yer adı",
+  "kalkis_zaman": "YYYY-MM-DDTHH:MM" veya null,
+  "varis_zaman": "YYYY-MM-DDTHH:MM" veya null,
+  "yuk_cinsi": "yük türü" veya null,
+  "notlar": "mola saatleri, özel notlar vb" veya null,
+  "tahmini_sure_saat": sayı veya null
+}`
+      }]
+    });
+
+    const text = msg.content[0].text.trim();
+    const json = JSON.parse(text.replace(/```json|```/g, '').trim());
+    res.json(json);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 /* ── YÜK BİLDİRİMİ ── */
 app.post('/api/yuk-bildirimi', async (req, res) => {
   try {
