@@ -1083,7 +1083,14 @@ tr:hover td{background:rgba(26,45,107,0.02)}
                 <option value="iptal">İptal</option>
               </select>
             </div>
+            <div class="form-group"><label>Kalkış Saati</label><input type="datetime-local" id="sevk-kalkis-zamani"></div>
             <div class="form-group"><label>Tahmini Teslim</label><input type="datetime-local" id="sevk-teslim"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:0.8rem">
+            <label>Kurum (isteğe bağlı)</label>
+            <select id="sevk-kurum-id" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+              <option value="">-- Kuruma bağlama --</option>
+            </select>
           </div>
           <div class="form-group" style="margin-bottom:1.5rem"><label>Notlar</label><textarea id="sevk-notlar" rows="2" style="width:100%;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans);resize:vertical" placeholder="İç notlar..."></textarea></div>
           <p id="sevkFormMsg" style="font-size:0.78rem;margin-bottom:1rem;display:none"></p>
@@ -2643,7 +2650,22 @@ async function loadSevkiyatlar() {
         <td>${s.musteri_adi}<br><span style="font-size:0.72rem;color:var(--muted)">${s.musteri_tel||''}</span></td>
         <td style="font-size:0.82rem">${s.kalkis}<br><span style="color:var(--muted)">→ ${s.varis}</span></td>
         <td style="font-size:0.82rem">${s.arac_plaka||'—'}<br><span style="color:var(--muted)">${s.surucu_adi||''}</span></td>
-        <td>${DURUM_BADGE[s.durum]||s.durum}</td>
+        <td>
+          ${DURUM_BADGE[s.durum]||s.durum}
+          ${(()=>{
+            if (s.durum !== 'yolda' || !s.kalkis_zamani || !s.tahmini_teslim) return '';
+            const start = new Date(s.kalkis_zamani).getTime();
+            const end   = new Date(s.tahmini_teslim).getTime();
+            const now   = Date.now();
+            const pct   = Math.min(100, Math.max(0, Math.round((now - start) / (end - start) * 100)));
+            const kalan = Math.max(0, Math.round((end - now) / 60000));
+            const kalanStr = kalan > 60 ? Math.round(kalan/60) + 's' : kalan + 'dk';
+            return `<div style="margin-top:4px;background:rgba(255,255,255,0.1);border-radius:4px;height:5px;width:100%">
+              <div style="background:var(--gold);height:5px;border-radius:4px;width:${pct}%"></div>
+            </div>
+            <span style="font-size:0.68rem;color:var(--muted)">${pct}% · ${kalan>0?kalanStr+' kaldı':'Süre doldu'}</span>`;
+          })()}
+        </td>
         <td style="font-size:0.82rem">${s.mevcut_konum_adi||'—'}</td>
         <td>
           <span class="sevk-desktop-actions">
@@ -2927,11 +2949,13 @@ function toggleSevkKebab(btn) {
 function openSevkModal() {
   document.getElementById('sevk-edit-id').value = '';
   document.getElementById('sevkModalTitle').textContent = '🚚 Yeni Sevkiyat';
-  ['sevk-musteri','sevk-tel','sevk-kalkis','sevk-varis','sevk-plaka','sevk-surucu','sevk-konum','sevk-konum-adi','sevk-teslim','sevk-notlar','sevk-kalkis-lat','sevk-kalkis-lng','sevk-varis-lat','sevk-varis-lng','sevk-konum-lat','sevk-konum-lng','sevk-yuk-cinsi'].forEach(id => {
+  ['sevk-musteri','sevk-tel','sevk-kalkis','sevk-varis','sevk-plaka','sevk-surucu','sevk-konum','sevk-konum-adi','sevk-teslim','sevk-notlar','sevk-kalkis-lat','sevk-kalkis-lng','sevk-varis-lat','sevk-varis-lng','sevk-konum-lat','sevk-konum-lng','sevk-yuk-cinsi','sevk-kalkis-zamani'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('sevk-durum').value = 'beklemede';
   if (document.getElementById('sevk-arac-id')) document.getElementById('sevk-arac-id').value = '';
+  if (document.getElementById('sevk-kurum-id')) document.getElementById('sevk-kurum-id').value = '';
+  loadKurumlarSelect();
   document.getElementById('sevkFormMsg').style.display = 'none';
   loadAraclar();
   setTimeout(initSevkAutocomplete, 100);
@@ -2959,6 +2983,8 @@ function editSevk(s) {
   document.getElementById('sevk-konum-lat').value      = s.mevcut_lat || '';
   document.getElementById('sevk-konum-lng').value      = s.mevcut_lng || '';
   if (document.getElementById('sevk-yuk-cinsi')) document.getElementById('sevk-yuk-cinsi').value = s.yuk_cinsi || '';
+  document.getElementById('sevk-kalkis-zamani').value = s.kalkis_zamani ? s.kalkis_zamani.substring(0,16) : '';
+  loadKurumlarSelect(s.kurum_id);
   if (document.getElementById('sevk-arac-id')) document.getElementById('sevk-arac-id').value = s.arac_id || '';
   setOrCreate('sevk-rota-polyline', s.rota_polyline || '');
   setOrCreate('sevk-mesafe-km',     s.mesafe_km     || '');
@@ -3084,6 +3110,8 @@ async function saveSevk() {
     notlar:           document.getElementById('sevk-notlar').value.trim(),
     arac_id:          parseInt(document.getElementById('sevk-arac-id')?.value) || null,
     yuk_cinsi:        document.getElementById('sevk-yuk-cinsi')?.value || null,
+    kalkis_zamani:    document.getElementById('sevk-kalkis-zamani').value || null,
+    kurum_id:         parseInt(document.getElementById('sevk-kurum-id').value) || null,
     kalkis_lat, kalkis_lng, varis_lat, varis_lng,
     mevcut_lat:       parseFloat(document.getElementById('sevk-konum-lat').value) || null,
     mevcut_lng:       parseFloat(document.getElementById('sevk-konum-lng').value) || null,
@@ -3284,6 +3312,22 @@ function onSevkAracChange() {
 let allAraclar = [];
 
 let _filoMap = null, _filoMarkers = [];
+
+async function loadKurumlarSelect(selectedId) {
+  try {
+    const kurumlar = await api('/api/kurumlar');
+    const sel = document.getElementById('sevk-kurum-id');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Kuruma bağlama --</option>';
+    kurumlar.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k.id;
+      opt.textContent = k.kurum_adi;
+      if (selectedId && k.id == selectedId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } catch(_) {}
+}
 
 async function loadAraclar() {
   try {

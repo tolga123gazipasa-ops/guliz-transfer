@@ -62,12 +62,27 @@ input::placeholder{color:rgba(255,255,255,0.2);}
 .info-row .icon{font-size:18px;width:28px;text-align:center;}
 .info-row .txt{font-size:13px;color:rgba(255,255,255,0.75);}
 .info-row .lbl{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;}
-.coming-soon{text-align:center;padding:24px;background:rgba(201,168,76,0.05);border:1px dashed rgba(201,168,76,0.25);border-radius:12px;margin-top:16px;}
-.coming-soon .cs-icon{font-size:36px;margin-bottom:10px;}
-.coming-soon p{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;}
-.coming-soon strong{color:rgba(201,168,76,0.8);}
 .btn-logout{width:100%;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.2);border-radius:10px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-top:20px;font-family:'Montserrat',sans-serif;transition:all 0.2s;}
 .btn-logout:hover{background:rgba(248,113,113,0.2);}
+/* Sevkiyat kartları */
+.sevk-list{margin-top:16px;}
+.sevk-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+.sevk-card.yolda{border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.04);}
+.sevk-card.teslim_edildi{border-color:rgba(148,163,184,0.3);opacity:0.7;}
+.sevk-card .sc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.sevk-card .sc-kod{font-size:0.72rem;font-weight:700;color:#c9a84c;letter-spacing:1px;}
+.sevk-card .sc-durum{font-size:0.7rem;padding:2px 8px;border-radius:20px;font-weight:700;}
+.sc-durum.beklemede{background:rgba(251,191,36,0.15);color:#fbbf24;}
+.sc-durum.yolda{background:rgba(74,222,128,0.15);color:#4ade80;}
+.sc-durum.teslim_edildi{background:rgba(148,163,184,0.15);color:#94a3b8;}
+.sc-durum.iptal{background:rgba(248,113,113,0.15);color:#f87171;}
+.sevk-card .sc-route{font-size:0.82rem;color:#fff;margin-bottom:4px;}
+.sevk-card .sc-meta{font-size:0.72rem;color:rgba(255,255,255,0.4);}
+.sevk-card .sc-progress{margin-top:8px;}
+.sc-bar-wrap{background:rgba(255,255,255,0.1);border-radius:4px;height:6px;width:100%;margin-bottom:3px;}
+.sc-bar{background:#4ade80;height:6px;border-radius:4px;transition:width 0.3s;}
+.sc-bar-meta{display:flex;justify-content:space-between;font-size:0.68rem;color:rgba(255,255,255,0.35);}
+.sevk-empty{text-align:center;padding:24px;color:rgba(255,255,255,0.3);font-size:0.82rem;}
 </style>
 </head>
 <body>
@@ -129,9 +144,8 @@ input::placeholder{color:rgba(255,255,255,0.2);}
       </div>
     </div>
 
-    <div class="coming-soon">
-      <div class="cs-icon">⚙️</div>
-      <p>Kurum paneli hazırlanıyor.<br><strong>Yakında:</strong> Evrak gönderimi, ihale takibi ve bildirimler bu ekrandan yönetilebilecek.</p>
+    <div class="sevk-list" id="kurumSevkList">
+      <div class="sevk-empty">Yükleniyor...</div>
     </div>
 
     <button class="btn-logout" onclick="doLogout()">Çıkış Yap</button>
@@ -185,6 +199,52 @@ function showPanel(kurum) {
   document.getElementById('panelSub').textContent = 'Başarıyla giriş yapıldı';
   document.getElementById('panelKurum').textContent = kurum.kurum_adi;
   document.getElementById('panelYetkili').textContent = kurum.yetkili_ad || '—';
+  loadKurumSevkiyatlar(kurum.id);
+}
+
+const DURUM_LABEL = { beklemede:'Beklemede', yolda:'Yolda', teslim_edildi:'Teslim Edildi', iptal:'İptal' };
+
+async function loadKurumSevkiyatlar(kurumId) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const list = document.getElementById('kurumSevkList');
+  try {
+    const res = await fetch('/api/kurumlar/' + kurumId + '/sevkiyatlar', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) { list.innerHTML = '<div class="sevk-empty">Sevkiyatlar yüklenemedi.</div>'; return; }
+    const rows = await res.json();
+    if (!rows.length) { list.innerHTML = '<div class="sevk-empty">Bu kuruma ait sevkiyat bulunamadı.</div>'; return; }
+    list.innerHTML = rows.map(s => {
+      const durum = s.durum || 'beklemede';
+      const durumLabel = DURUM_LABEL[durum] || durum;
+      let progressHtml = '';
+      if (durum === 'yolda' && s.kalkis_zamani && s.tahmini_teslim) {
+        const start = new Date(s.kalkis_zamani).getTime();
+        const end   = new Date(s.tahmini_teslim).getTime();
+        const now   = Date.now();
+        const pct   = Math.min(100, Math.max(0, Math.round((now - start) / (end - start) * 100)));
+        const kalan = Math.max(0, Math.round((end - now) / 60000));
+        const kalanStr = kalan > 60 ? Math.round(kalan/60) + ' saat' : kalan + ' dk';
+        const teslimStr = new Date(s.tahmini_teslim).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+        progressHtml = `<div class="sc-progress">
+          <div class="sc-bar-wrap"><div class="sc-bar" style="width:${pct}%"></div></div>
+          <div class="sc-bar-meta"><span>${pct}% yolda</span><span>${kalan > 0 ? kalanStr + ' kaldı' : 'Süre doldu'} · ETA ${teslimStr}</span></div>
+        </div>`;
+      }
+      const metaParts = [s.arac_plaka, s.surucu_adi, s.mevcut_konum_adi].filter(Boolean);
+      return `<div class="sevk-card ${durum}">
+        <div class="sc-head">
+          <span class="sc-kod">${s.takip_kodu}</span>
+          <span class="sc-durum ${durum}">${durumLabel}</span>
+        </div>
+        <div class="sc-route">${s.kalkis} <span style="color:rgba(255,255,255,0.4)">→</span> ${s.varis}</div>
+        <div class="sc-meta">${metaParts.join(' · ') || '—'}</div>
+        ${progressHtml}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="sevk-empty">Bağlantı hatası.</div>';
+  }
 }
 
 function doLogout() {

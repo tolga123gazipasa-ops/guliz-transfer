@@ -106,6 +106,21 @@ router.post('/login', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* ── Kurum: Kendi sevkiyatları ── */
+router.get('/:id/sevkiyatlar', kurumAuth, async (req, res) => {
+  if (req.kurum.id !== parseInt(req.params.id))
+    return res.status(403).json({ error: 'Yetkisiz' });
+  try {
+    const { rows } = await db.query(
+      `SELECT takip_kodu, kalkis, varis, durum, arac_plaka, surucu_adi,
+              mevcut_konum_adi, kalkis_zamani, tahmini_teslim, created_at, updated_at
+       FROM sevkiyatlar WHERE kurum_id=$1 ORDER BY created_at DESC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 /* ── Kurum: Kendi bilgisi ── */
 router.get('/me', kurumAuth, async (req, res) => {
   try {
