@@ -943,6 +943,8 @@ db.query(`
   ALTER TABLE araclar ADD COLUMN IF NOT EXISTS son_lat       DOUBLE PRECISION;
   ALTER TABLE araclar ADD COLUMN IF NOT EXISTS son_lng       DOUBLE PRECISION;
   ALTER TABLE araclar ADD COLUMN IF NOT EXISTS son_konum_adi TEXT;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kalkis_zamani TIMESTAMPTZ;
+  ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kurum_id      INTEGER REFERENCES kurumlar(id) ON DELETE SET NULL;
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');
@@ -995,6 +997,19 @@ db.query(`
   if (eklenen > 0) console.log(`🏗️  ${eklenen} ihale verisi eklendi.`);
 
 }).catch(e => console.error('Tablo oluşturma hatası:', e.message));
+
+/* ── Bağımsız sütun migration'ları — ana blok hata alsa bile çalışır ── */
+(async () => {
+  const cols = [
+    `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kalkis_zamani TIMESTAMPTZ`,
+    `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kurum_id INTEGER REFERENCES kurumlar(id) ON DELETE SET NULL`,
+    `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS son_konum_adi TEXT`,
+  ];
+  for (const sql of cols) {
+    await db.query(sql).catch(e => console.warn('Migration uyarısı:', e.message));
+  }
+  console.log('✅ Sütun migration\'ları tamamlandı.');
+})();
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {

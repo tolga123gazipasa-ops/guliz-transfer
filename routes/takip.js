@@ -74,19 +74,25 @@ router.post('/', auth, async (req, res) => {
          (takip_kodu, musteri_adi, musteri_tel, kalkis, varis, arac_plaka,
           surucu_adi, mevcut_konum, mevcut_konum_adi, tahmini_teslim, notlar,
           kalkis_lat, kalkis_lng, varis_lat, varis_lng, mevcut_lat, mevcut_lng,
-          rota_polyline, mesafe_km, sure_dakika, arac_id, yuk_cinsi,
-          kalkis_zamani, kurum_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) RETURNING *`,
+          rota_polyline, mesafe_km, sure_dakika, arac_id, yuk_cinsi)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING *`,
       [kod, musteri_adi, musteri_tel||null, kalkis, varis, arac_plaka||null,
        surucu_adi||null, mevcut_konum||null, mevcut_konum_adi||null,
        tahmini_teslim||null, notlar||null,
        kalkis_lat||null, kalkis_lng||null, varis_lat||null, varis_lng||null,
        mevcut_lat||null, mevcut_lng||null,
        rota_polyline||null, mesafe_km||null, sure_dakika||null,
-       arac_id||null, yuk_cinsi||null,
-       kalkis_zamani||null, kurum_id||null]
+       arac_id||null, yuk_cinsi||null]
     );
-    res.status(201).json(rows[0]);
+    const sevk = rows[0];
+    // kalkis_zamani / kurum_id — migration sonrası sütunlar, yoksa sessizce geç
+    if (kalkis_zamani || kurum_id) {
+      await db.query(
+        `UPDATE sevkiyatlar SET kalkis_zamani=$1, kurum_id=$2 WHERE id=$3`,
+        [kalkis_zamani||null, kurum_id||null, sevk.id]
+      ).catch(() => {});
+    }
+    res.status(201).json(sevk);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -121,10 +127,8 @@ router.put('/:id', auth, async (req, res) => {
          musteri_tel=COALESCE($20, musteri_tel),
          kalkis=COALESCE($21, kalkis),
          varis=COALESCE($22, varis),
-         kalkis_zamani=COALESCE($23, kalkis_zamani),
-         kurum_id=$24,
          updated_at=NOW()
-       WHERE id=$25 RETURNING *`,
+       WHERE id=$23 RETURNING *`,
       [durum, arac_plaka||null, surucu_adi||null, mKonum||null,
        mevcut_konum_adi||null, tahmini_teslim||null, notlar||null,
        mevcut_lat||null, mevcut_lng||null,
@@ -133,11 +137,21 @@ router.put('/:id', auth, async (req, res) => {
        rota_polyline||null, mesafe_km||null, sure_dakika||null,
        arac_id||null, yuk_cinsi||null,
        musteri_adi||null, musteri_tel||null, kalkis||null, varis||null,
-       kalkis_zamani||null, kurum_id||null,
        req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı.' });
-    const guncellenen = rows[0];
+    let guncellenen = rows[0];
+
+    // kalkis_zamani ve kurum_id — migration sonrası sütunlar var
+    if (kalkis_zamani !== undefined || kurum_id !== undefined) {
+      await db.query(
+        `UPDATE sevkiyatlar SET
+           kalkis_zamani=COALESCE($1, kalkis_zamani),
+           kurum_id=$2
+         WHERE id=$3`,
+        [kalkis_zamani||null, kurum_id||null, req.params.id]
+      ).catch(() => {});
+    }
 
     // Durum değiştiyse Telegram bildirimi gönder
     if (durum && durum !== eskiDurum) {
