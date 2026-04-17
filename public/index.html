@@ -1398,7 +1398,7 @@ window.openAracTakip = function(){
   document.getElementById('atPwOverlay').style.display = 'none';
   document.getElementById('atDarkOverlay').style.display = 'none';
   document.body.style.overflow = 'hidden';
-  setTimeout(()=>{ initAtMap(); if(atMap) atMap.invalidateSize(); }, 120);
+  setTimeout(async ()=>{ await initAtMap(); if(atMap) atMap.invalidateSize(); }, 120);
 
   /* Sohbet aç → Telegram bildirimi */
   if(!chatOpen){
@@ -1410,40 +1410,50 @@ window.openAracTakip = function(){
     chatSocket.emit('visitor:action',{ sessionId:chatSessionId, action:'arac_takip_acildi', detail:'Araç Takip Sistemi açıldı' });
   }
 
-  if(atPwTimer){ clearTimeout(atPwTimer); atPwTimer = null; }
+  if(atPwTimer){ clearTimeout(atPwTimer); clearInterval(atPwTimer); atPwTimer = null; }
 
   const now = Date.now();
 
   /* 1) Geçerli 1 saatlik oturum var mı? */
   const accessUntil = parseInt(localStorage.getItem(AT_ACCESS_KEY) || '0');
   if(accessUntil > now){
-    const remaining = accessUntil - now;
-    atPwTimer = setTimeout(showAtPwScreen, remaining);
-    return; // serbest
-  }
-
-  /* 2) 45 saniyelik ücretsiz süre hâlâ geçerli mi? */
-  const freeExpires = parseInt(localStorage.getItem(AT_FREE_KEY) || '0');
-  if(freeExpires === 0){
-    /* İlk kez açıldı — 45 sn ücretsiz süre başlat */
-    const exp = now + AT_FREE_MS;
-    localStorage.setItem(AT_FREE_KEY, exp.toString());
-    atPwTimer = setTimeout(showAtPwScreen, AT_FREE_MS);
+    /* Her 3 sn'de kontrol — oturum süresi dolunca şifre iste */
+    atPwTimer = setInterval(()=>{
+      if(Date.now() > parseInt(localStorage.getItem(AT_ACCESS_KEY)||'0')) {
+        clearInterval(atPwTimer); atPwTimer = null;
+        showAtPwScreen();
+      }
+    }, 3000);
     return;
   }
 
-  const freeLeft = freeExpires - now;
-  if(freeLeft > 0){
-    /* Ücretsiz süre bitmemiş, kalanı sayıyoruz */
-    atPwTimer = setTimeout(showAtPwScreen, freeLeft);
-  } else {
-    /* Ücretsiz süre dolmuş — hemen şifre iste */
-    showAtPwScreen();
+  /* 2) 45 saniyelik ücretsiz süre */
+  let freeExpires = parseInt(localStorage.getItem(AT_FREE_KEY) || '0');
+  if(freeExpires === 0){
+    freeExpires = now + AT_FREE_MS;
+    localStorage.setItem(AT_FREE_KEY, freeExpires.toString());
   }
+
+  const freeLeft = freeExpires - now;
+  if(freeLeft <= 0){
+    showAtPwScreen();
+    return;
+  }
+
+  /* Her 3 sn'de kontrol — 45 sn dolunca şifre iste */
+  atPwTimer = setInterval(()=>{
+    const exp = parseInt(localStorage.getItem(AT_FREE_KEY)||'0');
+    const acc = parseInt(localStorage.getItem(AT_ACCESS_KEY)||'0');
+    if(acc > Date.now()) return; // şifre girildi, oturum aktif
+    if(Date.now() >= exp){
+      clearInterval(atPwTimer); atPwTimer = null;
+      showAtPwScreen();
+    }
+  }, 3000);
 };
 
 window.closeAracTakip = function(){
-  if(atPwTimer){ clearTimeout(atPwTimer); atPwTimer = null; }
+  if(atPwTimer){ clearTimeout(atPwTimer); clearInterval(atPwTimer); atPwTimer = null; }
   document.getElementById('atOverlay').classList.remove('open');
   document.getElementById('atPwOverlay').style.display = 'none';
   document.getElementById('atDarkOverlay').style.display = 'none';
