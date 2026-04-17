@@ -633,10 +633,15 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <button onclick="closeKonumModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer">×</button>
           </div>
           <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Haritaya tıklayarak aracın konumunu işaretleyin</p>
-          <div id="konumModalMap" style="width:100%;height:350px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1rem"></div>
+          <div style="display:flex;gap:8px;margin-bottom:0.75rem">
+            <input type="text" id="konumModalAdi" placeholder="Şehir veya yer adı ara (örn: Antalya, İstanbul Depo...)" style="flex:1;background:#0f0f1a;border:0.5px solid var(--border);color:#fff;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans);font-size:0.82rem"
+              onkeydown="if(event.key==='Enter')konumAramaYap()">
+            <button class="btn btn-outline btn-sm" onclick="konumAramaYap()" style="white-space:nowrap">🔍 Ara</button>
+          </div>
+          <p style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem">Arama yapın veya haritaya tıklayın — marker sürüklenebilir</p>
+          <div id="konumModalMap" style="width:100%;height:320px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1rem"></div>
           <div style="display:flex;gap:0.75rem;align-items:center">
-            <input type="text" id="konumModalAdi" placeholder="Konum adı (örn: İstanbul Depo)" style="flex:1;background:#0f0f1a;border:0.5px solid var(--border);color:#fff;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
-            <button class="btn btn-gold" style="padding:0.55rem 1.25rem;white-space:nowrap" onclick="saveKonum()">Kaydet</button>
+            <button class="btn btn-gold" style="flex:1;padding:0.55rem" onclick="saveKonum()">Kaydet</button>
             <button class="btn btn-outline" style="padding:0.55rem 1rem" onclick="closeKonumModal()">İptal</button>
           </div>
           <input type="hidden" id="konumModalAracId">
@@ -3421,47 +3426,85 @@ function closeInfoWindows() {
   _filoMarkers.forEach(m => { if (m._iw) m._iw.close(); });
 }
 
+/* ── Konum Modalı — Leaflet (OpenStreetMap) kullanır, Google Maps key gerektirmez ── */
 let _konumMap = null, _konumMarker = null;
+
 function openKonumModal(aracId, plaka, lat, lng, konumAdi) {
   document.getElementById('konumModalAracId').value = aracId;
-  document.getElementById('konumModalLat').value = lat || '';
-  document.getElementById('konumModalLng').value = lng || '';
-  document.getElementById('konumModalAdi').value = konumAdi || '';
+  document.getElementById('konumModalLat').value    = lat || '';
+  document.getElementById('konumModalLng').value    = lng || '';
+  document.getElementById('konumModalAdi').value    = konumAdi || '';
   document.getElementById('konumModalTitle').textContent = '📍 Konum Güncelle — ' + plaka;
   document.getElementById('konumModal').style.display = 'flex';
 
   setTimeout(() => {
-    if (!_mapsReady) return;
-    const center = (lat && lng) ? { lat: parseFloat(lat), lng: parseFloat(lng) } : { lat: 37.0, lng: 35.3 };
-    if (!_konumMap) {
-      _konumMap = new google.maps.Map(document.getElementById('konumModalMap'), {
-        center, zoom: lat ? 10 : 6,
-        mapTypeControl: false, streetViewControl: false
-      });
-      _konumMap.addListener('click', e => setKonumMarker(e.latLng.lat(), e.latLng.lng()));
+    const clat = lat ? parseFloat(lat) : 37.0;
+    const clng = lng ? parseFloat(lng) : 35.3;
+    const zoom = lat ? 10 : 6;
+
+    if (!window.L) {
+      // Leaflet henüz yüklü değilse yükle
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(css);
+      const js = document.createElement('script');
+      js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      js.onload = () => _initKonumMap(clat, clng, zoom, lat, lng);
+      document.head.appendChild(js);
     } else {
-      _konumMap.setCenter(center);
-      _konumMap.setZoom(lat ? 10 : 6);
+      _initKonumMap(clat, clng, zoom, lat, lng);
     }
-    if (lat && lng) setKonumMarker(parseFloat(lat), parseFloat(lng));
-    else if (_konumMarker) { _konumMarker.setMap(null); _konumMarker = null; }
   }, 80);
 }
 
-function setKonumMarker(lat, lng) {
+function _initKonumMap(clat, clng, zoom, lat, lng) {
+  const el = document.getElementById('konumModalMap');
+  if (_konumMap) {
+    _konumMap.setView([clat, clng], zoom);
+  } else {
+    _konumMap = L.map(el, { center: [clat, clng], zoom });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(_konumMap);
+    _konumMap.on('click', e => _setKonumMarkerL(e.latlng.lat, e.latlng.lng));
+  }
+  setTimeout(() => _konumMap.invalidateSize(), 100);
+  if (lat && lng) _setKonumMarkerL(parseFloat(lat), parseFloat(lng));
+  else if (_konumMarker) { _konumMarker.remove(); _konumMarker = null; }
+}
+
+function _setKonumMarkerL(lat, lng) {
   document.getElementById('konumModalLat').value = lat;
   document.getElementById('konumModalLng').value = lng;
-  if (_konumMarker) _konumMarker.setPosition({ lat, lng });
-  else {
-    _konumMarker = new google.maps.Marker({
-      position: { lat, lng }, map: _konumMap, draggable: true,
-      icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="#c9a84c" stroke="#fff" stroke-width="2"/><text x="18" y="24" text-anchor="middle" font-size="16">🚛</text></svg>'), scaledSize: new google.maps.Size(36,36), anchor: new google.maps.Point(18,18) }
-    });
-    _konumMarker.addListener('dragend', e => {
-      document.getElementById('konumModalLat').value = e.latLng.lat();
-      document.getElementById('konumModalLng').value = e.latLng.lng();
+  const icon = L.divIcon({
+    html: '<div style="background:#c9a84c;border:2px solid #fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🚛</div>',
+    className: '', iconSize: [28, 28], iconAnchor: [14, 14]
+  });
+  if (_konumMarker) {
+    _konumMarker.setLatLng([lat, lng]);
+  } else {
+    _konumMarker = L.marker([lat, lng], { icon, draggable: true }).addTo(_konumMap);
+    _konumMarker.on('dragend', e => {
+      document.getElementById('konumModalLat').value = e.target.getLatLng().lat;
+      document.getElementById('konumModalLng').value = e.target.getLatLng().lng;
     });
   }
+  _konumMap.setView([lat, lng], _konumMap.getZoom() < 8 ? 10 : _konumMap.getZoom());
+}
+
+async function konumAramaYap() {
+  const q = document.getElementById('konumModalAdi').value.trim();
+  if (!q) return;
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=tr`);
+    const d = await r.json();
+    if (d[0]) {
+      const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
+      document.getElementById('konumModalAdi').value = d[0].display_name.split(',')[0];
+      _setKonumMarkerL(lat, lng);
+    } else alert('Yer bulunamadı, daha spesifik yazın.');
+  } catch(e) { alert('Arama hatası: ' + e.message); }
 }
 
 function closeKonumModal() {
@@ -3473,7 +3516,7 @@ async function saveKonum() {
   const lat = document.getElementById('konumModalLat').value;
   const lng = document.getElementById('konumModalLng').value;
   const adi = document.getElementById('konumModalAdi').value.trim();
-  if (!lat || !lng) { alert('Haritadan bir konum seçin.'); return; }
+  if (!lat || !lng) { alert('Haritaya tıklayarak veya arama yaparak konum seçin.'); return; }
   try {
     await api('/api/araclar/' + id + '/konum', { method:'PATCH', body: JSON.stringify({ lat: parseFloat(lat), lng: parseFloat(lng), konum_adi: adi || null }) });
     closeKonumModal();
