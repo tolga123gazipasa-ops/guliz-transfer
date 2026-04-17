@@ -273,6 +273,24 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 .v-offline{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .v-page{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
 .v-time{font-size:10px;color:var(--muted)}
+/* Lead score badge */
+.score-cold{background:rgba(100,116,139,0.15);color:#94a3b8}
+.score-warm{background:rgba(251,191,36,0.15);color:#fbbf24}
+.score-hot{background:rgba(239,68,68,0.18);color:#f87171}
+.score-fire{background:rgba(239,68,68,0.3);color:#ef4444;animation:scorePulse 1.2s infinite}
+@keyframes scorePulse{0%,100%{opacity:1}50%{opacity:.6}}
+/* Hot lead toast */
+.hot-toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:#0a1235;border:1.5px solid #ef4444;border-radius:12px;padding:14px 18px;min-width:260px;max-width:320px;box-shadow:0 8px 32px rgba(239,68,68,0.3);animation:toastIn .35s ease}
+@keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.hot-toast-close{position:absolute;top:8px;right:10px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;line-height:1}
+/* Form field capture items */
+.ff-item{padding:7px 12px;border-bottom:0.5px solid var(--gray2);font-size:11.5px}
+.ff-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.ff-value{color:var(--navy);margin-top:2px;word-break:break-all}
+.ff-phone{color:var(--red);font-weight:600}
+/* Funnel step items */
+.funnel-item{padding:7px 12px;border-bottom:0.5px solid var(--gray2);display:flex;align-items:center;gap:8px;font-size:11.5px}
+.funnel-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .v-unread{position:absolute;top:10px;right:12px;background:#e30713;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
 .chat-panel{display:flex;flex-direction:column;background:var(--gray)}
 .chat-panel-head{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:#fff}
@@ -760,6 +778,16 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         <h2>Canlı Destek</h2>
         <span id="supportOnlineText" style="font-size:0.75rem;color:#4ade80;">0 ziyaretçi çevrimiçi</span>
       </div>
+
+      <!-- Funnel özeti -->
+      <div id="funnelBar" style="display:flex;gap:0;margin-bottom:1rem;border-radius:8px;overflow:hidden;border:0.5px solid var(--border)">
+        <div class="funnel-step" id="fn-homepage"   style="flex:1;padding:8px 10px;text-align:center;background:rgba(26,45,107,0.08);border-right:0.5px solid var(--border)"><div style="font-size:1.1rem;font-weight:700;color:var(--gold)" id="fn-c-homepage">0</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Ana Sayfa</div></div>
+        <div class="funnel-step" id="fn-service"    style="flex:1;padding:8px 10px;text-align:center;background:rgba(26,45,107,0.08);border-right:0.5px solid var(--border)"><div style="font-size:1.1rem;font-weight:700;color:var(--gold)" id="fn-c-service">0</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Hizmet</div></div>
+        <div class="funnel-step" id="fn-pricing"    style="flex:1;padding:8px 10px;text-align:center;background:rgba(26,45,107,0.08);border-right:0.5px solid var(--border)"><div style="font-size:1.1rem;font-weight:700;color:var(--gold)" id="fn-c-pricing">0</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Fiyat Gördü</div></div>
+        <div class="funnel-step" id="fn-form"       style="flex:1;padding:8px 10px;text-align:center;background:rgba(26,45,107,0.08);border-right:0.5px solid var(--border)"><div style="font-size:1.1rem;font-weight:700;color:#f59e0b" id="fn-c-form">0</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Form Açtı</div></div>
+        <div class="funnel-step" id="fn-booking"    style="flex:1;padding:8px 10px;text-align:center;background:rgba(26,45,107,0.08)"><div style="font-size:1.1rem;font-weight:700;color:#22c55e" id="fn-c-booking">0</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Rezervasyon</div></div>
+      </div>
+
       <div class="support-wrap">
 
         <!-- Sol: Ziyaretçi listesi -->
@@ -792,7 +820,10 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <div id="chatPanelContent" style="display:none;flex-direction:column;height:100%">
               <div class="chat-panel-head">
                 <div style="flex:1">
-                  <div class="chat-panel-name" id="cpName">—</div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <div class="chat-panel-name" id="cpName">—</div>
+                    <span id="cpScoreBadge" style="display:none;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.5px"></span>
+                  </div>
                   <div class="chat-panel-meta">
                     <span id="cpDevice"></span> ·
                     <a id="cpPage" class="chat-panel-page" href="#" target="_blank"></a>
@@ -806,7 +837,11 @@ tr:hover td{background:rgba(26,45,107,0.02)}
                 <div style="font-size:0.68rem;color:var(--muted);text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
                   <div id="cpOnlineStatus"></div>
                   <div id="cpTime"></div>
-                  <button class="btn btn-danger btn-sm" onclick="deleteChatSession()" style="margin-top:4px;font-size:10px">🗑 Konuşmayı Sil</button>
+                  <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;justify-content:flex-end">
+                    <button class="btn btn-sm" id="btnLiveWatch" onclick="openScreenModal('live')" style="display:none;background:rgba(34,197,94,0.15);color:#4ade80;border:0.5px solid rgba(34,197,94,0.3);font-size:10px">📺 Canlı İzle</button>
+                    <button class="btn btn-sm" id="btnReplay"    onclick="openScreenModal('replay')" style="display:none;background:rgba(139,92,246,0.15);color:#a78bfa;border:0.5px solid rgba(139,92,246,0.3);font-size:10px">▶ Tekrar Oynat</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteChatSession()" style="font-size:10px">🗑 Sil</button>
+                  </div>
                 </div>
               </div>
               <div class="admin-messages" id="adminMessages"></div>
@@ -823,9 +858,11 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 
           <!-- Aktivite logu -->
           <div class="activity-log" id="activityLog">
-            <div class="activity-head">
+            <div class="activity-head" style="flex-wrap:wrap;gap:2px">
               <span class="activity-tab active" id="tabActivity" onclick="switchActivityTab('activity')">Aktivite</span>
-              <span class="activity-tab" id="tabPages" onclick="switchActivityTab('pages')">Sayfalar</span>
+              <span class="activity-tab" id="tabPages"    onclick="switchActivityTab('pages')">Sayfalar</span>
+              <span class="activity-tab" id="tabForm"     onclick="switchActivityTab('form')">Form</span>
+              <span class="activity-tab" id="tabFunnel"   onclick="switchActivityTab('funnel')">Funnel</span>
             </div>
             <div id="activityItems" style="flex:1;overflow-y:auto">
               <div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Ziyaretçi seçin</div>
@@ -833,10 +870,38 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <div id="pageHistItems" style="flex:1;overflow-y:auto;display:none">
               <div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Ziyaretçi seçin</div>
             </div>
+            <div id="formFieldItems" style="flex:1;overflow-y:auto;display:none">
+              <div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Form verisi yok</div>
+            </div>
+            <div id="funnelItems" style="flex:1;overflow-y:auto;display:none">
+              <div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Funnel verisi yok</div>
+            </div>
           </div>
 
         </div>
       </div>
+
+      <!-- Screen watch / replay modal -->
+      <div id="screenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:5000;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#0a1235;border-bottom:0.5px solid var(--border)">
+          <div>
+            <span id="screenModalTitle" style="font-size:0.9rem;font-weight:700;color:#fff">📺 Canlı İzle</span>
+            <span id="screenModalMeta" style="font-size:0.72rem;color:var(--muted);margin-left:10px"></span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="screenLiveDot" style="display:none;width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 1.5s infinite"></span>
+            <span id="screenLiveLabel" style="display:none;font-size:0.7rem;color:#4ade80;font-weight:600">CANLI</span>
+            <button onclick="closeScreenModal()" style="background:rgba(248,113,113,0.15);border:0.5px solid rgba(248,113,113,0.3);color:#f87171;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.8rem">✕ Kapat</button>
+          </div>
+        </div>
+        <div id="rrwebPlayerWrap" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px">
+          <div id="rrwebPlayerInner" style="width:100%;max-width:1200px;"></div>
+        </div>
+        <div id="screenNoData" style="display:none;color:var(--muted);font-size:0.85rem;text-align:center;padding:3rem">
+          Henüz kayıt verisi yok — ziyaretçi sayfada biraz daha gezinmeli
+        </div>
+      </div>
+
     </div>
 
     <!-- SETTINGS -->
@@ -2410,10 +2475,14 @@ function supportAdminJoin() {
   script.onload = () => {
     supportSocket = io({ transports:['websocket','polling'] });
     supportSocket.emit('admin:join');
-    supportSocket.on('visitors:update', onVisitorsUpdate);
-    supportSocket.on('visitor:joined',  onVisitorJoined);
-    supportSocket.on('visitor:activity', onVisitorActivity);
-    supportSocket.on('chat:sync',        onChatSync);
+    supportSocket.on('visitors:update',    onVisitorsUpdate);
+    supportSocket.on('visitor:joined',     onVisitorJoined);
+    supportSocket.on('visitor:activity',   onVisitorActivity);
+    supportSocket.on('chat:sync',          onChatSync);
+    supportSocket.on('visitor:hot_lead',   onHotLead);
+    supportSocket.on('visitor:score_update', onScoreUpdate);
+    supportSocket.on('visitor:form_captured', onFormCaptured);
+    supportSocket.on('visitor:funnel_step',   onFunnelStep);
     supportSocket.on('chat:visitor_typing', ({sessionId, typing, text}) => {
       if (sessionId === activeSessionId) {
         document.getElementById('adminTypingRow').style.display = typing ? 'block' : 'none';
@@ -2435,17 +2504,68 @@ function supportAdminJoin() {
 function onVisitorsUpdate(list) {
   allVisitorsData = list;
   renderVisitorList(list);
+  updateFunnelBar(list);
   const online = list.filter(v => v.online).length;
-  const total  = list.length;
   document.getElementById('onlineCountBadge').textContent   = online + ' online';
   document.getElementById('supportOnlineText').textContent  = online + ' ziyaretçi çevrimiçi';
   document.getElementById('supportBadge').textContent       = online;
   document.getElementById('supportBadge').style.display     = online > 0 ? 'inline-block' : 'none';
-  // Toplam okunmamış
-  const unread = list.reduce((s,v) => s + (v.unread||0), 0);
-  if (unread > 0 && document.getElementById('page-support').classList.contains('active') === false) {
-    // badge'i kırmızı yap
+  // Seçili ziyaretçi güncellenirse score badge'i de güncelle
+  if (activeSessionId) {
+    const v = list.find(x => x.sessionId === activeSessionId);
+    if (v) {
+      const score = v.score || 0;
+      const cpScore = document.getElementById('cpScoreBadge');
+      if (cpScore && score > 0) {
+        const lvl  = score >= 66 ? 'fire' : score >= 36 ? 'hot' : score >= 16 ? 'warm' : 'cold';
+        const icon = score >= 66 ? '🚨' : score >= 36 ? '🔥' : score >= 16 ? '🌤' : '❄️';
+        cpScore.textContent = `${icon} ${score} puan`;
+        cpScore.className   = `score-${lvl}`;
+        cpScore.style.display = 'inline-block';
+      }
+      const btnReplay = document.getElementById('btnReplay');
+      if (btnReplay) btnReplay.style.display = v.hasReplay ? 'inline-block' : 'none';
+    }
   }
+}
+
+function onHotLead(v) {
+  showHotLeadToast(v);
+  // Ses çıkar (varsa)
+  try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA').play().catch(()=>{}); } catch(_) {}
+}
+
+function onScoreUpdate({ sessionId, score }) {
+  const v = allVisitorsData.find(x => x.sessionId === sessionId);
+  if (v) v.score = score;
+}
+
+function onFormCaptured({ sessionId, label, value, isPhone, isName, page, time }) {
+  const v = allVisitorsData.find(x => x.sessionId === sessionId);
+  if (v) {
+    if (!v.formFields) v.formFields = [];
+    v.formFields.push({ label, value, isPhone, isName, page, time });
+  }
+  if (sessionId !== activeSessionId) return;
+  const el = document.getElementById('formFieldItems');
+  const div = document.createElement('div');
+  div.className = 'ff-item';
+  const t = new Date(time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const icon = isPhone ? '📞' : isName ? '👤' : '📝';
+  div.innerHTML = `<div class="ff-label">${t} · ${icon} ${escapeHtml(label)}</div>
+    <div class="ff-value${isPhone?' ff-phone':''}">${escapeHtml(value)}</div>`;
+  el.prepend(div);
+  if (el.children.length > 30) el.lastChild?.remove();
+}
+
+function onFunnelStep({ sessionId, step, page, time }) {
+  const v = allVisitorsData.find(x => x.sessionId === sessionId);
+  if (v) {
+    if (!v.funnelSteps) v.funnelSteps = {};
+    v.funnelSteps[step] = time;
+  }
+  updateFunnelBar(allVisitorsData);
+  if (sessionId === activeSessionId) renderFunnelSteps(v || {funnelSteps: {}});
 }
 
 function onVisitorJoined(data) {
@@ -2486,16 +2606,23 @@ function renderVisitorList(list) {
     const phone    = v.phone
       ? `<span style="color:var(--gold);font-size:0.68rem;">${escapeHtml(v.phone)}</span>`
       : `<span style="font-size:0.65rem;color:rgba(255,100,100,0.5);">tel yok</span>`;
-    const pageCount  = v.totalPages  || 0;
-    const clicks     = v.clickCount  || 0;
-    const forms      = v.formFills   || 0;
-    const scrollPct  = v.scrollDepth || 0;
-    return `<div class="visitor-item${activeSessionId===v.sessionId?' active':''}${unread>0?' has-unread':''}"
+    const pageCount = v.totalPages  || 0;
+    const clicks    = v.clickCount  || 0;
+    const forms     = v.formFills   || 0;
+    const scrollPct = v.scrollDepth || 0;
+    const score     = v.score || 0;
+    const scoreLvl  = score >= 66 ? 'fire' : score >= 36 ? 'hot' : score >= 16 ? 'warm' : 'cold';
+    const scoreIcon = score >= 66 ? '🚨' : score >= 36 ? '🔥' : score >= 16 ? '🌤' : '❄️';
+    const scoreBadge = score > 0 ? `<span class="score-${scoreLvl}" style="font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:8px;letter-spacing:.4px">${scoreIcon} ${score}</span>` : '';
+    const rageBadge  = (v.rageClicks||0) > 0 ? `<span style="font-size:0.6rem;background:rgba(239,68,68,0.12);color:#f87171;padding:1px 5px;border-radius:3px;" title="Rage click">😤 ${v.rageClicks}</span>` : '';
+    const exitBadge  = (v.exitIntents||0) > 0 ? `<span style="font-size:0.6rem;background:rgba(139,92,246,0.12);color:#a78bfa;padding:1px 5px;border-radius:3px;" title="Çıkış niyeti">🚪 ${v.exitIntents}</span>` : '';
+    return `<div class="visitor-item${activeSessionId===v.sessionId?' active':''}${unread>0?' has-unread':''}${score>=66?' visitor-fire':''}"
       onclick="selectVisitor('${v.sessionId}')">
       <div class="v-name">
         <span class="${v.online?'v-online':'v-offline'}"></span>
         <span>${escapeHtml(v.name)}</span>
         ${unread > 0 ? `<span class="v-unread">${unread}</span>` : ''}
+        ${scoreBadge}
       </div>
       <div style="margin:3px 0;display:flex;gap:0.5rem;align-items:center">${phone}</div>
       <div class="v-page">${escapeHtml(pagePath)}</div>
@@ -2504,6 +2631,7 @@ function renderVisitorList(list) {
         ${clicks  > 0 ? `<span style="font-size:0.61rem;background:rgba(26,45,107,0.15);color:#8fa8d8;padding:1px 5px;border-radius:3px;">🖱 ${clicks}</span>` : ''}
         ${forms   > 0 ? `<span style="font-size:0.61rem;background:rgba(5,150,105,0.12);color:#34d399;padding:1px 5px;border-radius:3px;">✍️ ${forms}</span>` : ''}
         ${scrollPct>0 ? `<span style="font-size:0.61rem;background:rgba(201,168,76,0.1);color:var(--gold);padding:1px 5px;border-radius:3px;">📜%${scrollPct}</span>` : ''}
+        ${rageBadge}${exitBadge}
       </div>
     </div>`;
   }).join('');
@@ -2525,6 +2653,21 @@ function selectVisitor(sessionId) {
   document.getElementById('cpName').innerHTML = escapeHtml(v.name) +
     (v.phone ? ` <span style="font-family:var(--sans);font-size:0.75rem;color:var(--gold);font-weight:400;"> · ${escapeHtml(v.phone)}</span>` :
                ` <span style="font-family:var(--sans);font-size:0.7rem;color:rgba(255,100,100,0.6);font-weight:400;"> · telefon yok</span>`);
+  // Score badge güncelle
+  const score = v.score || 0;
+  const cpScore = document.getElementById('cpScoreBadge');
+  if (score > 0 && cpScore) {
+    const lvl  = score >= 66 ? 'fire' : score >= 36 ? 'hot' : score >= 16 ? 'warm' : 'cold';
+    const icon = score >= 66 ? '🚨' : score >= 36 ? '🔥' : score >= 16 ? '🌤' : '❄️';
+    cpScore.textContent  = `${icon} ${score} puan`;
+    cpScore.className    = `score-${lvl}`;
+    cpScore.style.display = 'inline-block';
+  } else if (cpScore) { cpScore.style.display = 'none'; }
+  // Canlı izle / replay butonları
+  const btnLive   = document.getElementById('btnLiveWatch');
+  const btnReplay = document.getElementById('btnReplay');
+  if (btnLive)   btnLive.style.display   = v.online     ? 'inline-block' : 'none';
+  if (btnReplay) btnReplay.style.display = v.hasReplay  ? 'inline-block' : 'none';
   document.getElementById('cpDevice').textContent            = v.device;
   document.getElementById('cpOnlineStatus').textContent      = v.online ? '🟢 Çevrimiçi' : '⚫ Çevrimdışı';
   document.getElementById('cpTime').textContent              = 'Giriş: ' + timeSince(v.startTime);
@@ -2561,6 +2704,8 @@ function selectVisitor(sessionId) {
   // Sayfa geçmişini yükle
   renderPageHistory(v);
   renderActivityItems(v);
+  renderFormFields(v);
+  renderFunnelSteps(v);
   switchActivityTab(activityTabMode);
 }
 
@@ -2635,17 +2780,14 @@ function onVisitorActivity({ sessionId, type, action, detail, page, pageTitle, t
 
 function switchActivityTab(tab) {
   activityTabMode = tab;
-  const tabAct  = document.getElementById('tabActivity');
-  const tabPg   = document.getElementById('tabPages');
-  const actDiv  = document.getElementById('activityItems');
-  const pgDiv   = document.getElementById('pageHistItems');
-  if (tab === 'activity') {
-    tabAct.classList.add('active');    tabPg.classList.remove('active');
-    actDiv.style.display = 'block';   pgDiv.style.display = 'none';
-  } else {
-    tabPg.classList.add('active');    tabAct.classList.remove('active');
-    pgDiv.style.display = 'block';    actDiv.style.display = 'none';
-  }
+  ['activity','pages','form','funnel'].forEach(t => {
+    const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) { btn.classList.toggle('active', t === tab); }
+  });
+  document.getElementById('activityItems').style.display  = tab === 'activity' ? 'block' : 'none';
+  document.getElementById('pageHistItems').style.display  = tab === 'pages'    ? 'block' : 'none';
+  document.getElementById('formFieldItems').style.display = tab === 'form'     ? 'block' : 'none';
+  document.getElementById('funnelItems').style.display    = tab === 'funnel'   ? 'block' : 'none';
 }
 
 function renderActivityItems(v) {
@@ -2701,6 +2843,193 @@ function renderPageHistory(v) {
 
 function loadActivityLog(sessionId) {
   document.getElementById('activityItems').innerHTML = '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Aktivite bekleniyor...</div>';
+}
+
+/* ── Form alanları render ── */
+function renderFormFields(v) {
+  const el = document.getElementById('formFieldItems');
+  if (!v || !v.formFields || !v.formFields.length) {
+    el.innerHTML = '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Henüz form alanı yakalanmadı</div>';
+    return;
+  }
+  el.innerHTML = [...v.formFields].reverse().map(f => {
+    const t = new Date(f.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const valClass = f.isPhone ? 'ff-phone' : '';
+    const icon = f.isPhone ? '📞' : f.isName ? '👤' : '📝';
+    return `<div class="ff-item">
+      <div class="ff-label">${t} · ${icon} ${escapeHtml(f.label)} <span style="color:#64748b;font-size:9px">${f.page||''}</span></div>
+      <div class="ff-value ${valClass}">${escapeHtml(f.value)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Funnel adımları render ── */
+const FUNNEL_STEP_LABELS = {
+  homepage: '🏠 Ana Sayfa',
+  service_page: '🚗 Hizmet Sayfası',
+  pricing_view: '💰 Fiyat Gördü',
+  services_view: '📋 Hizmetler',
+  form_open: '📋 Form Açtı',
+  transfer_section: '✈️ Transfer Bölümü',
+  payment_page: '💳 Ödeme Sayfası',
+  booking_attempt: '🎯 Rezervasyon Denemesi',
+};
+
+function renderFunnelSteps(v) {
+  const el = document.getElementById('funnelItems');
+  const steps = v?.funnelSteps || {};
+  const keys = Object.keys(steps);
+  if (!keys.length) {
+    el.innerHTML = '<div style="padding:1rem;font-size:0.75rem;color:var(--muted);">Funnel verisi yok</div>';
+    return;
+  }
+  const ordered = ['homepage','service_page','pricing_view','services_view','form_open','transfer_section','payment_page','booking_attempt'];
+  el.innerHTML = ordered.filter(k => steps[k]).map((k, i) => {
+    const t = new Date(steps[k]).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const colors = ['#94a3b8','#60a5fa','#fbbf24','#f59e0b','#f87171','#a78bfa','#34d399','#22c55e'];
+    return `<div class="funnel-item">
+      <span class="funnel-dot" style="background:${colors[i]||'#94a3b8'}"></span>
+      <div style="flex:1">
+        <div style="font-size:0.75rem;color:var(--text);font-weight:500">${FUNNEL_STEP_LABELS[k]||k}</div>
+        <div style="font-size:0.65rem;color:var(--muted)">${t}</div>
+      </div>
+      <span style="font-size:1rem">${i === Object.keys(steps).length - 1 ? '◀' : '✓'}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   SCREEN WATCH / SESSION REPLAY
+══════════════════════════════════════ */
+let _screenMode = null;
+let _rrwebPlayerInstance = null;
+
+function openScreenModal(mode) {
+  _screenMode = mode;
+  const modal = document.getElementById('screenModal');
+  const v = allVisitorsData.find(x => x.sessionId === activeSessionId);
+  if (!v) return;
+  document.getElementById('screenModalMeta').textContent = v.name + (v.phone ? ' · ' + v.phone : '');
+  document.getElementById('screenLiveDot').style.display   = mode === 'live' ? 'block' : 'none';
+  document.getElementById('screenLiveLabel').style.display = mode === 'live' ? 'block' : 'none';
+  document.getElementById('screenModalTitle').textContent  = mode === 'live' ? '📺 Canlı İzle' : '▶ Tekrar Oynat';
+  document.getElementById('screenNoData').style.display    = 'none';
+  document.getElementById('rrwebPlayerInner').innerHTML    = '';
+  modal.style.display = 'flex';
+
+  // rrweb-player CSS + JS yükle
+  if (!document.getElementById('rrwebPlayerCss')) {
+    const css = document.createElement('link');
+    css.id   = 'rrwebPlayerCss';
+    css.rel  = 'stylesheet';
+    css.href = 'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0/dist/style.css';
+    document.head.appendChild(css);
+  }
+
+  const loadPlayer = () => {
+    if (mode === 'live') {
+      supportSocket.emit('admin:watch_live', { sessionId: activeSessionId });
+      supportSocket.once('rrweb:snapshot', ({ events }) => {
+        if (!events || !events.length) {
+          document.getElementById('screenNoData').style.display = 'block';
+          return;
+        }
+        _startRrwebPlayer(events, true);
+      });
+    } else {
+      supportSocket.emit('admin:get_replay', { sessionId: activeSessionId });
+      supportSocket.once('rrweb:snapshot', ({ events }) => {
+        if (!events || !events.length) {
+          document.getElementById('screenNoData').style.display = 'block';
+          return;
+        }
+        _startRrwebPlayer(events, false);
+      });
+    }
+  };
+
+  if (window.rrwebPlayer) { loadPlayer(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0/dist/index.js';
+  s.onload = loadPlayer;
+  document.head.appendChild(s);
+}
+
+function _startRrwebPlayer(events, isLive) {
+  const wrap = document.getElementById('rrwebPlayerInner');
+  try {
+    _rrwebPlayerInstance = new rrwebPlayer({
+      target: wrap,
+      props: {
+        events,
+        autoPlay: true,
+        showController: !isLive,
+        width: Math.min(window.innerWidth - 80, 1200),
+        height: Math.min(window.innerHeight - 120, 700),
+        speedOption: [1, 1.5, 2, 4],
+      }
+    });
+    if (isLive) {
+      // Canlı modda yeni event gelince player'a ekle
+      supportSocket.on('rrweb:event', ({ sessionId, event }) => {
+        if (sessionId !== activeSessionId || _screenMode !== 'live') return;
+        _rrwebPlayerInstance?.addEvent?.(event);
+      });
+    }
+  } catch(e) {
+    wrap.innerHTML = `<div style="color:#f87171;padding:2rem">Oynatıcı yüklenemedi: ${e.message}</div>`;
+  }
+}
+
+function closeScreenModal() {
+  document.getElementById('screenModal').style.display = 'none';
+  if (activeSessionId) supportSocket.emit('admin:stop_watch', { sessionId: activeSessionId });
+  supportSocket.off('rrweb:event');
+  _rrwebPlayerInstance = null;
+  _screenMode = null;
+}
+
+/* ══════════════════════════════════════
+   HOT LEAD TOAST BİLDİRİMİ
+══════════════════════════════════════ */
+function showHotLeadToast(v) {
+  const existing = document.getElementById('hotToast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'hotToast';
+  toast.className = 'hot-toast';
+  const scoreIcon = v.score >= 66 ? '🚨' : '🔥';
+  toast.innerHTML = `
+    <button class="hot-toast-close" onclick="this.parentElement.remove()">✕</button>
+    <div style="font-size:0.85rem;font-weight:700;color:#ef4444;margin-bottom:6px">${scoreIcon} SICAK LEAD — ${v.score} puan</div>
+    <div style="font-size:0.8rem;color:#e2e8f0;font-weight:600">${escapeHtml(v.name)}</div>
+    ${v.phone ? `<div style="font-size:0.78rem;color:#fbbf24;margin-top:2px">${escapeHtml(v.phone)}</div>` : ''}
+    <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px">${(v.page||'/').replace(/https?:\/\/[^/]+/,'')}</div>
+    <button onclick="selectVisitor('${escapeHtml(v.sessionId)}');showPage('support');this.closest('.hot-toast').remove()"
+      style="margin-top:10px;width:100%;background:#ef4444;border:none;border-radius:6px;color:#fff;padding:6px;font-size:0.78rem;font-weight:600;cursor:pointer">
+      Hemen Yaz →
+    </button>`;
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentElement) toast.remove(); }, 12000);
+}
+
+/* ══════════════════════════════════════
+   FUNNEL ÖZET GÜNCELLE
+══════════════════════════════════════ */
+function updateFunnelBar(visitors) {
+  const counts = { homepage: 0, service: 0, pricing: 0, form: 0, booking: 0 };
+  visitors.forEach(v => {
+    const f = v.funnelSteps || {};
+    if (f.homepage)       counts.homepage++;
+    if (f.service_page)   counts.service++;
+    if (f.pricing_view)   counts.pricing++;
+    if (f.form_open)      counts.form++;
+    if (f.booking_attempt || f.payment_page) counts.booking++;
+  });
+  Object.keys(counts).forEach(k => {
+    const el = document.getElementById('fn-c-' + k);
+    if (el) el.textContent = counts[k];
+  });
 }
 
 function clearSupportBadge() {

@@ -455,9 +455,19 @@ function broadcastVisitors() {
     clickCount:  v.clickCount  || 0,
     formFills:   v.formFills   || 0,
     scrollDepth: v.scrollDepth || 0,
+    score:       v.score       || 0,
+    rageClicks:  v.rageClicks  || 0,
+    exitIntents: v.exitIntents || 0,
+    funnelSteps: v.funnelSteps || {},
+    formFields:  v.formFields  || [],
+    hasReplay:   (v.rrwebEvents || []).length > 0,
     pageHistory: v.pageHistory,
     activity:    v.activity,
     messages:    v.messages,
+    country:     v.country,
+    city:        v.city,
+    ip:          v.ip,
+    referrer:    v.referrer,
   }));
   io.to('admins').emit('visitors:update', list);
 }
@@ -658,7 +668,11 @@ io.on('connection', (socket) => {
     if (action === 'scroll') {
       const pct = parseInt(detail) || 0;
       if (pct > v.scrollDepth) v.scrollDepth = pct;
+      const scoreKey = { 25:'scroll_25', 50:'scroll_50', 75:'scroll_75', 100:'scroll_100' }[pct];
+      if (scoreKey) addScore(v, scoreKey);
     }
+    if (action === 'booking_attempt') addScore(v, 'booking_attempt');
+    if (action === 'chat_opened')     addScore(v, 'chat_opened');
 
     const entry = { type: 'action', action, detail, time: new Date().toISOString() };
     v.activity.push(entry);
@@ -742,9 +756,163 @@ io.on('connection', (socket) => {
     }
   });
 
+  /* ── Lead scoring kuralları ── */
+  const SCORE = {
+    page_visit: 3, transfer_page: 10, pricing_view: 8, services_view: 5,
+    form_open: 20, form_fill: 8, phone_entered: 30, name_entered: 15,
+    booking_attempt: 50, chat_opened: 15,
+    scroll_25: 3, scroll_50: 6, scroll_75: 10, scroll_100: 15,
+    rage_click: 12, exit_intent: 25, return_visitor: 20,
+  };
+
+  function addScore(v, key, bonus) {
+    if (!v.score) v.score = 0;
+    const pts = bonus || SCORE[key] || 0;
+    if (!pts) return;
+    const before = v.score;
+    v.score = Math.min(999, v.score + pts);
+    // Sıcak lead eşiği: 50 puana ulaşınca admin'e bildir (sadece bir kez)
+    if (before < 50 && v.score >= 50 && !v._hotNotified) {
+      v._hotNotified = true;
+      io.to('admins').emit('visitor:hot_lead', {
+        sessionId: v.sessionId, name: v.name, phone: v.phone,
+        score: v.score, page: v.page, device: v.device,
+      });
+      const { tg } = require('./services/telegram');
+      const who = `${v.name}${v.phone ? ' · ' + v.phone : ''}${v.city ? ' · ' + v.city : ''}`;
+      tg(`🔥 <b>SICAK LEAD!</b> Puan: ${v.score}\n👤 ${who}\n📄 ${(v.page||'/').replace(/https?:\/\/[^/]+/,'')}`).catch(() => {});
+    }
+    io.to('admins').emit('visitor:score_update', { sessionId: v.sessionId, score: v.score });
+  }
+
+  /* ── rrweb olayı geldi — sakla + canlı izleyenlere ilet ── */
+  socket.on('visitor:rrweb', ({ sessionId, event }) => {
+    if (!isValidSessionId(sessionId)) return;
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (!v.rrwebEvents) v.rrwebEvents = [];
+    v.rrwebEvents.push(event);
+    if (v.rrwebEvents.length > 400) v.rrwebEvents.shift(); // circular buffer
+    // Canlı izleyen adminlere aktar
+    if (v._watchers && v._watchers.size > 0) {
+      io.to([...v._watchers]).emit('rrweb:event', { sessionId, event });
+    }
+  });
+
+  /* ── Admin canlı izleme başlat ── */
+  socket.on('admin:watch_live', ({ sessionId }) => {
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (!v._watchers) v._watchers = new Set();
+    v._watchers.add(socket.id);
+    // Mevcut bufferi önce gönder (bağlam için)
+    if (v.rrwebEvents && v.rrwebEvents.length) {
+      socket.emit('rrweb:snapshot', { sessionId, events: v.rrwebEvents });
+    }
+  });
+
+  /* ── Admin canlı izlemeyi durdur ── */
+  socket.on('admin:stop_watch', ({ sessionId }) => {
+    const v = visitors.get(sessionId);
+    if (v && v._watchers) v._watchers.delete(socket.id);
+  });
+
+  /* ── Admin replay iste (tüm bufferi gönder) ── */
+  socket.on('admin:get_replay', ({ sessionId }) => {
+    const v = visitors.get(sessionId);
+    if (!v || !v.rrwebEvents || !v.rrwebEvents.length) {
+      socket.emit('rrweb:snapshot', { sessionId, events: [] });
+      return;
+    }
+    socket.emit('rrweb:snapshot', { sessionId, events: v.rrwebEvents });
+  });
+
+  /* ── Form alan yakalama ── */
+  socket.on('visitor:form_field', ({ sessionId, label, value, isPhone, isName, page }) => {
+    if (!isValidSessionId(sessionId)) return;
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (!v.formFields) v.formFields = [];
+    v.formFields.push({ label, value, isPhone, isName, page, time: new Date().toISOString() });
+    if (v.formFields.length > 50) v.formFields.shift();
+    addScore(v, isPhone ? 'phone_entered' : isName ? 'name_entered' : 'form_fill');
+    // Form verisini admine ilet
+    io.to('admins').emit('visitor:form_captured', {
+      sessionId, label, value, isPhone, isName, page, time: new Date().toISOString()
+    });
+    broadcastVisitors();
+    // Telefon girildi → Telegram
+    if (isPhone && !v._phoneTgSent) {
+      v._phoneTgSent = true;
+      const { tg } = require('./services/telegram');
+      const who = `${v.name}${v.city ? ' · ' + v.city : ''}`;
+      tg(`📞 <b>TELEFON GİRDİ!</b>\n👤 ${who}\n📱 ${value}\n📄 ${page || '/'}`).catch(() => {});
+    }
+  });
+
+  /* ── Rage click ── */
+  socket.on('visitor:rage_click', ({ sessionId, element, page }) => {
+    if (!isValidSessionId(sessionId)) return;
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (!v.rageClicks) v.rageClicks = 0;
+    v.rageClicks++;
+    addScore(v, 'rage_click');
+    const entry = { type: 'action', action: 'rage_click', detail: `😤 ${element} (${page||''})`, time: new Date().toISOString() };
+    v.activity.push(entry);
+    if (v.activity.length > 100) v.activity.shift();
+    io.to('admins').emit('visitor:activity', { sessionId, ...entry });
+    broadcastVisitors();
+  });
+
+  /* ── Exit intent ── */
+  socket.on('visitor:exit_intent', ({ sessionId, page }) => {
+    if (!isValidSessionId(sessionId)) return;
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (!v.exitIntents) v.exitIntents = 0;
+    v.exitIntents++;
+    addScore(v, 'exit_intent');
+    const entry = { type: 'action', action: 'exit_intent', detail: `🚪 Çıkış niyeti — ${(page||'/').replace(/https?:\/\/[^/]+/,'')}`, time: new Date().toISOString() };
+    v.activity.push(entry);
+    if (v.activity.length > 100) v.activity.shift();
+    io.to('admins').emit('visitor:activity', { sessionId, ...entry });
+    broadcastVisitors();
+  });
+
+  /* ── Funnel adımı ── */
+  socket.on('visitor:funnel', ({ sessionId, step, page }) => {
+    if (!isValidSessionId(sessionId)) return;
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (!v.funnelSteps) v.funnelSteps = {};
+    if (v.funnelSteps[step]) return; // tekrar sayma
+    v.funnelSteps[step] = new Date().toISOString();
+    // Scoring
+    const scoreMap = { homepage: 3, service_page: 10, pricing_view: 8, form_open: 20, payment_page: 30 };
+    addScore(v, null, scoreMap[step] || 5);
+    io.to('admins').emit('visitor:funnel_step', { sessionId, step, page, time: new Date().toISOString() });
+    broadcastVisitors();
+  });
+
+  /* ── visitor:action — scoring ekle ── */
+  socket.on('visitor:action_score', ({ sessionId, action }) => {
+    // Mevcut visitor:action handler'ına scoring eklemek için
+    // (asıl handler üstte, bu ek scoring)
+    const v = visitors.get(sessionId);
+    if (!v) return;
+    if (action === 'booking_attempt') addScore(v, 'booking_attempt');
+    if (action === 'chat_opened')     addScore(v, 'chat_opened');
+    if (action === 'scroll') { /* scroll scoring visitor:action içinde */ }
+  });
+
   /* ── Bağlantı kesildi ── */
   socket.on('disconnect', () => {
     adminSockets.delete(socket.id);
+    // Tüm canlı izleme listelerinden kaldır
+    for (const v of visitors.values()) {
+      if (v._watchers) v._watchers.delete(socket.id);
+    }
     const sid = socket.sessionId;
     if (sid && visitors.has(sid)) {
       visitors.get(sid).online  = false;

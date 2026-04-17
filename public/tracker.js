@@ -1,12 +1,10 @@
 /**
- * tracker.js — Güliz Şirketler Topluluğu
- * Evrensel ziyaretçi takip modülü.
- * Tüm sayfalara dahil edilir; click, scroll ve form doldurmayı izler.
+ * tracker.js — Güliz Gelişmiş Ziyaretçi Takip Modülü
+ * Rage click · Exit intent · Form capture · rrweb replay · Funnel · Lead score
  */
 (function () {
   'use strict';
 
-  /* ── SESSION ID ── */
   const SESSION_KEY = 'gt_chat_session';
   let sessionId = localStorage.getItem(SESSION_KEY);
   if (!sessionId) {
@@ -14,59 +12,79 @@
     localStorage.setItem(SESSION_KEY, sessionId);
   }
 
-  /* ── KUYRUK (socket hazır olmadan önce gelen olaylar) ── */
   const _queue = [];
-  let _socket  = null;
+  let _socket   = null;
+  let _rrwebStop = null;
 
-  /**
-   * Mevcut sayfada chat widget'ının tanımladığı 'chatSocket'ı bul.
-   * Yoksa tracker'ın kendi socketini (_socket) kullan.
-   */
   function getSocket() {
-    try {
-      // chatSocket const olarak inline script'te tanımlı → doğrudan erişilebilir
-      if (typeof chatSocket !== 'undefined' && chatSocket) return chatSocket;
-    } catch (_) {}
+    try { if (typeof chatSocket !== 'undefined' && chatSocket) return chatSocket; } catch (_) {}
     return _socket;
   }
 
-  function emit(action, detail) {
+  function rawEmit(event, data) {
     const s = getSocket();
-    const data = { sessionId, action, detail };
     if (s && s.connected) {
-      s.emit('visitor:action', data);
+      s.emit(event, data);
     } else {
-      _queue.push(data);
+      _queue.push({ event, data });
     }
+  }
+
+  function action(act, detail) {
+    rawEmit('visitor:action', { sessionId, action: act, detail });
   }
 
   function flushQueue(s) {
     while (_queue.length) {
-      s.emit('visitor:action', _queue.shift());
+      const item = _queue.shift();
+      s.emit(item.event, item.data);
     }
   }
 
   /* ══════════════════════════════════════
-     1. CLICK TAKİBİ
+     1. RAGE CLICK — aynı elemente 3+ tıklama
   ══════════════════════════════════════ */
+  let _rage = { el: null, count: 0, t: 0 };
+
   document.addEventListener('click', function (e) {
-    const el = e.target.closest(
-      'a, button, [role="button"], input[type="submit"], input[type="button"]'
-    );
-    if (!el) return;
-    if (el.closest('.chat-box, .chat-btn, #chatInputRow')) return; // chat modülü kendi izliyor
+    const now = Date.now();
+    const el  = e.target;
 
-    const text = (el.textContent || el.value || el.getAttribute('aria-label') || '')
-      .trim().replace(/\s+/g, ' ').slice(0, 80);
-    const href = (el.href || el.getAttribute('href') || '').replace(location.origin, '').slice(0, 60);
-    const isNav = !!el.closest('nav');
-    const detail = [text, (!isNav && href) ? '→ ' + href : ''].filter(Boolean).join(' ').trim() || el.tagName;
+    // Rage click tespiti
+    if (_rage.el === el && now - _rage.t < 700) {
+      _rage.count++;
+      if (_rage.count === 3) {
+        const label = (el.textContent || el.getAttribute('aria-label') || el.tagName).trim().slice(0, 60);
+        rawEmit('visitor:rage_click', { sessionId, element: label, page: location.pathname });
+      }
+    } else {
+      _rage = { el, count: 1, t: now };
+    }
 
-    emit(isNav ? 'nav_click' : 'click', detail.slice(0, 120));
+    // Normal click kaydı
+    const btn = el.closest('a, button, [role="button"], input[type="submit"], input[type="button"]');
+    if (!btn || btn.closest('.chat-box, #chatInputRow, .chat-btn')) return;
+    const text   = (btn.textContent || btn.value || btn.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    const href   = (btn.href || btn.getAttribute('href') || '').replace(location.origin, '').slice(0, 60);
+    const isNav  = !!btn.closest('nav, .nav, header');
+    const detail = [text, (!isNav && href) ? '→ ' + href : ''].filter(Boolean).join(' ').slice(0, 120);
+    action(isNav ? 'nav_click' : 'click', detail || btn.tagName);
   }, true);
 
   /* ══════════════════════════════════════
-     2. SCROLL DERİNLİĞİ
+     2. EXIT INTENT — mouse üst kenara
+  ══════════════════════════════════════ */
+  let _exitFired = false;
+  document.addEventListener('mouseleave', function (e) {
+    if (e.clientY < 10 && !_exitFired) {
+      _exitFired = true;
+      rawEmit('visitor:exit_intent', { sessionId, page: location.href });
+      setTimeout(function () { _exitFired = false; }, 30000);
+    }
+  });
+
+  /* ══════════════════════════════════════
+     3. SCROLL DERİNLİĞİ
   ══════════════════════════════════════ */
   const _scrollPassed = new Set();
   let   _rafPending   = false;
@@ -82,39 +100,133 @@
       [25, 50, 75, 100].forEach(function (m) {
         if (pct >= m && !_scrollPassed.has(m)) {
           _scrollPassed.add(m);
-          emit('scroll', '%' + m + ' · ' + (document.title || location.pathname));
+          action('scroll', m.toString());
         }
       });
     });
   }, { passive: true });
 
   /* ══════════════════════════════════════
-     3. FORM ALANI DOLDURMA (blur'da)
+     4. FORM ALAN YAKALAMA — blur'da değer
   ══════════════════════════════════════ */
   document.addEventListener('blur', function (e) {
     const el = e.target;
     if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) return;
-    if (el.type === 'password') return; // Şifre asla izlenmiyor
-    if (el.closest('.chat-box, #chatInputRow, #chatMsgInput')) return;
+    if (el.type === 'password') return;
+    if (el.closest('.chat-box, #chatInputRow, #chatMsgInput, .admin-input-row')) return;
 
-    const label = (el.placeholder || el.name || el.id || el.tagName).slice(0, 40);
+    const label = (
+      el.closest('.form-group, .field-wrap, .booking-field, .input-group')
+        ?.querySelector('label')?.textContent?.trim() ||
+      el.placeholder || el.name || el.id || el.tagName
+    ).slice(0, 50);
+
     const val = el.tagName === 'SELECT'
-      ? (el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : el.value)
-      : el.value.trim().slice(0, 60);
+      ? (el.options[el.selectedIndex]?.text || el.value)
+      : el.value.trim().slice(0, 100);
     if (!val) return;
 
-    emit('form_fill', label + ': ' + val);
+    const isPhone = /tel|phone|gsm|cep/i.test(label + el.type + (el.name || ''));
+    const isName  = /isim|^ad |ad$|name|soyad/i.test(label);
+
+    rawEmit('visitor:form_field', { sessionId, label, value: val, isPhone, isName, page: location.pathname });
+    action('form_fill', label + ': ' + val.slice(0, 40));
   }, true);
 
   /* ══════════════════════════════════════
-     4. SOCKET BAĞLANTISI
+     5. FUNNEL ADIMLAR — section görünürlüğü
+  ══════════════════════════════════════ */
+  const FUNNEL_MAP = {
+    '#rezervasyon':       'form_open',
+    '#fiyatlar':          'pricing_view',
+    '#hizmetler':         'services_view',
+    '.booking-form':      'form_open',
+    '#bookingSection':    'form_open',
+    '#transfer-section':  'transfer_section',
+    '.price-card':        'pricing_view',
+    '#odeme':             'payment_page',
+  };
+
+  if (window.IntersectionObserver) {
+    const funnelObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        for (const sel in FUNNEL_MAP) {
+          if (entry.target.matches(sel)) {
+            rawEmit('visitor:funnel', { sessionId, step: FUNNEL_MAP[sel], page: location.pathname });
+            funnelObserver.unobserve(entry.target);
+            break;
+          }
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const tryObserveFunnel = function () {
+      Object.keys(FUNNEL_MAP).forEach(function (sel) {
+        document.querySelectorAll(sel).forEach(function (el) {
+          funnelObserver.observe(el);
+        });
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tryObserveFunnel);
+    } else {
+      tryObserveFunnel();
+    }
+  }
+
+  // Sayfa başlangıcında funnel adımını belirle
+  const pagePath = location.pathname;
+  if (pagePath.includes('/transfer')) rawEmit('visitor:funnel', { sessionId, step: 'service_page', page: pagePath });
+  else if (pagePath === '/' || pagePath === '/index.html') rawEmit('visitor:funnel', { sessionId, step: 'homepage', page: pagePath });
+  else if (pagePath.includes('/lojistik')) rawEmit('visitor:funnel', { sessionId, step: 'service_page', page: pagePath });
+
+  /* ══════════════════════════════════════
+     6. RRWEB KAYIT — session replay
+  ══════════════════════════════════════ */
+  function startRrweb() {
+    if (!window.rrweb || _rrwebStop) return;
+    try {
+      _rrwebStop = rrweb.record({
+        emit: function (event) {
+          rawEmit('visitor:rrweb', { sessionId, event });
+        },
+        sampling: {
+          mousemove : 100,
+          scroll    : 150,
+          input     : 'last',
+        },
+        maskInputOptions : { password: true },
+        blockClass       : 'rr-block',
+        checkoutEveryNth : 60,
+      });
+    } catch (err) { /* rrweb desteklenmiyorsa sessizce geç */ }
+  }
+
+  function loadRrweb() {
+    if (window.rrweb) { startRrweb(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.13/dist/rrweb.min.js';
+    s.onload = startRrweb;
+    s.onerror = function () {
+      const s2 = document.createElement('script');
+      s2.src = 'https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js';
+      s2.onload = startRrweb;
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s);
+  }
+
+  /* ══════════════════════════════════════
+     7. SOCKET BAĞLANTISI
   ══════════════════════════════════════ */
   function connectOwnSocket() {
     if (typeof io === 'undefined') return;
     _socket = io({ transports: ['websocket', 'polling'] });
     _socket.on('connect', function () {
       _socket.emit('visitor:connect', {
-        sessionId : sessionId,
+        sessionId,
         name      : 'Ziyaretçi',
         phone     : localStorage.getItem('gt_chat_phone') || '',
         page      : location.href,
@@ -127,29 +239,27 @@
   }
 
   function tryConnect() {
-    // Önce mevcut chatSocket'ı kontrol et
     const s = getSocket();
     if (s) {
-      if (s.connected) flushQueue(s);
-      else s.on('connect', function () { flushQueue(s); });
+      const afterConnect = function () { flushQueue(s); loadRrweb(); };
+      if (s.connected) afterConnect();
+      else s.on('connect', afterConnect);
       return;
     }
-    // Yoksa kendi bağlantımızı aç
     if (typeof io !== 'undefined') {
       connectOwnSocket();
+      loadRrweb();
     } else {
-      // socket.io henüz yüklenmediyse bir kez daha dene
-      var script = document.createElement('script');
+      const script = document.createElement('script');
       script.src = '/socket.io/socket.io.js';
-      script.onload = connectOwnSocket;
+      script.onload = function () { connectOwnSocket(); loadRrweb(); };
       document.head.appendChild(script);
     }
   }
 
-  // DOM hazır olduktan sonra bağlan (chatSocket inline script'ten önce tanımlanmış olsun)
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(tryConnect, 100); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(tryConnect, 150); });
   } else {
-    setTimeout(tryConnect, 100);
+    setTimeout(tryConnect, 150);
   }
 })();
