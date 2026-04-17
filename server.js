@@ -52,9 +52,21 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({ origin: '*' }));
-app.use(express.json());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3001'];
+app.use(cors({
+  origin: (origin, cb) => cb(null, true), // tüm origin'e izin ver ama credentials'sız
+  credentials: false
+}));
+app.use(express.json({ limit: '2mb' }));
+
+// Login için sıkı rate limit
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true });
+app.use('/api/auth/login', authLimiter);
+app.use('/api/kurumlar/login', authLimiter);
+
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ── CV Upload (multer) ── */
@@ -111,7 +123,8 @@ app.post('/api/ai/sevkiyat-parse', async (req, res) => {
     const client = new Anthropic({ apiKey });
     const bugun = new Date().toLocaleDateString('tr-TR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-    const msg = await client.messages.create({
+    const msg = await Promise.race([
+      client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
       system: `Sen bir lojistik şirketi için çalışan bir asistansın. Kullanıcının Türkçe sevkiyat açıklamasından yapılandırılmış veri çıkarıyorsun. Bugün: ${bugun}. SADECE JSON döndür, başka metin yok.`,
@@ -129,8 +142,9 @@ Döndür (eksik alanlar null olsun):
   "notlar": "mola saatleri, özel notlar vb" veya null,
   "tahmini_sure_saat": sayı veya null
 }`
-      }]
-    });
+      }]),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('AI_TIMEOUT')), 12000))
+    ]);
 
     const text = msg.content[0].text.trim();
     const json = JSON.parse(text.replace(/```json|```/g, '').trim());
@@ -177,10 +191,13 @@ app.get('/api/yuk-bildirimleri', async (req, res) => {
 });
 
 app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
-  try {
-    await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  const auth = require('./middleware/auth');
+  auth(req, res, async () => {
+    try {
+      await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
+      res.json({ ok: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
 });
 
 app.delete('/api/yuk-bildirimleri/:id', async (req, res) => {
@@ -298,7 +315,13 @@ app.get('/api/ik/:id/cv', async (req, res) => {
     );
     if (!rows.length || !rows[0].cv_path)
       return res.status(404).json({ error: 'CV bulunamadı.' });
+    // Path traversal koruması
+    if (!/^[a-zA-Z0-9_\-\.]+\.pdf$/i.test(rows[0].cv_path))
+      return res.status(400).json({ error: 'Geçersiz dosya.' });
     const filePath = path.join(CV_DIR, rows[0].cv_path);
+    // Dizin dışına çıkma kontrolü
+    if (!filePath.startsWith(CV_DIR))
+      return res.status(400).json({ error: 'Geçersiz dosya.' });
     if (!fs.existsSync(filePath))
       return res.status(404).json({ error: 'Dosya sunucuda bulunamadı.' });
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(rows[0].cv_original_name || 'cv.pdf')}"`);
@@ -997,6 +1020,20 @@ db.query(`
   if (eklenen > 0) console.log(`🏗️  ${eklenen} ihale verisi eklendi.`);
 
 }).catch(e => console.error('Tablo oluşturma hatası:', e.message));
+
+/* ── 404 handler ── */
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Endpoint bulunamadı.' });
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'), err => {
+    if (err) res.status(404).send('Sayfa bulunamadı.');
+  });
+});
+
+/* ── Global error handler ── */
+app.use((err, req, res, _next) => {
+  console.error('Uncaught error:', err.message || err);
+  res.status(500).json({ error: 'Sunucu hatası oluştu.' });
+});
 
 /* ── Bağımsız sütun migration'ları — ana blok hata alsa bile çalışır ── */
 (async () => {

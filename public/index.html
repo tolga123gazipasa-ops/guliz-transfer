@@ -790,7 +790,7 @@
         <span class="icon">🏛️</span><span data-i18n="badge.construction">İnşaat</span>
       </a>
       <a class="badge" href="#" onclick="openAracTakip();return false;">
-        <span class="icon">📡</span><span>ARAÇLARIMIZ</span>
+        <span class="icon">📡</span><span data-i18n="badge.fleet">ARAÇLARIMIZ</span>
       </a>
     </div>
 
@@ -823,8 +823,8 @@
     <div class="at-header-left">
       <div class="at-live-dot"></div>
       <div>
-        <div class="at-title">🚛 Araç Takip Sistemi</div>
-        <div class="at-subtitle">Güliz Şirketler Grubu — Filo Yönetimi</div>
+        <div class="at-title" data-i18n="fleet.title">🚛 Araç Takip Sistemi</div>
+        <div class="at-subtitle" data-i18n="fleet.subtitle">Güliz Şirketler Grubu — Filo Yönetimi</div>
       </div>
     </div>
     <button class="at-close" onclick="closeAracTakip()" title="Kapat">✕</button>
@@ -834,7 +834,7 @@
     <div class="at-sidebar">
       <div class="at-sidebar-head">14 Araç · Filo Durumu</div>
       <div id="at-truck-list"></div>
-      <div class="at-footer" id="at-update-time">Son güncelleme: —</div>
+      <div class="at-footer" id="at-update-time" data-i18n-prefix="fleet.update">Son güncelleme: —</div>
       <div class="at-footer" id="at-pw-countdown" style="color:#fbbf24;margin-top:2px"></div>
     </div>
   </div>
@@ -1159,7 +1159,7 @@ function effectiveStatus(t, nowMs) {
 
 /* ── Görsel ── */
 const SC={moving:'#4ade80',offline:'#6b7280',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
-const SL={moving:'AKTİF',offline:'KAPALI',mola:'MOLA',yukleme:'YÜKLEME',istirahat:'İSTİRAHAT'};
+function getSL(){ return {moving:t('fleet.active'),offline:t('fleet.offline'),mola:t('fleet.break'),yukleme:t('fleet.break'),istirahat:t('fleet.rest')}; }
 
 function calcBearing(from,to){
   if(!from||!to) return 0;
@@ -1185,7 +1185,7 @@ function fmtTime(ms){return new Date(ms).toLocaleTimeString('tr-TR',{hour:'2-dig
 
 function popupContent(t, idx, nowMs) {
   const eSt = effectiveStatus(t, nowMs);
-  const c = SC[eSt], lbl = SL[eSt];
+  const c = SC[eSt], lbl = getSL()[eSt];
   const pos = getTruckPos(t, idx, nowMs);
   const spd = getTruckSpeed(t, idx, nowMs);
   const coord = `${pos[0].toFixed(4)}°K, ${pos[1].toFixed(4)}°D`;
@@ -1241,14 +1241,14 @@ function updateTrucks(nowMs){
   atLastTick=nowMs;
   renderSidebar(nowMs);
   const el=document.getElementById('at-update-time');
-  if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
+  if(el) el.textContent=`${t('fleet.update')} ${fmtTime(nowMs)}`;
 }
 
 function renderSidebar(nowMs){
   const list = document.getElementById('at-truck-list');
   if (!list) return;
   const head = document.querySelector('.at-sidebar-head');
-  if (head) head.textContent = `${TRUCKS.length} Araç · Filo Durumu`;
+  if (head) head.textContent = `${TRUCKS.length} ${t('fleet.sidebar')}`;
   const BORDER = {moving:'#4ade80',offline:'#e8192c',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
   if (!TRUCKS.length) {
     list.innerHTML = '<div style="padding:1rem;color:rgba(255,255,255,0.3);font-size:12px;text-align:center">Araç verisi yükleniyor...</div>';
@@ -1256,7 +1256,7 @@ function renderSidebar(nowMs){
   }
   list.innerHTML = TRUCKS.map((t, i) => {
     const eSt = effectiveStatus(t, nowMs);
-    const c = SC[eSt], lbl = SL[eSt];
+    const c = SC[eSt], lbl = getSL()[eSt];
     const bc = BORDER[eSt] || c;
     const spd = getTruckSpeed(t, i, nowMs);
     const sub = eSt === 'moving' ? `${spd} km/s` : (eSt === 'offline' ? 'Bakımda' : (eSt === 'istirahat' ? 'İstirahat' : 'Bekliyor'));
@@ -1309,7 +1309,7 @@ async function initAtMap(){
 
   renderSidebar(nowMs);
   const el=document.getElementById('at-update-time');
-  if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
+  if(el) el.textContent=`${t('fleet.update')} ${fmtTime(nowMs)}`;
 
   // 2.5 sn'de bir pozisyon güncelle + RAF ile smooth hareket
   atLastTick=nowMs;
@@ -1980,6 +1980,19 @@ const LANGS = {
     'chat.phonePh':     'Telefon Numarası (+90 5XX...)',
     'chat.start':       'Sohbeti Başlat →',
     'chat.msgPh':       'Mesajınızı yazın...',
+    'badge.fleet':      'ARAÇLARIMIZ',
+    'fleet.title':      '🚛 Araç Takip Sistemi',
+    'fleet.subtitle':   'Güliz Şirketler Grubu — Filo Yönetimi',
+    'fleet.sidebar':    'Araç · Filo Durumu',
+    'fleet.update':     'Son güncelleme:',
+    'fleet.active':     'AKTİF',
+    'fleet.offline':    'KAPALI',
+    'fleet.break':      'MOLA',
+    'fleet.rest':       'İSTİRAHAT',
+    'fleet.speed':      'km/s',
+    'fleet.status.maintenance': 'Bakımda',
+    'fleet.status.waiting':     'Bekliyor',
+    'fleet.status.rest':        'İstirahat',
   },
   en: {
     flag: 'https://flagcdn.com/28x21/us.png',
@@ -2024,6 +2037,19 @@ const LANGS = {
     'chat.phonePh':     'Phone Number (+90 5XX...)',
     'chat.start':       'Start Chat →',
     'chat.msgPh':       'Type your message...',
+    'badge.fleet':      'OUR FLEET',
+    'fleet.title':      '🚛 Vehicle Tracking',
+    'fleet.subtitle':   'Güliz Group — Fleet Management',
+    'fleet.sidebar':    'Vehicles · Fleet Status',
+    'fleet.update':     'Last update:',
+    'fleet.active':     'ACTIVE',
+    'fleet.offline':    'OFFLINE',
+    'fleet.break':      'BREAK',
+    'fleet.rest':       'REST',
+    'fleet.speed':      'km/h',
+    'fleet.status.maintenance': 'Maintenance',
+    'fleet.status.waiting':     'Waiting',
+    'fleet.status.rest':        'Resting',
   },
   ru: {
     flag: 'https://flagcdn.com/28x21/ru.png',
@@ -2068,6 +2094,19 @@ const LANGS = {
     'chat.phonePh':     'Номер телефона (+90 5XX...)',
     'chat.start':       'Начать чат →',
     'chat.msgPh':       'Введите сообщение...',
+    'badge.fleet':      'НАШ АВТОПАРК',
+    'fleet.title':      '🚛 Отслеживание транспорта',
+    'fleet.subtitle':   'Güliz Group — Управление автопарком',
+    'fleet.sidebar':    'Авто · Статус автопарка',
+    'fleet.update':     'Обновлено:',
+    'fleet.active':     'АКТИВЕН',
+    'fleet.offline':    'ВЫКЛ',
+    'fleet.break':      'ПЕРЕРЫВ',
+    'fleet.rest':       'ОТДЫХ',
+    'fleet.speed':      'км/ч',
+    'fleet.status.maintenance': 'На ТО',
+    'fleet.status.waiting':     'Ожидает',
+    'fleet.status.rest':        'Отдыхает',
   }
 };
 
@@ -2102,6 +2141,15 @@ function setLang(lang) {
 
   // html lang attribute
   document.documentElement.lang = lang;
+
+  // Araç takip sidebar canlı güncelle (overlay açıksa)
+  const head = document.querySelector('.at-sidebar-head');
+  if (head && typeof TRUCKS !== 'undefined') head.textContent = `${TRUCKS.length} ${t('fleet.sidebar')}`;
+  const upd = document.getElementById('at-update-time');
+  if (upd && upd.textContent && upd.textContent.includes(':')) {
+    const timePart = upd.textContent.split(': ')[1] || '—';
+    upd.textContent = `${t('fleet.update')} ${timePart}`;
+  }
 }
 
 function toggleLangMenu() {
