@@ -3020,9 +3020,14 @@ let _mapsReady = false;
 let _sevkKalkisAC, _sevkVarisAC, _sevkKonumAC;
 let _sevkKonumMap, _sevkKonumMarker;
 
-function initAdminMaps() {
+// Google Maps callback — window üzerinde olmalı
+window.initAdminMaps = function() {
   _mapsReady = true;
-}
+  // Araç filosu sayfası açıksa haritayı yükle
+  if (document.getElementById('page-araclar')?.style.display !== 'none') {
+    refreshFiloHarita(allAraclar || []);
+  }
+};
 
 function initSevkAutocomplete() {
   if (!_mapsReady || _sevkKalkisAC) return;
@@ -3259,7 +3264,9 @@ function refreshFiloHarita(araclar) {
   const el = document.getElementById('filoHarita');
   if (!el) return;
   if (!_mapsReady) {
-    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">Google Maps API key tanımlı değil.</div>';
+    // Maps henüz yüklenmedi, 1 sn sonra tekrar dene
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">Harita yükleniyor...</div>';
+    setTimeout(() => refreshFiloHarita(araclar), 1000);
     return;
   }
   const COLORS = { musait: '#22c55e', seferde: '#f59e0b', bakim: '#ef4444' };
@@ -3729,10 +3736,15 @@ async function saveNewBooking() {
 </script>
 <script src="/api/config.js"></script>
 <script>
-(function(){
-  if(!window.GMAPS_KEY) return;
+(function loadMapsWhenReady(){
+  const key = window.GMAPS_KEY;
+  if (!key) {
+    // config.js henüz yüklenmemiş olabilir — 300ms bekle
+    setTimeout(loadMapsWhenReady, 300);
+    return;
+  }
   const s = document.createElement('script');
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${window.GMAPS_KEY}&libraries=places,geometry&language=tr&callback=initAdminMaps`;
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,geometry&language=tr&callback=initAdminMaps`;
   s.async = true; s.defer = true;
   document.head.appendChild(s);
 })();
