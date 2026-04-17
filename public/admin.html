@@ -1118,7 +1118,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             🖱 Haritaya tıklayarak yeni konumu işaretle — <button onclick="thKonumKaydet()" class="btn btn-gold btn-sm" style="margin-left:8px">Kaydet</button>
             <button onclick="thKonumModuKapat()" class="btn btn-outline btn-sm" style="margin-left:4px">İptal</button>
           </div>
-          <div id="takipHaritaDiv" style="flex:1;min-height:420px"></div>
+          <div id="takipHaritaDiv" style="flex:1;min-height:420px;height:100%"></div>
           <div style="padding:12px 18px;border-top:0.5px solid var(--border);display:flex;gap:16px;flex-wrap:wrap" id="thBilgi"></div>
         </div>
       </div>
@@ -1130,7 +1130,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
             <div style="font-family:var(--serif);font-size:1rem;color:var(--gold)">🗺 Tüm Araçlar — Canlı Harita</div>
             <button onclick="document.getElementById('tumAraclarModal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">×</button>
           </div>
-          <div id="tumAraclarHarita" style="flex:1;min-height:0"></div>
+          <div id="tumAraclarHarita" style="flex:1;min-height:0;height:100%"></div>
         </div>
       </div>
 
@@ -2690,152 +2690,130 @@ async function loadSevkiyatlar() {
 /* ═══════════════════════════════════════
    TAKİP HARİTASI — Tekli araç izleme
 ═══════════════════════════════════════ */
+/* ── Takip Haritası — Leaflet/OpenStreetMap, key gerektirmez ── */
 let _thMap = null, _thMarkerArac = null, _thMarkerKalkis = null, _thMarkerVaris = null;
-let _thPolyline = null, _thSevk = null, _thYeniKonum = null;
+let _thPolyline = null, _thSevk = null, _thYeniKonum = null, _thKonumModu = false;
+
+function _thEnsureLeaflet(cb) {
+  if (window.L) { cb(); return; }
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(css);
+  const js = document.createElement('script');
+  js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  js.onload = cb;
+  document.head.appendChild(js);
+}
 
 function openTakipHarita(s) {
   _thSevk = s;
   _thYeniKonum = null;
+  _thKonumModu = false;
 
   document.getElementById('thTitle').textContent = `📍 ${s.takip_kodu} — ${s.kalkis} → ${s.varis}`;
   const durumStr = { beklemede:'⏳ Beklemede', yolda:'🚛 Yolda', teslim_edildi:'✅ Teslim Edildi', iptal:'❌ İptal' }[s.durum] || s.durum;
-  const metaParts = [durumStr, s.arac_plaka, s.surucu_adi, s.musteri_adi].filter(Boolean);
-  document.getElementById('thMeta').textContent = metaParts.join(' · ');
+  document.getElementById('thMeta').textContent = [durumStr, s.arac_plaka, s.surucu_adi, s.musteri_adi].filter(Boolean).join(' · ');
 
-  // Bilgi satırı
   const bilgi = [];
-  if (s.mesafe_km)     bilgi.push(`📏 ${s.mesafe_km} km`);
-  if (s.sure_dakika)   { const h=Math.floor(s.sure_dakika/60),m=s.sure_dakika%60; bilgi.push(`⏱ ${h>0?h+'s ':''}${m}dk`); }
+  if (s.mesafe_km)      bilgi.push(`📏 ${s.mesafe_km} km`);
+  if (s.sure_dakika)    { const h=Math.floor(s.sure_dakika/60),m=s.sure_dakika%60; bilgi.push(`⏱ ${h>0?h+'s ':''}${m}dk`); }
   if (s.tahmini_teslim) bilgi.push(`🏁 ${new Date(s.tahmini_teslim).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`);
   if (s.mevcut_konum_adi) bilgi.push(`📌 ${s.mevcut_konum_adi}`);
   document.getElementById('thBilgi').innerHTML = bilgi.map(t=>`<span style="font-size:0.78rem;color:var(--muted)">${t}</span>`).join('');
 
-  // "Konum Güncelle" butonu sadece yolda/beklemede ise göster
   document.getElementById('thKonumBtn').style.display = ['yolda','beklemede'].includes(s.durum) ? 'inline-flex' : 'none';
   document.getElementById('thKonumBar').style.display = 'none';
-
   document.getElementById('takipHaritaModal').style.display = 'flex';
 
-  if (!_mapsReady) {
-    const div = document.getElementById('takipHaritaDiv');
-    div.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">🗺 Harita yükleniyor...</div>';
-    let tries = 0;
-    const wait = setInterval(() => {
-      tries++;
-      if (_mapsReady) { clearInterval(wait); openTakipHarita(s); }
-      else if (tries > 15) {
-        clearInterval(wait);
-        div.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:#f87171;font-size:0.8rem;text-align:center;padding:1.5rem">⚠️ Google Maps yüklenemedi.<br><span style="color:var(--muted);font-size:0.72rem">Google Cloud Console → API\'lar → Maps JavaScript API, Places API, Geometry Library aktif olmalı.</span></div>';
-      }
-    }, 500);
-    return;
+  _thEnsureLeaflet(() => setTimeout(_thInitMap, 80));
+}
+
+function _thIconArac() {
+  return L.divIcon({
+    html: '<div style="background:#e8192c;border:2.5px solid #fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,.5)">🚛</div>',
+    className: '', iconSize: [34,34], iconAnchor: [17,17]
+  });
+}
+
+function _thInitMap() {
+  const s = _thSevk;
+  const lat = parseFloat(s.mevcut_lat || s.kalkis_lat || 37.0);
+  const lng = parseFloat(s.mevcut_lng || s.kalkis_lng || 35.3);
+
+  if (!_thMap) {
+    _thMap = L.map('takipHaritaDiv', { center:[lat,lng], zoom:7 });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap', maxZoom:19
+    }).addTo(_thMap);
+    _thMap.on('click', e => {
+      if (!_thKonumModu) return;
+      _thYeniKonum = { lat: e.latlng.lat, lng: e.latlng.lng };
+      if (_thMarkerArac) _thMarkerArac.setLatLng(e.latlng);
+      else _thMarkerArac = L.marker(e.latlng, { icon: _thIconArac(), draggable:true }).addTo(_thMap);
+      _thMarkerArac.off('dragend').on('dragend', ev => {
+        _thYeniKonum = { lat: ev.target.getLatLng().lat, lng: ev.target.getLatLng().lng };
+      });
+    });
+  } else {
+    // Eski katmanları temizle
+    [_thMarkerArac, _thMarkerKalkis, _thMarkerVaris].forEach(m => m && _thMap.removeLayer(m));
+    _thMarkerArac = _thMarkerKalkis = _thMarkerVaris = null;
+    if (_thPolyline) { _thMap.removeLayer(_thPolyline); _thPolyline = null; }
+    _thMap.setView([lat,lng], 7);
   }
 
-  setTimeout(() => {
-    const lat = s.mevcut_lat || s.kalkis_lat || 37.0;
-    const lng = s.mevcut_lng || s.kalkis_lng || 35.3;
+  setTimeout(() => _thMap.invalidateSize(), 100);
 
-    if (!_thMap) {
-      _thMap = new google.maps.Map(document.getElementById('takipHaritaDiv'), {
-        center: { lat, lng }, zoom: 7,
-        mapTypeControl: false, streetViewControl: false, fullscreenControl: true
-      });
-    } else {
-      _thMap.setCenter({ lat, lng });
-      // Eski marker/polyline'ları temizle
-      [_thMarkerArac, _thMarkerKalkis, _thMarkerVaris].forEach(m => m && m.setMap(null));
-      _thPolyline && _thPolyline.setMap(null);
-    }
+  // Kalkış
+  if (s.kalkis_lat && s.kalkis_lng) {
+    const kIcon = L.divIcon({ html:'<div style="background:#16a34a;border:2px solid #fff;border-radius:50%;width:18px;height:18px;box-shadow:0 1px 6px rgba(0,0,0,.4)"></div>', className:'', iconSize:[18,18], iconAnchor:[9,9] });
+    _thMarkerKalkis = L.marker([parseFloat(s.kalkis_lat), parseFloat(s.kalkis_lng)], { icon:kIcon })
+      .bindPopup(`<b>🟢 Kalkış</b><br>${s.kalkis}`).addTo(_thMap);
+  }
 
-    // Kalkış
-    if (s.kalkis_lat && s.kalkis_lng) {
-      _thMarkerKalkis = new google.maps.Marker({
-        position: { lat: s.kalkis_lat, lng: s.kalkis_lng }, map: _thMap,
-        title: 'Kalkış: ' + s.kalkis,
-        icon: { url:'https://maps.google.com/mapfiles/ms/icons/green-dot.png', scaledSize: new google.maps.Size(32,32) }
-      });
-      new google.maps.InfoWindow({ content: `<b>🟢 Kalkış</b><br>${s.kalkis}` }).open(_thMap, _thMarkerKalkis);
-    }
+  // Varış
+  if (s.varis_lat && s.varis_lng) {
+    const vIcon = L.divIcon({ html:'<div style="background:#ef4444;border:2px solid #fff;border-radius:50%;width:18px;height:18px;box-shadow:0 1px 6px rgba(0,0,0,.4)"></div>', className:'', iconSize:[18,18], iconAnchor:[9,9] });
+    _thMarkerVaris = L.marker([parseFloat(s.varis_lat), parseFloat(s.varis_lng)], { icon:vIcon })
+      .bindPopup(`<b>🔴 Varış</b><br>${s.varis}`).addTo(_thMap);
+  }
 
-    // Varış
-    if (s.varis_lat && s.varis_lng) {
-      _thMarkerVaris = new google.maps.Marker({
-        position: { lat: s.varis_lat, lng: s.varis_lng }, map: _thMap,
-        title: 'Varış: ' + s.varis,
-        icon: { url:'https://maps.google.com/mapfiles/ms/icons/red-dot.png', scaledSize: new google.maps.Size(32,32) }
-      });
-    }
+  // Araç konumu
+  if (s.mevcut_lat && s.mevcut_lng) {
+    _thMarkerArac = L.marker([parseFloat(s.mevcut_lat), parseFloat(s.mevcut_lng)], { icon:_thIconArac(), draggable:false })
+      .bindPopup(`<b>🚛 ${s.arac_plaka||'Araç'}</b><br>${s.mevcut_konum_adi||''}`).addTo(_thMap).openPopup();
+  }
 
-    // Araç konumu
-    if (s.mevcut_lat && s.mevcut_lng) {
-      _thMarkerArac = new google.maps.Marker({
-        position: { lat: s.mevcut_lat, lng: s.mevcut_lng }, map: _thMap,
-        title: s.arac_plaka || 'Araç',
-        zIndex: 10,
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="19" r="18" fill="#e8192c" stroke="#fff" stroke-width="2"/><text x="19" y="25" text-anchor="middle" font-size="20">🚛</text></svg>'),
-          scaledSize: new google.maps.Size(38, 38), anchor: new google.maps.Point(19, 19)
-        }
-      });
-      const iw = new google.maps.InfoWindow({
-        content: `<div style="font-size:13px"><b>🚛 ${s.arac_plaka||'Araç'}</b><br>${s.mevcut_konum_adi||''}<br><span style="color:#16a34a;font-weight:600">${{ beklemede:'Beklemede',yolda:'Yolda',teslim_edildi:'Teslim Edildi',iptal:'İptal' }[s.durum]||s.durum}</span></div>`
-      });
-      iw.open(_thMap, _thMarkerArac);
-      _thMap.setCenter({ lat: s.mevcut_lat, lng: s.mevcut_lng });
-    }
-
-    // Rota polyline
-    if (s.rota_polyline) {
-      try {
-        const path = google.maps.geometry.encoding.decodePath(s.rota_polyline);
-        _thPolyline = new google.maps.Polyline({ path, map: _thMap, strokeColor:'#1d4ed8', strokeOpacity:0.7, strokeWeight:4 });
-        // Haritayı rotaya sığdır
-        const bounds = new google.maps.LatLngBounds();
-        path.forEach(p => bounds.extend(p));
-        _thMap.fitBounds(bounds, { top:40, bottom:40, left:40, right:40 });
-      } catch(_) {}
-    } else if (s.kalkis_lat && s.varis_lat) {
-      // Polyline yoksa en azından iki noktayı göster
-      const bounds = new google.maps.LatLngBounds();
-      bounds.extend({ lat: s.kalkis_lat, lng: s.kalkis_lng });
-      bounds.extend({ lat: s.varis_lat,  lng: s.varis_lng  });
-      if (s.mevcut_lat) bounds.extend({ lat: s.mevcut_lat, lng: s.mevcut_lng });
-      _thMap.fitBounds(bounds, { top:60, bottom:60, left:60, right:60 });
-    }
-  }, 50);
+  // Rota çizgisi veya bounds fit
+  const pts = [];
+  if (s.kalkis_lat) pts.push([parseFloat(s.kalkis_lat), parseFloat(s.kalkis_lng)]);
+  if (s.mevcut_lat) pts.push([parseFloat(s.mevcut_lat), parseFloat(s.mevcut_lng)]);
+  if (s.varis_lat)  pts.push([parseFloat(s.varis_lat),  parseFloat(s.varis_lng)]);
+  if (pts.length >= 2) {
+    _thPolyline = L.polyline(pts, { color:'#1d4ed8', weight:3, opacity:0.65, dashArray:'8,6' }).addTo(_thMap);
+    _thMap.fitBounds(_thPolyline.getBounds(), { padding:[40,40] });
+  }
 }
 
 function closeTakipHarita() {
   document.getElementById('takipHaritaModal').style.display = 'none';
   thKonumModuKapat();
-  _thSevk = null; _thYeniKonum = null;
+  _thSevk = null; _thYeniKonum = null; _thKonumModu = false;
 }
 
 function thKonumModuAc() {
+  _thKonumModu = true;
   document.getElementById('thKonumBar').style.display = 'block';
   document.getElementById('thKonumBtn').style.display = 'none';
-  if (_thMap) {
-    _thMap.setOptions({ draggableCursor: 'crosshair' });
-    _thMap.addListener('click', _thMapClick = (e) => {
-      _thYeniKonum = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-      if (_thMarkerArac) {
-        _thMarkerArac.setPosition(_thYeniKonum);
-      } else {
-        _thMarkerArac = new google.maps.Marker({ position: _thYeniKonum, map: _thMap, zIndex:10 });
-      }
-    });
-  }
+  if (_thMap) _thMap.getContainer().style.cursor = 'crosshair';
 }
 
-let _thMapClick = null;
 function thKonumModuKapat() {
+  _thKonumModu = false;
   document.getElementById('thKonumBar').style.display = 'none';
   document.getElementById('thKonumBtn').style.display = _thSevk && ['yolda','beklemede'].includes(_thSevk.durum) ? 'inline-flex' : 'none';
-  if (_thMap && _thMapClick) {
-    google.maps.event.clearListeners(_thMap, 'click');
-    _thMap.setOptions({ draggableCursor: '' });
-    _thMapClick = null;
-  }
+  if (_thMap) _thMap.getContainer().style.cursor = '';
 }
 
 async function thKonumKaydet() {
@@ -2843,29 +2821,38 @@ async function thKonumKaydet() {
   const btn = document.querySelector('#thKonumBar .btn-gold');
   btn.disabled = true; btn.textContent = 'Kaydediliyor...';
   try {
-    // Reverse geocode
+    // Nominatim ile reverse geocode
     let adres = '';
-    await new Promise(resolve => {
-      new google.maps.Geocoder().geocode({ location: _thYeniKonum }, (results, status) => {
-        if (status === 'OK' && results[0]) adres = results[0].formatted_address;
-        resolve();
-      });
-    });
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${_thYeniKonum.lat}&lon=${_thYeniKonum.lng}&format=json`);
+      const d = await r.json();
+      if (d.display_name) adres = d.address?.city || d.address?.town || d.address?.village || d.display_name.split(',')[0];
+    } catch(_) {}
+
+    // Mevcut sevkiyat verisini koru — sadece konum alanlarını güncelle
     await api('/api/takip/' + _thSevk.id, {
       method: 'PUT',
       body: JSON.stringify({
-        durum:           _thSevk.durum,
-        mevcut_lat:      _thYeniKonum.lat,
-        mevcut_lng:      _thYeniKonum.lng,
-        mevcut_konum:    _thYeniKonum.lat + ',' + _thYeniKonum.lng,
+        ..._thSevk,
+        mevcut_lat:       _thYeniKonum.lat,
+        mevcut_lng:       _thYeniKonum.lng,
+        mevcut_konum:     _thYeniKonum.lat.toFixed(5) + ',' + _thYeniKonum.lng.toFixed(5),
         mevcut_konum_adi: adres || (_thYeniKonum.lat.toFixed(4) + ', ' + _thYeniKonum.lng.toFixed(4)),
       })
     });
-    // Bilgi satırını güncelle
-    if (adres) document.getElementById('thBilgi').querySelector('span:last-child') && (document.getElementById('thBilgi').lastElementChild.textContent = '📌 ' + adres);
+
     _thSevk.mevcut_lat = _thYeniKonum.lat;
     _thSevk.mevcut_lng = _thYeniKonum.lng;
     _thSevk.mevcut_konum_adi = adres;
+
+    // Bilgi satırını güncelle
+    const bilgi = [];
+    if (_thSevk.mesafe_km)      bilgi.push(`📏 ${_thSevk.mesafe_km} km`);
+    if (_thSevk.sure_dakika)    { const h=Math.floor(_thSevk.sure_dakika/60),m=_thSevk.sure_dakika%60; bilgi.push(`⏱ ${h>0?h+'s ':''}${m}dk`); }
+    if (_thSevk.tahmini_teslim) bilgi.push(`🏁 ${new Date(_thSevk.tahmini_teslim).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`);
+    if (adres) bilgi.push(`📌 ${adres}`);
+    document.getElementById('thBilgi').innerHTML = bilgi.map(t=>`<span style="font-size:0.78rem;color:var(--muted)">${t}</span>`).join('');
+
     thKonumModuKapat();
     loadSevkiyatlar();
   } catch(e) {
@@ -2875,54 +2862,60 @@ async function thKonumKaydet() {
   }
 }
 
-/* ── Tüm Araçlar Haritası ── */
-let _tumHaritaMap = null;
+/* ── Tüm Araçlar Haritası — Leaflet ── */
+let _tumHaritaMap = null, _tumHaritaMarkers = [];
 async function openTumAraclarHarita() {
   document.getElementById('tumAraclarModal').style.display = 'flex';
-  if (!_mapsReady) {
-    document.getElementById('tumAraclarHarita').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">Google Maps API key tanımlı değil.</div>';
-    return;
-  }
-  // Tüm sevkiyatları al
   const rows = await api('/api/takip').catch(() => []);
   const aktif = rows.filter(s => s.mevcut_lat && s.mevcut_lng);
-  setTimeout(() => {
+
+  _thEnsureLeaflet(() => setTimeout(() => {
+    const el = document.getElementById('tumAraclarHarita');
     if (!_tumHaritaMap) {
-      _tumHaritaMap = new google.maps.Map(document.getElementById('tumAraclarHarita'), {
-        center: { lat: 37.0, lng: 35.3 }, zoom: 6,
-        mapTypeControl: false, streetViewControl: false
-      });
-    } else {
-      // Eski marker'ları temizleme — yeniden oluştur
+      _tumHaritaMap = L.map(el, { center:[37.0,35.3], zoom:6 });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'© OpenStreetMap', maxZoom:19
+      }).addTo(_tumHaritaMap);
     }
-    const bounds = new google.maps.LatLngBounds();
-    let hasPoint = false;
+    setTimeout(() => _tumHaritaMap.invalidateSize(), 100);
+
+    // Eski marker'ları temizle
+    _tumHaritaMarkers.forEach(m => _tumHaritaMap.removeLayer(m));
+    _tumHaritaMarkers = [];
+
+    if (!aktif.length) {
+      el.querySelector('.leaflet-pane') || (el.innerHTML += '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#666;font-size:0.85rem;z-index:1000;background:#fff;padding:8px 14px;border-radius:8px">Konumu bilinen araç yok</div>');
+      return;
+    }
+
+    const pts = [];
+    const DURUM_COLOR = { yolda:'#16a34a', teslim_edildi:'#1d4ed8', beklemede:'#ca8a04', iptal:'#ef4444' };
     aktif.forEach(s => {
-      const pos = { lat: s.mevcut_lat, lng: s.mevcut_lng };
-      const marker = new google.maps.Marker({
-        position: pos, map: _tumHaritaMap, zIndex: 10,
-        title: s.arac_plaka || s.takip_kodu,
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="17" fill="${s.durum==='yolda'?'#16a34a':s.durum==='teslim_edildi'?'#1d4ed8':'#ca8a04'}" stroke="#fff" stroke-width="2"/><text x="18" y="24" text-anchor="middle" font-size="18">🚛</text></svg>`),
-          scaledSize: new google.maps.Size(36,36), anchor: new google.maps.Point(18,18)
-        }
+      const lat = parseFloat(s.mevcut_lat), lng = parseFloat(s.mevcut_lng);
+      const c = DURUM_COLOR[s.durum] || '#94a3b8';
+      const icon = L.divIcon({
+        html: `<div style="background:${c};border:2.5px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🚛</div>`,
+        className:'', iconSize:[32,32], iconAnchor:[16,16]
       });
       const durumStr = { beklemede:'⏳ Beklemede',yolda:'🚛 Yolda',teslim_edildi:'✅ Teslim',iptal:'❌ İptal' }[s.durum]||s.durum;
-      const iw = new google.maps.InfoWindow({
-        content:`<div style="font-size:13px;min-width:160px"><b>${s.arac_plaka||s.takip_kodu}</b><br>${s.mevcut_konum_adi||''}<br><b>${s.kalkis} → ${s.varis}</b><br><span style="color:#16a34a">${durumStr}</span><br><a href="#" onclick="closeTumAraclarHarita();openTakipHarita(${JSON.stringify(s).replace(/"/g,'&quot;')});return false" style="color:#1d4ed8;font-size:12px">Detay →</a></div>`
-      });
-      marker.addListener('click', () => iw.open(_tumHaritaMap, marker));
-      bounds.extend(pos); hasPoint = true;
+      const sq = JSON.stringify(s).replace(/"/g,'&quot;');
+      const marker = L.marker([lat,lng], { icon })
+        .bindPopup(`<div style="font-size:13px;min-width:160px"><b>${s.arac_plaka||s.takip_kodu}</b><br>${s.mevcut_konum_adi||''}<br><b>${s.kalkis} → ${s.varis}</b><br><span style="color:${c}">${durumStr}</span><br><a href="#" onclick="closeTumAraclarHarita();openTakipHarita(${sq});return false" style="color:#1d4ed8;font-size:12px">Detay →</a></div>`)
+        .addTo(_tumHaritaMap);
+      _tumHaritaMarkers.push(marker);
+      pts.push([lat, lng]);
 
-      // Rota polyline
-      if (s.rota_polyline) {
-        try {
-          new google.maps.Polyline({ path: google.maps.geometry.encoding.decodePath(s.rota_polyline), map: _tumHaritaMap, strokeColor:'#94a3b8', strokeOpacity:0.5, strokeWeight:2 });
-        } catch(_) {}
+      if (s.kalkis_lat && s.varis_lat) {
+        const pl = L.polyline([
+          [parseFloat(s.kalkis_lat), parseFloat(s.kalkis_lng)],
+          [lat, lng],
+          [parseFloat(s.varis_lat), parseFloat(s.varis_lng)]
+        ], { color:'#94a3b8', weight:2, opacity:0.5, dashArray:'6,6' }).addTo(_tumHaritaMap);
+        _tumHaritaMarkers.push(pl);
       }
     });
-    if (hasPoint) _tumHaritaMap.fitBounds(bounds, { top:60, bottom:60, left:60, right:60 });
-  }, 50);
+    if (pts.length) _tumHaritaMap.fitBounds(L.latLngBounds(pts), { padding:[40,40] });
+  }, 80));
 }
 function closeTumAraclarHarita() {
   document.getElementById('tumAraclarModal').style.display = 'none';
