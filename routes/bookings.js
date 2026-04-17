@@ -92,17 +92,22 @@ router.post('/:id/payment', async (req, res) => {
     const { rows: br } = await db.query('SELECT * FROM bookings WHERE id=$1', [req.params.id]);
     if (!br.length) return res.status(404).json({ error: 'Rezervasyon bulunamadı' });
     const booking = br[0];
+    const finalAmount = parseFloat(amount) || parseFloat(booking.price);
+    const bookingPrice = parseFloat(booking.price);
+    // Amount ±%20 toleransla booking.price ile uyuşmalı
+    if (amount && (finalAmount < bookingPrice * 0.8 || finalAmount > bookingPrice * 1.2))
+      return res.status(400).json({ error: 'Geçersiz ödeme tutarı.' });
     await db.query(
       `INSERT INTO payments (booking_id, amount, installment, iyzico_token, status)
        VALUES ($1,$2,$3,$4,'completed')`,
-      [req.params.id, amount || booking.price, installment || 1, iyzico_token || null]
+      [req.params.id, finalAmount, installment || 1, iyzico_token || null]
     );
     await db.query(`UPDATE bookings SET payment_status='paid', status='confirmed' WHERE id=$1`, [req.params.id]);
     // Admin bildirimleri
     const { notifyAdminPayment } = require('../services/email');
-    notifyAdminPayment(booking, amount || booking.price).catch(() => {});
-    notifyAdminSms(`[GULIZ] ODEME ALINDI: ${booking.booking_ref} | ${booking.customer_name} | TL${parseInt(amount||booking.price).toLocaleString('tr-TR')}`).catch(() => {});
-    tgPayment(booking, amount || booking.price).catch(() => {});
+    notifyAdminPayment(booking, finalAmount).catch(() => {});
+    notifyAdminSms(`[GULIZ] ODEME ALINDI: ${booking.booking_ref} | ${booking.customer_name} | TL${parseInt(finalAmount).toLocaleString('tr-TR')}`).catch(() => {});
+    tgPayment(booking, finalAmount).catch(() => {});
     res.json({ message: 'Ödeme kaydedildi', booking_ref: booking.booking_ref });
   } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });

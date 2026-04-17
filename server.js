@@ -1,12 +1,14 @@
 require('dotenv').config();
-const express   = require('express');
-const cors      = require('cors');
-const path      = require('path');
-const fs        = require('fs');
-const http      = require('http');
-const { Server } = require('socket.io');
-const rateLimit = require('express-rate-limit');
-const multer    = require('multer');
+const express      = require('express');
+const cors         = require('cors');
+const path         = require('path');
+const fs           = require('fs');
+const http         = require('http');
+const { Server }   = require('socket.io');
+const rateLimit    = require('express-rate-limit');
+const multer       = require('multer');
+const helmet       = require('helmet');
+const compression  = require('compression');
 
 /* ── GeoIP yardımcısı ── */
 async function geoIP(ip) {
@@ -39,9 +41,16 @@ const db = require('./models/db');
 
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server, { cors: { origin: '*' } });
+const io     = new Server(server, {
+  cors: { origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : true }
+});
 
 app.set('trust proxy', 1);
+app.use(compression());
+app.use(helmet({
+  contentSecurityPolicy: false, // inline script'ler var (admin.html), CSP ayrıca ayarlanabilir
+  crossOriginEmbedderPolicy: false,
+}));
 
 /* ── www → non-www yönlendirmesi (SEO: tek canonical domain) ── */
 app.use((req, res, next) => {
@@ -156,6 +165,8 @@ Döndür (eksik alanlar null olsun):
 
 const PHONE_RE = /^(\+90|0)?[0-9]{10}$/;
 function isValidPhone(p) { return p && PHONE_RE.test(String(p).replace(/[\s\-().]/g,'')); }
+// Telegram mesajlarında HTML tag injection önler
+function tgEscape(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* ── YÜK BİLDİRİMİ ── */
 app.post('/api/yuk-bildirimi', async (req, res) => {
@@ -174,10 +185,10 @@ app.post('/api/yuk-bildirimi', async (req, res) => {
     const { tg } = require('./services/telegram');
     await tg(
       `📦 <b>YENİ YÜK BİLDİRİMİ</b>\n` +
-      `👤 <b>${ad_soyad.trim()}</b>\n` +
-      `📞 ${telefon.trim()}\n` +
-      `🚚 ${yuk_tanimi.trim()}\n` +
-      `📍 Kaynak: ${kaynak || 'anasayfa'}\n` +
+      `👤 <b>${tgEscape(ad_soyad.trim())}</b>\n` +
+      `📞 ${tgEscape(telefon.trim())}\n` +
+      `🚚 ${tgEscape(yuk_tanimi.trim())}\n` +
+      `📍 Kaynak: ${tgEscape(kaynak || 'anasayfa')}\n` +
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
@@ -231,11 +242,11 @@ app.post('/api/iletisim', async (req, res) => {
     const { tg } = require('./services/telegram');
     await tg(
       `📩 <b>YENİ İLETİŞİM MESAJI</b>\n` +
-      `👤 <b>${ad_soyad.trim()}</b>\n` +
-      `📞 ${telefon.trim()}\n` +
-      `💬 ${mesaj.trim()}\n` +
-      `📍 Kaynak: ${kaynak || 'anasayfa'}\n` +
-      `🌐 IP: <code>${ip}</code>\n` +
+      `👤 <b>${tgEscape(ad_soyad.trim())}</b>\n` +
+      `📞 ${tgEscape(telefon.trim())}\n` +
+      `💬 ${tgEscape(mesaj.trim())}\n` +
+      `📍 Kaynak: ${tgEscape(kaynak || 'anasayfa')}\n` +
+      `🌐 IP: <code>${tgEscape(ip)}</code>\n` +
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
@@ -665,10 +676,10 @@ io.on('connection', (socket) => {
 
     // ── Telegram bildirimleri (önemli olaylar) ──
     const { tg } = require('./services/telegram');
-    const who = `${v.name}${v.phone ? ' · ' + v.phone : ''}${v.city ? ' · ' + v.city : ''}`;
+    const who = `${tgEscape(v.name)}${v.phone ? ' · ' + tgEscape(v.phone) : ''}${v.city ? ' · ' + tgEscape(v.city) : ''}`;
 
     if (action === 'booking_attempt') {
-      tg(`🚀 <b>REZERVASYON GİRİŞİMİ</b>\n👤 ${who}\n📄 ${v.page || '/'}\n📋 ${detail || ''}`).catch(() => {});
+      tg(`🚀 <b>REZERVASYON GİRİŞİMİ</b>\n👤 ${who}\n📄 ${tgEscape(v.page || '/')}\n📋 ${tgEscape(detail || '')}`).catch(() => {});
     } else if (action === 'form_fill') {
       // Telefon veya isim girildiğinde bildir (kişisel veri içerdiğinden değerli)
       const low = (detail || '').toLowerCase();
@@ -677,7 +688,7 @@ io.on('connection', (socket) => {
         if (!v._formTgTimer) {
           v._formTgTimer = setTimeout(() => {
             v._formTgTimer = null;
-            tg(`✍️ <b>FORM DOLDURUYOR</b>\n👤 ${who}\n📄 ${(v.page||'/').replace(/https?:\/\/[^/]+/,'')}\n📝 ${detail || ''}`).catch(() => {});
+            tg(`✍️ <b>FORM DOLDURUYOR</b>\n👤 ${who}\n📄 ${tgEscape((v.page||'/').replace(/https?:\/\/[^/]+/,''))}\n📝 ${tgEscape(detail || '')}`).catch(() => {});
           }, 3000);
         }
       }
@@ -687,7 +698,7 @@ io.on('connection', (socket) => {
         // Sayfayı tamamen okudu — sadece bir kez bildir
         if (!v._scroll100Notified) {
           v._scroll100Notified = true;
-          tg(`📜 <b>SAYFA TAMAMEN OKUNDU</b>\n👤 ${who}\n📄 ${(v.page||'/').replace(/https?:\/\/[^/]+/,'')}`).catch(() => {});
+          tg(`📜 <b>SAYFA TAMAMEN OKUNDU</b>\n👤 ${who}\n📄 ${tgEscape((v.page||'/').replace(/https?:\/\/[^/]+/,''))}`).catch(() => {});
         }
       }
     }
