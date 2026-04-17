@@ -135,24 +135,14 @@ app.post('/api/ai/sevkiyat-parse', async (req, res) => {
 
     const msg = await Promise.race([
       client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
-      system: `Sen bir lojistik şirketi için çalışan bir asistansın. Kullanıcının Türkçe sevkiyat açıklamasından yapılandırılmış veri çıkarıyorsun. Bugün: ${bugun}. SADECE JSON döndür, başka metin yok.`,
-      messages: [{
-        role: 'user',
-        content: `Şu sevkiyat açıklamasından bilgileri çıkar: "${metin}"
-
-Döndür (eksik alanlar null olsun):
-{
-  "kalkis": "şehir/yer adı",
-  "varis": "şehir/yer adı",
-  "kalkis_zaman": "YYYY-MM-DDTHH:MM" veya null,
-  "varis_zaman": "YYYY-MM-DDTHH:MM" veya null,
-  "yuk_cinsi": "yük türü" veya null,
-  "notlar": "mola saatleri, özel notlar vb" veya null,
-  "tahmini_sure_saat": sayı veya null
-}`
-      }]),
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        system: `Sen bir lojistik şirketi için çalışan bir asistansın. Kullanıcının Türkçe sevkiyat açıklamasından yapılandırılmış veri çıkarıyorsun. Bugün: ${bugun}. SADECE JSON döndür, başka metin yok.`,
+        messages: [{
+          role: 'user',
+          content: `Şu sevkiyat açıklamasından bilgileri çıkar: "${metin}"\n\nDöndür (eksik alanlar null olsun):\n{\n  "kalkis": "şehir/yer adı",\n  "varis": "şehir/yer adı",\n  "kalkis_zaman": "YYYY-MM-DDTHH:MM" veya null,\n  "varis_zaman": "YYYY-MM-DDTHH:MM" veya null,\n  "yuk_cinsi": "yük türü" veya null,\n  "notlar": "mola saatleri, özel notlar vb" veya null,\n  "tahmini_sure_saat": sayı veya null\n}`
+        }]
+      }),
       new Promise((_, rej) => setTimeout(() => rej(new Error('AI_TIMEOUT')), 12000))
     ]);
 
