@@ -576,7 +576,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         <button class="btn btn-gold btn-sm" onclick="openAracModal()">+ Araç Ekle</button>
       </div>
 
-      <!-- Modal -->
+      <!-- Araç Ekle/Düzenle Modal -->
       <div id="aracModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;">
         <div style="background:#1a1a2e;border:0.5px solid var(--border);border-radius:12px;padding:2rem;width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
@@ -625,6 +625,49 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         </div>
       </div>
 
+      <!-- Konum Güncelle Modal -->
+      <div id="konumModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1001;align-items:center;justify-content:center;">
+        <div style="background:#1a1a2e;border:0.5px solid var(--border);border-radius:12px;padding:1.5rem;width:640px;max-width:95vw;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div style="font-family:var(--serif);font-size:1rem;color:var(--gold)" id="konumModalTitle">📍 Konum Güncelle</div>
+            <button onclick="closeKonumModal()" style="background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer">×</button>
+          </div>
+          <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Haritaya tıklayarak aracın konumunu işaretleyin</p>
+          <div id="konumModalMap" style="width:100%;height:350px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1rem"></div>
+          <div style="display:flex;gap:0.75rem;align-items:center">
+            <input type="text" id="konumModalAdi" placeholder="Konum adı (örn: İstanbul Depo)" style="flex:1;background:#0f0f1a;border:0.5px solid var(--border);color:#fff;padding:0.55rem 0.75rem;border-radius:6px;font-family:var(--sans)">
+            <button class="btn btn-gold" style="padding:0.55rem 1.25rem;white-space:nowrap" onclick="saveKonum()">Kaydet</button>
+            <button class="btn btn-outline" style="padding:0.55rem 1rem" onclick="closeKonumModal()">İptal</button>
+          </div>
+          <input type="hidden" id="konumModalAracId">
+          <input type="hidden" id="konumModalLat">
+          <input type="hidden" id="konumModalLng">
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div id="aracStatBar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem"></div>
+
+      <!-- Filo Haritası -->
+      <div style="background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem">
+          <h3 style="margin:0;font-family:var(--serif);font-size:1rem">Filo Haritası</h3>
+          <div style="display:flex;gap:12px;font-size:0.72rem;color:var(--muted)">
+            <span><span style="display:inline-block;width:10px;height:10px;background:#22c55e;border-radius:50%;margin-right:4px"></span>Müsait</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#f59e0b;border-radius:50%;margin-right:4px"></span>Seferde</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:50%;margin-right:4px"></span>Bakım</span>
+            <span><span style="display:inline-block;width:10px;height:10px;background:#475569;border-radius:50%;margin-right:4px"></span>Konum yok</span>
+          </div>
+        </div>
+        <div id="filoHarita" style="width:100%;height:460px;border-radius:8px;border:0.5px solid var(--border);overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center">
+          <span style="color:var(--muted);font-size:0.85rem">Harita yükleniyor...</span>
+        </div>
+        <div id="konumsuzAraclar" style="margin-top:0.75rem;display:none">
+          <p style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem">Konumu belirsiz araçlar — 📍 butonuna tıklayarak işaretleyin:</p>
+          <div id="konumsuzList" style="display:flex;flex-wrap:wrap;gap:0.5rem"></div>
+        </div>
+      </div>
+
       <!-- Tablo -->
       <div class="table-wrap">
         <div class="table-header">
@@ -633,7 +676,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         </div>
         <table>
           <thead><tr>
-            <th>Plaka</th><th>Marka/Model</th><th>Araç Tipi</th><th>Yük Cinsi</th><th>Kapasite</th><th>Sürücü</th><th>Durum</th><th>İşlem</th>
+            <th>Plaka</th><th>Marka/Model</th><th>Araç Tipi</th><th>Sürücü</th><th>Konum</th><th>Durum</th><th>İşlem</th>
           </tr></thead>
           <tbody id="araclarTable"></tbody>
         </table>
@@ -3131,33 +3174,78 @@ function onSevkAracChange() {
 ═══════════════════════════════════════ */
 let allAraclar = [];
 
+let _filoMap = null, _filoMarkers = [];
+
 async function loadAraclar() {
   try {
     allAraclar = await api('/api/araclar');
-    const tbody = document.getElementById('araclarTable');
+    const tbody   = document.getElementById('araclarTable');
     const countEl = document.getElementById('aracCount');
     if (countEl) countEl.textContent = allAraclar.length + ' araç';
 
-    const DURUM_ARAC = { musait:'<span style="background:rgba(74,222,128,.15);color:#4ade80;padding:2px 8px;border-radius:12px;font-size:0.72rem">✅ Müsait</span>', seferde:'<span style="background:rgba(251,191,36,.15);color:#fbbf24;padding:2px 8px;border-radius:12px;font-size:0.72rem">🚛 Seferde</span>', bakim:'<span style="background:rgba(248,113,113,.15);color:#f87171;padding:2px 8px;border-radius:12px;font-size:0.72rem">🔧 Bakım</span>' };
-
-    if (tbody) {
-      tbody.innerHTML = allAraclar.map(a => `
-        <tr>
-          <td><strong style="color:var(--navy)">${a.plaka}</strong></td>
-          <td style="font-size:0.82rem">${a.marka_model||'—'}</td>
-          <td style="font-size:0.82rem">${a.arac_tipi||'—'}</td>
-          <td style="font-size:0.82rem">${a.yuk_cinsi||'—'}</td>
-          <td style="font-size:0.82rem">${a.kapasite||'—'}</td>
-          <td style="font-size:0.82rem">${a.surucu_adi||'—'}<br><span style="color:var(--muted);font-size:0.72rem">${a.surucu_tel||''}</span></td>
-          <td>${DURUM_ARAC[a.durum]||a.durum}</td>
-          <td>
-            <button class="btn btn-outline btn-sm" onclick="editArac(${JSON.stringify(a).replace(/"/g,'&quot;')})">Düzenle</button>
-            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:0.5px solid rgba(248,113,113,.3);margin-left:4px" onclick="deleteArac(${a.id})">Sil</button>
-          </td>
-        </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Henüz araç eklenmemiş.</td></tr>';
+    // --- Stats bar ---
+    const statBar = document.getElementById('aracStatBar');
+    if (statBar) {
+      const total   = allAraclar.length;
+      const musait  = allAraclar.filter(a => a.durum === 'musait').length;
+      const seferde = allAraclar.filter(a => a.durum === 'seferde').length;
+      const bakim   = allAraclar.filter(a => a.durum === 'bakim').length;
+      const statCard = (label, val, color, icon) =>
+        `<div style="background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center">
+          <div style="font-size:1.6rem;font-weight:700;color:${color}">${val}</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:2px">${icon} ${label}</div>
+        </div>`;
+      statBar.innerHTML =
+        statCard('Toplam Araç', total, 'var(--gold)', '🚛') +
+        statCard('Müsait', musait, '#22c55e', '✅') +
+        statCard('Seferde', seferde, '#f59e0b', '🟡') +
+        statCard('Bakımda', bakim, '#ef4444', '🔧');
     }
 
-    // Sevkiyat modal araç dropdown'ını doldur
+    // --- Tablo ---
+    const DURUM_ARAC = {
+      musait:  '<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:2px 10px;border-radius:12px;font-size:0.72rem">✅ Müsait</span>',
+      seferde: '<span style="background:rgba(245,158,11,.15);color:#f59e0b;padding:2px 10px;border-radius:12px;font-size:0.72rem">🚛 Seferde</span>',
+      bakim:   '<span style="background:rgba(239,68,68,.15);color:#ef4444;padding:2px 10px;border-radius:12px;font-size:0.72rem">🔧 Bakım</span>'
+    };
+    if (tbody) {
+      tbody.innerHTML = allAraclar.map(a => `
+        <tr id="arac-row-${a.id}">
+          <td><strong style="color:var(--gold)">${escapeHtml(a.plaka)}</strong></td>
+          <td style="font-size:0.82rem">${escapeHtml(a.marka_model||'—')}</td>
+          <td style="font-size:0.82rem">${escapeHtml(a.arac_tipi||'—')}</td>
+          <td style="font-size:0.82rem">${escapeHtml(a.surucu_adi||'—')}<br><span style="color:var(--muted);font-size:0.72rem">${escapeHtml(a.surucu_tel||'')}</span></td>
+          <td style="font-size:0.78rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(a.konum_adi||'')}">
+            ${a.konum_lat ? `<span style="color:#60a5fa">📍 ${escapeHtml(a.konum_adi||'Koordinat mevcut')}</span>` : '<span style="color:#475569">— Belirsiz</span>'}
+          </td>
+          <td>${DURUM_ARAC[a.durum]||a.durum}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-outline btn-sm" onclick="openKonumModal(${a.id},'${escapeHtml(a.plaka)}',${a.konum_lat||'null'},${a.konum_lng||'null'},'${escapeHtml(a.konum_adi||'')}')">📍</button>
+            <button class="btn btn-outline btn-sm" style="margin-left:4px" onclick="editArac(${JSON.stringify(a).replace(/"/g,'&quot;')})">Düzenle</button>
+            <button class="btn btn-sm" style="background:rgba(248,113,113,.1);color:#f87171;border:0.5px solid rgba(248,113,113,.3);margin-left:4px" onclick="deleteArac(${a.id})">Sil</button>
+          </td>
+        </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Henüz araç eklenmemiş.</td></tr>';
+    }
+
+    // --- Konumsuz araçlar listesi ---
+    const konumsuz = allAraclar.filter(a => !a.konum_lat);
+    const konumsuzWrap = document.getElementById('konumsuzAraclar');
+    const konumsuzList = document.getElementById('konumsuzList');
+    if (konumsuzWrap && konumsuzList) {
+      if (konumsuz.length) {
+        konumsuzWrap.style.display = 'block';
+        konumsuzList.innerHTML = konumsuz.map(a =>
+          `<button class="btn btn-outline btn-sm" style="font-size:0.72rem" onclick="openKonumModal(${a.id},'${escapeHtml(a.plaka)}',null,null,'')">📍 ${escapeHtml(a.plaka)}</button>`
+        ).join('');
+      } else {
+        konumsuzWrap.style.display = 'none';
+      }
+    }
+
+    // --- Filo haritası ---
+    refreshFiloHarita(allAraclar);
+
+    // --- Sevkiyat modal dropdown ---
     const sel = document.getElementById('sevk-arac-id');
     if (sel) {
       const cur = sel.value;
@@ -3165,6 +3253,152 @@ async function loadAraclar() {
         allAraclar.map(a => `<option value="${a.id}" data-plaka="${a.plaka}" data-surucu="${a.surucu_adi||''}" data-yuk="${a.yuk_cinsi||''}" ${a.id==cur?'selected':''}>${a.plaka}${a.marka_model?' - '+a.marka_model:''} (${a.arac_tipi})</option>`).join('');
     }
   } catch(e) { console.error(e); }
+}
+
+function refreshFiloHarita(araclar) {
+  const el = document.getElementById('filoHarita');
+  if (!el) return;
+  if (!_mapsReady) {
+    el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem">Google Maps API key tanımlı değil.</div>';
+    return;
+  }
+  const COLORS = { musait: '#22c55e', seferde: '#f59e0b', bakim: '#ef4444' };
+  const EMOJIS = { tır: '🚛', kamyon: '🚚', platform: '🚜', frigorifik: '❄️', tanker: '⛽', konteyner: '📦' };
+
+  const withCoord = araclar.filter(a => a.konum_lat && a.konum_lng);
+
+  if (!_filoMap) {
+    _filoMap = new google.maps.Map(el, {
+      center: withCoord.length
+        ? { lat: parseFloat(withCoord[0].konum_lat), lng: parseFloat(withCoord[0].konum_lng) }
+        : { lat: 37.0, lng: 35.3 },
+      zoom: withCoord.length ? 7 : 6,
+      mapTypeControl: false, streetViewControl: false,
+      styles: [{ featureType:'all', elementType:'labels.text.fill', stylers:[{ color:'#4a5568' }] }]
+    });
+  }
+
+  // Eski marker'ları temizle
+  _filoMarkers.forEach(m => m.setMap(null));
+  _filoMarkers = [];
+
+  const bounds = new google.maps.LatLngBounds();
+  let hasPoint = false;
+
+  withCoord.forEach(a => {
+    const lat = parseFloat(a.konum_lat), lng = parseFloat(a.konum_lng);
+    const color = COLORS[a.durum] || '#475569';
+    const emoji = EMOJIS[a.arac_tipi] || '🚛';
+    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
+      <circle cx="22" cy="22" r="20" fill="${color}" stroke="#fff" stroke-width="2.5" opacity="0.92"/>
+      <text x="22" y="29" text-anchor="middle" font-size="20">${emoji}</text>
+    </svg>`;
+    const marker = new google.maps.Marker({
+      position: { lat, lng }, map: _filoMap,
+      title: a.plaka,
+      icon: {
+        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(iconSvg),
+        scaledSize: new google.maps.Size(44, 44),
+        anchor: new google.maps.Point(22, 22)
+      },
+      zIndex: a.durum === 'seferde' ? 10 : 5
+    });
+    const durumLabel = { musait:'✅ Müsait', seferde:'🚛 Seferde', bakim:'🔧 Bakım' }[a.durum] || a.durum;
+    const sevkInfo = a.sevk_kalkis
+      ? `<br><span style="color:#94a3b8;font-size:11px">${a.sevk_kalkis} → ${a.sevk_varis}</span>`
+      : '';
+    const konumStr = a.konum_adi ? `<br><span style="color:#94a3b8;font-size:11px">📍 ${a.konum_adi}</span>` : '';
+    const iw = new google.maps.InfoWindow({
+      content: `<div style="font-size:13px;min-width:160px;line-height:1.6">
+        <b style="font-size:14px">${a.plaka}</b><br>
+        <span style="color:#64748b">${a.marka_model||a.arac_tipi}</span><br>
+        <b>${durumLabel}</b>${sevkInfo}${konumStr}
+        ${a.surucu_adi ? `<br><span style="color:#64748b;font-size:11px">👤 ${a.surucu_adi}</span>` : ''}
+        <br><a href="#" onclick="event.preventDefault();closeInfoWindows();openKonumModal(${a.id},'${a.plaka}',${lat},${lng},'${(a.konum_adi||'').replace(/'/g,'')}')" style="color:#3b82f6;font-size:11px">📍 Konum güncelle</a>
+      </div>`
+    });
+    marker.addListener('click', () => {
+      closeInfoWindows();
+      iw.open(_filoMap, marker);
+      const row = document.getElementById('arac-row-' + a.id);
+      if (row) { row.scrollIntoView({ behavior:'smooth', block:'nearest' }); row.style.outline = '1px solid var(--gold)'; setTimeout(() => row.style.outline='', 2000); }
+    });
+    marker._iw = iw;
+    _filoMarkers.push(marker);
+    bounds.extend({ lat, lng });
+    hasPoint = true;
+  });
+
+  if (hasPoint && withCoord.length > 1) {
+    _filoMap.fitBounds(bounds, { top:60, bottom:60, left:60, right:60 });
+  } else if (hasPoint) {
+    _filoMap.setCenter({ lat: parseFloat(withCoord[0].konum_lat), lng: parseFloat(withCoord[0].konum_lng) });
+    _filoMap.setZoom(10);
+  }
+}
+
+function closeInfoWindows() {
+  _filoMarkers.forEach(m => { if (m._iw) m._iw.close(); });
+}
+
+let _konumMap = null, _konumMarker = null;
+function openKonumModal(aracId, plaka, lat, lng, konumAdi) {
+  document.getElementById('konumModalAracId').value = aracId;
+  document.getElementById('konumModalLat').value = lat || '';
+  document.getElementById('konumModalLng').value = lng || '';
+  document.getElementById('konumModalAdi').value = konumAdi || '';
+  document.getElementById('konumModalTitle').textContent = '📍 Konum Güncelle — ' + plaka;
+  document.getElementById('konumModal').style.display = 'flex';
+
+  setTimeout(() => {
+    if (!_mapsReady) return;
+    const center = (lat && lng) ? { lat: parseFloat(lat), lng: parseFloat(lng) } : { lat: 37.0, lng: 35.3 };
+    if (!_konumMap) {
+      _konumMap = new google.maps.Map(document.getElementById('konumModalMap'), {
+        center, zoom: lat ? 10 : 6,
+        mapTypeControl: false, streetViewControl: false
+      });
+      _konumMap.addListener('click', e => setKonumMarker(e.latLng.lat(), e.latLng.lng()));
+    } else {
+      _konumMap.setCenter(center);
+      _konumMap.setZoom(lat ? 10 : 6);
+    }
+    if (lat && lng) setKonumMarker(parseFloat(lat), parseFloat(lng));
+    else if (_konumMarker) { _konumMarker.setMap(null); _konumMarker = null; }
+  }, 80);
+}
+
+function setKonumMarker(lat, lng) {
+  document.getElementById('konumModalLat').value = lat;
+  document.getElementById('konumModalLng').value = lng;
+  if (_konumMarker) _konumMarker.setPosition({ lat, lng });
+  else {
+    _konumMarker = new google.maps.Marker({
+      position: { lat, lng }, map: _konumMap, draggable: true,
+      icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" fill="#c9a84c" stroke="#fff" stroke-width="2"/><text x="18" y="24" text-anchor="middle" font-size="16">🚛</text></svg>'), scaledSize: new google.maps.Size(36,36), anchor: new google.maps.Point(18,18) }
+    });
+    _konumMarker.addListener('dragend', e => {
+      document.getElementById('konumModalLat').value = e.latLng.lat();
+      document.getElementById('konumModalLng').value = e.latLng.lng();
+    });
+  }
+}
+
+function closeKonumModal() {
+  document.getElementById('konumModal').style.display = 'none';
+}
+
+async function saveKonum() {
+  const id  = document.getElementById('konumModalAracId').value;
+  const lat = document.getElementById('konumModalLat').value;
+  const lng = document.getElementById('konumModalLng').value;
+  const adi = document.getElementById('konumModalAdi').value.trim();
+  if (!lat || !lng) { alert('Haritadan bir konum seçin.'); return; }
+  try {
+    await api('/api/araclar/' + id + '/konum', { method:'PATCH', body: JSON.stringify({ lat: parseFloat(lat), lng: parseFloat(lng), konum_adi: adi || null }) });
+    closeKonumModal();
+    loadAraclar();
+  } catch(e) { alert('Hata: ' + e.message); }
 }
 
 function openAracModal() {

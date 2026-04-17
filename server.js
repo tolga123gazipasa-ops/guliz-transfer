@@ -896,6 +896,9 @@ db.query(`
   ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS sure_dakika   INTEGER;
   ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS arac_id       INTEGER REFERENCES araclar(id) ON DELETE SET NULL;
   ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS yuk_cinsi     VARCHAR(100);
+  ALTER TABLE araclar ADD COLUMN IF NOT EXISTS son_lat       DOUBLE PRECISION;
+  ALTER TABLE araclar ADD COLUMN IF NOT EXISTS son_lng       DOUBLE PRECISION;
+  ALTER TABLE araclar ADD COLUMN IF NOT EXISTS son_konum_adi TEXT;
 `).then(async () => {
   // Varsayılan admin ve rotaları seed et (sadece boşsa)
   const bcrypt = require('bcryptjs');

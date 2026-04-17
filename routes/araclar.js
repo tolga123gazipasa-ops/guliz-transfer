@@ -13,11 +13,38 @@ router.get('/public', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-/* ── Admin: tüm araçlar ── */
+/* ── Admin: tüm araçlar (aktif sevkiyat konumuyla birlikte) ── */
 router.get('/', auth, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM araclar ORDER BY created_at DESC');
+    const { rows } = await db.query(`
+      SELECT a.*,
+        COALESCE(s.mevcut_lat, a.son_lat)       AS konum_lat,
+        COALESCE(s.mevcut_lng, a.son_lng)       AS konum_lng,
+        COALESCE(s.mevcut_konum_adi, a.son_konum_adi) AS konum_adi,
+        s.takip_kodu, s.kalkis AS sevk_kalkis, s.varis AS sevk_varis
+      FROM araclar a
+      LEFT JOIN LATERAL (
+        SELECT mevcut_lat, mevcut_lng, mevcut_konum_adi, takip_kodu, kalkis, varis
+        FROM sevkiyatlar
+        WHERE arac_id = a.id AND durum = 'yolda'
+        ORDER BY updated_at DESC LIMIT 1
+      ) s ON true
+      ORDER BY a.created_at DESC
+    `);
     res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+/* ── Admin: araç konumu güncelle ── */
+router.patch('/:id/konum', auth, async (req, res) => {
+  const { lat, lng, konum_adi } = req.body;
+  try {
+    const { rows } = await db.query(
+      `UPDATE araclar SET son_lat=$1, son_lng=$2, son_konum_adi=$3 WHERE id=$4 RETURNING *`,
+      [lat || null, lng || null, konum_adi || null, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Araç bulunamadı.' });
+    res.json(rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
