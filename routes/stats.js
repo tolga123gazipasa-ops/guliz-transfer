@@ -21,7 +21,7 @@ router.get('/dashboard', auth, async (req, res) => {
       pendingCount:  parseInt(pending.rows[0].count),
       topRoutes:     topRoutes.rows,
     });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.get('/monthly', auth, async (req, res) => {
@@ -35,7 +35,7 @@ router.get('/monthly', auth, async (req, res) => {
       WHERE EXTRACT(YEAR FROM transfer_date)=$1 AND status!='cancelled'
       GROUP BY month ORDER BY month`, [year]);
     res.json(rows);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

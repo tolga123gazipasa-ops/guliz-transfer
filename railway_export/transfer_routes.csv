@@ -1,0 +1,10 @@
+id,from_point,to_point,price,duration,active,updated_at
+6,Gazipaşa Havalimanı (GZP),Gazipaşa Merkez,400.00,10-15 dk,f,2026-04-11 20:46:32.243834+00
+1,Gazipaşa Havalimanı (GZP),Alanya Merkez,650.00,25-35 dk,f,2026-04-11 20:46:34.59945+00
+3,Gazipaşa Havalimanı (GZP),Alanya Oba,700.00,30-40 dk,f,2026-04-11 20:46:35.431118+00
+4,Gazipaşa Havalimanı (GZP),Alanya Kestel,720.00,30-40 dk,f,2026-04-11 20:46:36.723264+00
+2,Gazipaşa Havalimanı (GZP),Alanya Mahmutlar,750.00,35-45 dk,f,2026-04-11 20:46:37.381491+00
+5,Gazipaşa Havalimanı (GZP),Alanya Avsallar,800.00,40-50 dk,f,2026-04-11 20:46:38.666526+00
+8,Gazipaşa Havalimanı (GZP),Manavgat,900.00,55-70 dk,f,2026-04-11 20:46:40.040115+00
+7,Gazipaşa Havalimanı (GZP),Side,950.00,60-75 dk,f,2026-04-11 20:46:41.714007+00
+9,Gazipaşa Havalimanı (GZP),Antalya Merkez,1350.00,90-110 dk,f,2026-04-11 20:46:42.43408+00

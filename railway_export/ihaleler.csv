@@ -1,0 +1,21 @@
+id,kurum,baslik,tur,durum,sira,created_at,updated_at
+1,Milli Savunma Bakanlığı – MSB Bağlıları,1'inci Deniz İstihkam Tabur K. Lığı,Nakliye İşi,tamamlandi,1,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+2,Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu,Isparta Kapalı Ve Açık Ceza İnfaz Kurumu İşyurdu,Nakliye İşi,tamamlandi,2,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+3,Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu,Devrek Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü,Nakliye İşi,tamamlandi,3,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+4,Diğer Özel Bütçeli Kuruluşlar,Çanakkale Açık Ceza İnfaz Kurumu İşyurdu,Nakliye İşi,tamamlandi,4,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+5,Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu,Adana 2 Nolu Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü,Nakliye İşi,tamamlandi,5,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+6,Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu,Antakya Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü,Nakliye İşi,tamamlandi,6,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+7,Ceza İnfaz Kurumları İle Tutukevleri İş Yurtları Kurumu,Bafra Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü,Nakliye İşi,tamamlandi,7,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+8,Milli Eğitim Bakanlığı – Antalya Öğretmenevi,Öğretmen Evi Ve Akşam Sanat Okulu Müdürlüğü,Personel Alım İşi,devam,1,2026-04-11 19:56:12.672855+00,2026-04-11 19:56:12.672855+00
+9,Milli Savunma Bakanlığı,2. Deniz İst.Tb.Kom. Kocaeli,Nakliye İşi,tamamlandi,0,2026-04-11 20:38:45.661414+00,2026-04-11 20:38:45.661414+00
+10,Antalya Yatırım İzleme ve Koordinasyon Başkanlığı (YİKOB),Mahmutlar Mahalle Muhtarlığı,İnşaat Yapımı,tamamlandi,0,2026-04-11 20:39:28.648737+00,2026-04-11 20:39:28.648737+00
+11,Antalya Devlet Opera Ve Balesi Müdürlüğü,Opera Nakliye Hizmeti - İstanbul Antalya,Nakliye İşi,devam,0,2026-04-13 13:19:15.023464+00,2026-04-13 13:19:15.023464+00
+12,Tuzla Piyade Okul K.,Milli Savunma Bakanlığı Msb Bağlıları,Hizmet,tamamlandi,0,2026-04-13 14:08:53.838546+00,2026-04-13 14:08:53.838546+00
+13,Antalya İl Milli Eğitim Müdürlüğü,Gazipaşa Anaokulu,Yapım işi,tamamlandi,0,2026-04-13 14:09:21.216994+00,2026-04-13 14:09:21.216994+00
+14,Mersin Orman Fidanlık Müdürlüğü,Mersin Döner Sermaye İşletmesi - Mal Alımı,Mal Alımı,tamamlandi,0,2026-04-13 14:10:06.260909+00,2026-04-13 14:10:06.260909+00
+15,Antalya İl Sağlık Müdürlüğü Sağlık Bakanlığı Bakan Yardımcılıkları,Mal Alım Hizmeti,Mal Alımı,tamamlandi,0,2026-04-13 14:10:33.461069+00,2026-04-13 14:10:33.461069+00
+16,Alanya Devlet Hastanesi,Mal Alım Hizmeti,Mal Alımı,tamamlandi,0,2026-04-13 14:11:03.928195+00,2026-04-13 14:11:03.928195+00
+17,Antalya Büyükşehir Belediyesi Kırsal Hizmetler Dairesi Başkanlığı,Antalya - Gazipaşa Kısmı Filler Mal Alımı,Mal Alımı,tamamlandi,0,2026-04-13 14:11:34.421282+00,2026-04-13 14:11:34.421282+00
+18,Uşak Üniversitesi İdari Ve Mali İşler Daire Başkanlığı,Kömür Alım Hizmeti,Mal Alımı,tamamlandi,0,2026-04-13 14:12:13.089654+00,2026-04-13 14:12:13.089654+00
+19,Alanya Alaaddin Keykubat Üniversitesi,2 Adet Hizmet Aracı Kiralama Hizmeti - 1 Yıllık,Araç Kiralama İşi,tamamlandi,0,2026-04-13 14:13:10.63389+00,2026-04-13 14:13:10.63389+00
+20,Kocaeli Açık Ceza İnfaz Kurumu İşyurdu Müdürlüğü,Nakliye Alım Hizmeti,Nakliye İşi,devam,0,2026-04-14 10:32:56.441334+00,2026-04-14 10:32:56.441334+00

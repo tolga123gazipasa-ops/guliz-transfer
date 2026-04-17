@@ -20,7 +20,7 @@ router.get('/aktif', async (req, res) => {
        FROM sevkiyatlar WHERE durum='yolda' AND mevcut_lat IS NOT NULL ORDER BY updated_at DESC`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Herkese açık: takip kodu sorgula ── */
@@ -51,7 +51,7 @@ router.get('/', auth, async (req, res) => {
     );
     res.json(rows);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
 
@@ -94,7 +94,7 @@ router.post('/', auth, async (req, res) => {
     }
     res.status(201).json(sevk);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
 
@@ -161,7 +161,7 @@ router.put('/:id', auth, async (req, res) => {
 
     res.json(guncellenen);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
 
@@ -171,7 +171,7 @@ router.delete('/:id', auth, async (req, res) => {
     await db.query('DELETE FROM sevkiyatlar WHERE id=$1', [req.params.id]);
     res.json({ ok: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
 

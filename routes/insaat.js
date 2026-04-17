@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
        ORDER BY i.durum DESC, i.sira ASC, i.id ASC`
     );
     res.json(rows);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // Tek inşaat
@@ -69,7 +69,7 @@ router.get('/:id', async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ══════════════════════════════════════
@@ -88,7 +88,7 @@ router.post('/', auth, async (req, res) => {
       [baslik.trim(), aciklama?.trim() || null, parseInt(proje_yili), durum, konum?.trim() || null]
     );
     res.status(201).json(rows[0]);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // İnşaat güncelle
@@ -104,7 +104,7 @@ router.put('/:id', auth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // İnşaat sil (fotograflar da silinir — ON DELETE CASCADE)
@@ -120,7 +120,7 @@ router.delete('/:id', auth, async (req, res) => {
     }
     await db.query('DELETE FROM insaatlar WHERE id=$1', [req.params.id]);
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Fotoğraf yükle (max 5 adet) ── */
@@ -155,7 +155,7 @@ router.post('/:id/fotograflar', auth, upload.array('fotograflar', 5), async (req
     res.status(201).json({ eklenen: eklenenler.length, fotograflar: eklenenler });
   } catch(e) {
     if (req.files) for (const f of req.files) { try { fs.unlinkSync(f.path); } catch {} }
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
 
@@ -171,7 +171,7 @@ router.delete('/:id/fotograflar/:fotoId', auth, async (req, res) => {
     if (fs.existsSync(fp)) fs.unlinkSync(fp);
     await db.query('DELETE FROM insaat_fotograflar WHERE id=$1', [req.params.fotoId]);
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

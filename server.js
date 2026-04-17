@@ -150,16 +150,21 @@ Döndür (eksik alanlar null olsun):
     const json = JSON.parse(text.replace(/```json|```/g, '').trim());
     res.json(json);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
+
+const PHONE_RE = /^(\+90|0)?[0-9]{10}$/;
+function isValidPhone(p) { return p && PHONE_RE.test(String(p).replace(/[\s\-().]/g,'')); }
 
 /* ── YÜK BİLDİRİMİ ── */
 app.post('/api/yuk-bildirimi', async (req, res) => {
   try {
     const { ad_soyad, telefon, yuk_tanimi, kaynak } = req.body;
-    if (!ad_soyad || !telefon || !yuk_tanimi)
+    if (!ad_soyad?.trim() || !telefon || !yuk_tanimi?.trim())
       return res.status(400).json({ error: 'Ad soyad, telefon ve yük tanımı zorunludur.' });
+    if (!isValidPhone(telefon))
+      return res.status(400).json({ error: 'Geçersiz telefon numarası. (05xx veya +90 formatı)' });
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
     const { rows } = await db.query(
       `INSERT INTO yuk_bildirimleri (ad_soyad, telefon, yuk_tanimi, kaynak, ip)
@@ -176,7 +181,7 @@ app.post('/api/yuk-bildirimi', async (req, res) => {
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.get('/api/yuk-bildirimleri', async (req, res) => {
@@ -187,7 +192,7 @@ app.get('/api/yuk-bildirimleri', async (req, res) => {
       `SELECT * FROM yuk_bildirimleri ORDER BY created_at DESC LIMIT 200`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
@@ -196,7 +201,7 @@ app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
     try {
       await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
       res.json({ ok: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
   });
 });
 
@@ -206,15 +211,17 @@ app.delete('/api/yuk-bildirimleri/:id', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM yuk_bildirimleri WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── İLETİŞİM MESAJLARI ── */
 app.post('/api/iletisim', async (req, res) => {
   try {
     const { ad_soyad, telefon, mesaj, kaynak } = req.body;
-    if (!ad_soyad || !telefon || !mesaj)
+    if (!ad_soyad?.trim() || !telefon || !mesaj?.trim())
       return res.status(400).json({ error: 'Ad soyad, telefon ve mesaj zorunludur.' });
+    if (!isValidPhone(telefon))
+      return res.status(400).json({ error: 'Geçersiz telefon numarası. (05xx veya +90 formatı)' });
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
     const { rows } = await db.query(
       `INSERT INTO iletisim_mesajlari (ad_soyad, telefon, mesaj, kaynak, ip)
@@ -232,7 +239,7 @@ app.post('/api/iletisim', async (req, res) => {
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.get('/api/iletisim', async (req, res) => {
@@ -243,7 +250,7 @@ app.get('/api/iletisim', async (req, res) => {
       `SELECT * FROM iletisim_mesajlari ORDER BY created_at DESC LIMIT 300`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.delete('/api/iletisim/:id', async (req, res) => {
@@ -252,7 +259,7 @@ app.delete('/api/iletisim/:id', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM iletisim_mesajlari WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── İK BAŞVURULARI ── */
@@ -290,7 +297,7 @@ app.post('/api/ik', (req, res, next) => {
     res.json({ ok: true, id: rows[0].id });
   } catch (e) {
     if (req.file) fs.unlink(path.join(CV_DIR, req.file.filename), () => {});
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: "İşlem başarısız oldu." });
   }
 });
 
@@ -302,7 +309,7 @@ app.get('/api/ik', async (req, res) => {
       `SELECT * FROM is_basvurulari ORDER BY created_at DESC LIMIT 300`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── CV İNDİR ── */
@@ -327,7 +334,7 @@ app.get('/api/ik/:id/cv', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(rows[0].cv_original_name || 'cv.pdf')}"`);
     res.setHeader('Content-Type', 'application/pdf');
     res.sendFile(filePath);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.delete('/api/ik/:id', async (req, res) => {
@@ -341,7 +348,7 @@ app.delete('/api/ik/:id', async (req, res) => {
     }
     await db.query(`DELETE FROM is_basvurulari WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── TEKLİF TALEPLERİ ── */
@@ -370,7 +377,7 @@ app.post('/api/teklif', async (req, res) => {
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.get('/api/teklifler', async (req, res) => {
@@ -381,7 +388,7 @@ app.get('/api/teklifler', async (req, res) => {
       `SELECT * FROM teklifler ORDER BY created_at DESC LIMIT 300`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.delete('/api/teklifler/:id', async (req, res) => {
@@ -390,7 +397,7 @@ app.delete('/api/teklifler/:id', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM teklifler WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── CHAT SESSION SİL ── */
@@ -415,7 +422,7 @@ app.delete('/api/chat/:sessionId', async (req, res) => {
     }
     broadcastVisitors();
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ══════════════════════════════════════════
@@ -451,6 +458,11 @@ function broadcastVisitors() {
     messages:    v.messages,
   }));
   io.to('admins').emit('visitors:update', list);
+}
+
+/* ── Socket.IO session ID validation ── */
+function isValidSessionId(sid) {
+  return typeof sid === 'string' && /^[a-zA-Z0-9_\-]{8,64}$/.test(sid);
 }
 
 io.on('connection', (socket) => {
@@ -493,6 +505,12 @@ io.on('connection', (socket) => {
 
   /* ── Ziyaretçi bağlandı ── */
   socket.on('visitor:connect', async ({ sessionId, name, phone, page, pageTitle, device, referrer }) => {
+    if (!isValidSessionId(sessionId)) return;
+    // Ad ve telefon uzunluk sınırı
+    const safeName  = typeof name  === 'string' ? name.slice(0, 100)  : 'Ziyaretçi';
+    const safePhone = typeof phone === 'string' ? phone.slice(0, 20)  : '';
+    name  = safeName;
+    phone = safePhone;
     const ip = socket.handshake.headers['x-forwarded-for']?.split(',')[0].trim()
                || socket.handshake.address || '';
     const isNew = !visitors.has(sessionId);
@@ -591,6 +609,7 @@ io.on('connection', (socket) => {
 
   /* ── Ziyaretçi sayfa değiştirdi ── */
   socket.on('visitor:page', ({ sessionId, page, pageTitle }) => {
+    if (!isValidSessionId(sessionId)) return;
     const v = visitors.get(sessionId);
     if (!v) return;
     const now = new Date().toISOString();
@@ -623,6 +642,7 @@ io.on('connection', (socket) => {
 
   /* ── Ziyaretçi aktivite (form doldurma, buton tıklama vb.) ── */
   socket.on('visitor:action', ({ sessionId, action, detail }) => {
+    if (!isValidSessionId(sessionId)) return;
     const v = visitors.get(sessionId);
     if (!v) return;
     v.lastSeen = new Date().toISOString();
@@ -675,30 +695,33 @@ io.on('connection', (socket) => {
 
   /* ── Ziyaretçi mesaj gönderdi ── */
   socket.on('visitor:message', ({ sessionId, text, name, phone }) => {
+    if (!isValidSessionId(sessionId)) return;
+    if (!text || typeof text !== 'string' || text.trim().length === 0) return;
     let v = visitors.get(sessionId);
     if (!v) return;
-    if (name && name !== 'Ziyaretçi') v.name = name;
-    if (phone) v.phone = phone;
-    const msg = { from: 'visitor', senderName: v.name, text, time: new Date().toISOString(), id: Date.now(), read: false };
+    if (name && name !== 'Ziyaretçi') v.name = String(name).slice(0, 100);
+    if (phone) v.phone = String(phone).slice(0, 20);
+    const safeText = text.slice(0, 2000);
+    const msg = { from: 'visitor', senderName: v.name, text: safeText, time: new Date().toISOString(), id: Date.now(), read: false };
     v.messages.push(msg);
     v.lastSeen = new Date().toISOString();
     db.query(
       `INSERT INTO chat_messages (session_id, from_type, sender_name, text, read) VALUES ($1,'visitor',$2,$3,false)`,
-      [sessionId, v.name, text]
+      [sessionId, v.name, safeText]
     ).catch(() => {});
     db.query(`UPDATE chat_sessions SET name=$2, phone=$3, last_seen=NOW() WHERE session_id=$1`,
       [sessionId, v.name, v.phone || null]
     ).catch(() => {});
     io.to('admins').emit('chat:sync', { sessionId, message: msg });
     broadcastVisitors();
-    tgChatMessage(v.name, v.phone, text, sessionId, { ip: v.ip, country: v.country, city: v.city }).catch(() => {});
+    tgChatMessage(v.name, v.phone, safeText, sessionId, { ip: v.ip, country: v.country, city: v.city }).catch(() => {});
     socket.emit('chat:delivered', { id: msg.id });
   });
 
   /* ── Ziyaretçi yazıyor (canlı metin önizleme) ── */
   socket.on('visitor:typing', ({ sessionId, typing, text }) => {
-    io.to('admins').emit('chat:visitor_typing', { sessionId, typing, text: text || '' });
-    // Canlı yazan metin Telegram'a gönder (sadece metin değiştiyse, debounce)
+    if (!isValidSessionId(sessionId)) return;
+    io.to('admins').emit('chat:visitor_typing', { sessionId, typing, text: (text || '').slice(0, 500) });
     if (text && text.length > 0) {
       const v = visitors.get(sessionId);
       if (!v) return;

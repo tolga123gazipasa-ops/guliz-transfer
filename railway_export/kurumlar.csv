@@ -1,0 +1,2 @@
+id,kurum_adi,username,password,yetkili_ad,yetkili_tel,is_active,created_at,last_login
+1,GAZİPAŞA MİLLİ EĞİTİM,MEB_GAZİPASA,$2a$12$JFiuihng.wAWIGYaOea68ekczw7mDQVTCTsUJY0W0gwLUldOd0qb6,BİLAL DAL,05448525555,t,2026-04-11 20:47:29.778376+00,2026-04-11 21:15:46.944519+00

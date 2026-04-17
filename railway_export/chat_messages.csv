@@ -1,0 +1,76 @@
+id,session_id,from_type,sender_name,text,read,created_at
+1,v_1775844068112_f6lwsn6o,visitor,wddw,sdsd,f,2026-04-10 19:01:28.087992+00
+2,v_1775844068112_f6lwsn6o,admin,Yönetici,Efen,t,2026-04-10 19:02:05.373473+00
+3,v_1775844068112_f6lwsn6o,admin,Yönetici,Buyur,t,2026-04-10 19:02:15.112789+00
+4,v_1775844068112_f6lwsn6o,visitor,wddw,naılsız,f,2026-04-10 19:02:17.838081+00
+5,v_1775844068112_f6lwsn6o,admin,Yönetici,iyiyim sen nasılsın,t,2026-04-10 19:02:49.669686+00
+6,v_1775844068112_f6lwsn6o,visitor,wddw,bende iyiyim nerdesin,f,2026-04-10 19:03:11.587199+00
+7,v_1775846794102_ow93qkst,visitor,Tolga,selam naslsın,f,2026-04-10 19:04:03.439406+00
+8,v_1775846794102_ow93qkst,admin,Yönetici,İyiiö sen,t,2026-04-10 19:04:10.448673+00
+9,v_1775846794102_ow93qkst,visitor,Tolga,adwdwd,f,2026-04-10 19:05:40.248825+00
+10,v_1775844082357_lonoolt6,visitor,Rabia Çetiner,"Merhaba, transfer hizmetiniz hakkında bilgi alabilir miyim?",f,2026-04-10 19:08:40.285458+00
+11,v_1775845904842_cte3tg3y,visitor,Rabia,merhaba hizmetleriniz hakkında bilgi alabilir miyim,f,2026-04-10 19:15:38.148002+00
+12,v_1775845904842_cte3tg3y,admin,Yönetici,sana ne lazım anam,t,2026-04-10 19:17:01.259331+00
+13,v_1775845904842_cte3tg3y,admin,Yönetici,yardımcı olalım,t,2026-04-10 19:17:04.518421+00
+14,v_1775845904842_cte3tg3y,visitor,Rabia,anam ne yavrum mahalle transferi mi yapıyorsunuz hjkdgshs,f,2026-04-10 19:17:28.229217+00
+15,v_1775845904842_cte3tg3y,admin,Yönetici,sana bakkal mı lazım,t,2026-04-10 19:18:54.073731+00
+16,v_1775845904842_cte3tg3y,admin,Yönetici,şeker mi alacan,t,2026-04-10 19:18:56.215082+00
+17,v_1775845904842_cte3tg3y,admin,Yönetici,su mu alacan,t,2026-04-10 19:18:57.851626+00
+18,v_1775845904842_cte3tg3y,admin,Yönetici,ne yapacan,t,2026-04-10 19:18:59.204807+00
+19,v_1775845904842_cte3tg3y,visitor,Rabia,hurma şekeri almaya gitmek istiyorum Konya'ya,f,2026-04-10 19:20:08.751367+00
+20,v_1775845904842_cte3tg3y,visitor,Rabia,Vip araçla,f,2026-04-10 19:20:18.696523+00
+21,v_1775845904842_cte3tg3y,admin,Yönetici,verelim anam,t,2026-04-10 19:20:45.834435+00
+22,v_1775845904842_cte3tg3y,admin,Yönetici,Ses,t,2026-04-10 19:21:02.645269+00
+23,v_1775845904842_cte3tg3y,visitor,Rabia,Silah almaya da vip araçla gitmek istiyorum size sıkıntı yaratır mı anam?,f,2026-04-10 19:22:00.120678+00
+24,v_1775845904842_cte3tg3y,admin,Yönetici,Anan kim,t,2026-04-10 19:22:08.345601+00
+25,v_1775845904842_cte3tg3y,visitor,Rabia,yav öyle anam değil hjfkds,f,2026-04-10 19:22:30.066529+00
+26,v_1775845904842_cte3tg3y,visitor,Rabia,benim anamı hiç sorma kardeş ya,f,2026-04-10 19:22:40.633667+00
+27,v_1775845904842_cte3tg3y,admin,Yönetici,benim anamı boşver,t,2026-04-10 19:23:30.622304+00
+28,v_1775845904842_cte3tg3y,admin,Yönetici,senin anan kim,t,2026-04-10 19:23:32.38617+00
+29,v_1775845904842_cte3tg3y,visitor,Rabia,la oğlum ben seni aradım sen kimsin,f,2026-04-10 19:24:02.137267+00
+30,v_1775845904842_cte3tg3y,visitor,Rabia,(recep İvedik replik online),f,2026-04-10 19:24:38.027304+00
+31,v_1775845904842_cte3tg3y,admin,Yönetici,anan kim,t,2026-04-10 19:24:53.035697+00
+32,v_1775845904842_cte3tg3y,visitor,Rabia,adını söyleyince sistem banlıyor,f,2026-04-10 19:25:11.049202+00
+33,v_1775845904842_cte3tg3y,visitor,Rabia,hfjdkvs,f,2026-04-10 19:25:16.34968+00
+34,v_1775845904842_cte3tg3y,admin,Yönetici,Anan bekar mı,t,2026-04-10 19:25:28.294505+00
+35,v_1775845904842_cte3tg3y,visitor,Rabia,hayırdır kardeş,f,2026-04-10 19:25:50.776284+00
+36,v_1775845904842_cte3tg3y,admin,Yönetici,o değil de gerçekten unuttum sanıyordum yazılımı unutmamısım,t,2026-04-10 19:25:50.996213+00
+37,v_1775845904842_cte3tg3y,admin,Yönetici,yine parlıyorum,t,2026-04-10 19:25:53.22292+00
+38,v_1775845904842_cte3tg3y,admin,Yönetici,süper sistem oluyor değil mi,t,2026-04-10 19:25:57.278988+00
+39,v_1775845904842_cte3tg3y,admin,Yönetici,4 günde yazdım,t,2026-04-10 19:25:59.704158+00
+40,v_1775845904842_cte3tg3y,visitor,Rabia,sen ve yazılımı unutmak?,f,2026-04-10 19:26:04.85871+00
+41,v_1775845904842_cte3tg3y,admin,Yönetici,daah devam edecez,t,2026-04-10 19:26:07.201254+00
+42,v_1775845904842_cte3tg3y,admin,Yönetici,ask öyle deme,t,2026-04-10 19:26:08.737571+00
+43,v_1775845904842_cte3tg3y,admin,Yönetici,süper oldu bence,t,2026-04-10 19:26:10.840111+00
+44,v_1775845904842_cte3tg3y,admin,Yönetici,bunun bir de asıl büyük hali var,t,2026-04-10 19:26:16.042214+00
+45,v_1775845904842_cte3tg3y,visitor,Rabia,"senin yazılımı unutman imkansız çünkü bu yılların birikim,",f,2026-04-10 19:26:36.501409+00
+46,v_1775845904842_cte3tg3y,visitor,Rabia,sen benim yaşımdaykenden kendini geliştirmişsin aşkım,f,2026-04-10 19:27:23.895414+00
+47,v_1775845904842_cte3tg3y,admin,Yönetici,siktir :D,t,2026-04-10 19:27:47.050875+00
+48,v_1775845904842_cte3tg3y,admin,Yönetici,göt,t,2026-04-10 19:27:47.816873+00
+49,v_1775845904842_cte3tg3y,visitor,Rabia,sen bize iş mi koyuyorsun,f,2026-04-10 19:28:08.036971+00
+50,v_1775845904842_cte3tg3y,visitor,Rabia,ağzını topla,f,2026-04-10 19:28:34.912322+00
+51,v_1775845904842_cte3tg3y,visitor,Rabia,aaaa,f,2026-04-10 19:28:43.681737+00
+52,v_1775845904842_cte3tg3y,admin,Yönetici,tmm tmm hadi geç wp ye,t,2026-04-10 19:29:38.762155+00
+53,v_1775845904842_cte3tg3y,admin,Yönetici,burayı kasma,t,2026-04-10 19:29:40.598358+00
+54,v_1775845904842_cte3tg3y,admin,Yönetici,:D,t,2026-04-10 19:29:44.134264+00
+55,v_1775844068112_f6lwsn6o,visitor,wddw,adsdsa,f,2026-04-10 19:50:43.63287+00
+56,v_1775844068112_f6lwsn6o,admin,Yönetici,Ggjj,t,2026-04-10 19:50:59.84159+00
+57,v_1775844068112_f6lwsn6o,admin,Yönetici,Nbr,t,2026-04-10 19:51:03.69953+00
+58,v_1775844068112_f6lwsn6o,visitor,wddw,tls,f,2026-04-10 19:51:19.753839+00
+59,v_1775844068112_f6lwsn6o,visitor,wddw,sen nasılsın,f,2026-04-10 19:51:21.447395+00
+60,v_1775844068112_f6lwsn6o,visitor,wddw,neredesin,f,2026-04-10 19:51:23.133385+00
+61,v_1775844124596_jqnon05s,visitor,Tolga,Tyy,f,2026-04-10 20:13:48.326826+00
+62,v_1775844124596_jqnon05s,visitor,Tolga,Slm,f,2026-04-10 20:14:20.104404+00
+63,v_1775844124596_jqnon05s,admin,Yönetici,Çiyi misin,t,2026-04-10 20:15:52.1836+00
+64,v_1775844124596_jqnon05s,admin,Yönetici,Ne kadar iyisin,t,2026-04-10 20:15:59.785493+00
+65,v_1775844124596_jqnon05s,visitor,Tolga,Jjj,f,2026-04-11 04:44:49.275536+00
+66,v_1775844124596_jqnon05s,admin,Yönetici,Efem,t,2026-04-11 04:50:20.411703+00
+67,v_1775844124596_jqnon05s,visitor,Tolga,Ggff,f,2026-04-11 05:12:39.858756+00
+68,v_1775907939051_5q1hvkfr,visitor,Rabis,Hhhhh,f,2026-04-11 11:46:04.624272+00
+69,v_1775907939051_5q1hvkfr,admin,Yönetici,Eee,t,2026-04-11 11:46:15.48584+00
+70,v_1775924758531_6ojvfjbo,visitor,Ziyaretçi,selam,f,2026-04-11 19:56:33.45868+00
+71,v_1775924758531_6ojvfjbo,admin,Yönetici,Efem,t,2026-04-11 19:56:40.700812+00
+72,v_1775924758531_6ojvfjbo,visitor,Ziyaretçi,dwdw,f,2026-04-11 20:47:40.758502+00
+73,v_1775924758531_6ojvfjbo,visitor,Ziyaretçi,dwadwa,f,2026-04-11 20:50:37.323207+00
+74,v_1775924758531_6ojvfjbo,admin,Yönetici,Efen,t,2026-04-11 20:50:59.142123+00
+75,v_1775924758531_6ojvfjbo,visitor,Ziyaretçi,dgf,f,2026-04-13 14:15:22.82206+00

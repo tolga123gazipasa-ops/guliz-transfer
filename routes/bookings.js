@@ -7,6 +7,18 @@ const { tgNewBooking, tgPayment } = require('../services/telegram');
 
 function genRef() { return 'GT-' + Math.floor(100000 + Math.random() * 900000); }
 
+const PHONE_RE = /^(\+90|0)?[0-9]{10}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validatePhone(p) {
+  if (!p) return false;
+  return PHONE_RE.test(p.replace(/[\s\-().]/g, ''));
+}
+function validateEmail(e) {
+  if (!e) return true; // email opsiyonel
+  return EMAIL_RE.test(e);
+}
+
 router.get('/', auth, async (req, res) => {
   const { status, date, search } = req.query;
   let q = `SELECT b.*, d.name as driver_name, d.phone as driver_phone, d.plate
@@ -20,7 +32,7 @@ router.get('/', auth, async (req, res) => {
   }
   q += ' ORDER BY b.created_at DESC';
   try { const { rows } = await db.query(q, p); res.json(rows); }
-  catch(e) { res.status(500).json({ error: e.message }); }
+  catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.get('/:id', auth, async (req, res) => {
@@ -30,7 +42,7 @@ router.get('/:id', auth, async (req, res) => {
        FROM bookings b LEFT JOIN drivers d ON b.driver_id=d.id WHERE b.id=$1`, [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // Public endpoint — müşteri sitesinden rezervasyon
@@ -38,6 +50,13 @@ router.post('/', async (req, res) => {
   const { customer_name, customer_phone, customer_email,
           from_point, to_point, transfer_date, transfer_time,
           passenger_count, flight_number, price, notes, status } = req.body;
+  if (!customer_name?.trim() || !customer_phone || !from_point || !to_point || !transfer_date || !transfer_time)
+    return res.status(400).json({ error: 'Zorunlu alanlar eksik.' });
+  if (!validatePhone(customer_phone))
+    return res.status(400).json({ error: 'Geçersiz telefon numarası. (05xx veya +90 formatı)' });
+  if (!validateEmail(customer_email))
+    return res.status(400).json({ error: 'Geçersiz e-posta adresi.' });
+
   try {
     let ref, exists = true;
     while (exists) {
@@ -63,7 +82,7 @@ router.post('/', async (req, res) => {
     // Müşteri onay maili
     sendBookingConfirmation({ name: customer_name, email: customer_email }, booking).catch(() => {});
     res.status(201).json(booking);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // Ödeme kaydet — public endpoint (iyzico callback gibi)
@@ -85,7 +104,7 @@ router.post('/:id/payment', async (req, res) => {
     notifyAdminSms(`[GULIZ] ODEME ALINDI: ${booking.booking_ref} | ${booking.customer_name} | TL${parseInt(amount||booking.price).toLocaleString('tr-TR')}`).catch(() => {});
     tgPayment(booking, amount || booking.price).catch(() => {});
     res.json({ message: 'Ödeme kaydedildi', booking_ref: booking.booking_ref });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.patch('/:id/status', auth, async (req, res) => {
@@ -96,7 +115,7 @@ router.patch('/:id/status', auth, async (req, res) => {
     const { rows } = await db.query(
       'UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *', [status, req.params.id]);
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.patch('/:id/assign', auth, async (req, res) => {
@@ -107,7 +126,7 @@ router.patch('/:id/assign', auth, async (req, res) => {
       [driver_id, req.params.id]);
     await db.query("UPDATE drivers SET status='busy' WHERE id=$1", [driver_id]);
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;
