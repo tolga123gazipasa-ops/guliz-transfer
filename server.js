@@ -106,7 +106,9 @@ app.post('/api/ai/sevkiyat-parse', async (req, res) => {
 
   try {
     const { Anthropic } = require('@anthropic-ai/sdk');
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const apiKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+    if (!apiKey.startsWith('sk-ant-')) return res.status(503).json({ error: 'AI_KEY_INVALID', hint: 'Key "sk-ant-" ile başlamalı, Railway Variables kontrol edin.' });
+    const client = new Anthropic({ apiKey });
     const bugun = new Date().toLocaleDateString('tr-TR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     const msg = await client.messages.create({
