@@ -16,12 +16,12 @@ router.get('/public', async (req, res) => {
         s.kalkis      AS sevk_kalkis,
         s.varis       AS sevk_varis,
         s.tahmini_teslim,
-        s.created_at  AS sevk_baslangic
+        COALESCE(s.kalkis_zamani, s.created_at) AS sevk_baslangic
       FROM araclar a
       LEFT JOIN LATERAL (
         SELECT mevcut_lat, mevcut_lng, mevcut_konum_adi,
                kalkis_lat, kalkis_lng, varis_lat, varis_lng,
-               kalkis, varis, tahmini_teslim, created_at
+               kalkis, varis, tahmini_teslim, kalkis_zamani, created_at
         FROM sevkiyatlar
         WHERE arac_id = a.id AND durum = 'yolda'
         ORDER BY updated_at DESC LIMIT 1

@@ -1111,8 +1111,9 @@ function drawRouteLines() {
 
 /* ── Pozisyon hesapla (admin paneli verilerinden) ── */
 function getTruckPos(t, idx, nowMs) {
-  // Seferde + tam rota verisi var → başlangıç→varış arası interpolasyon
-  if (t.durum === 'seferde' && t.kalkis_lat && t.varis_lat && t.sevk_start) {
+  // Seferde (veya aktif sevkiyatı olan) + tam rota verisi var → interpolasyon
+  const isMoving = t.durum === 'seferde' || (t.kalkis_lat && t.varis_lat);
+  if (isMoving && t.kalkis_lat && t.varis_lat && t.sevk_start) {
     const eta = t.sevk_eta || (t.sevk_start + 10 * 3600000);
     const progress = Math.min(1, Math.max(0, (nowMs - t.sevk_start) / (eta - t.sevk_start)));
     const lat = t.kalkis_lat + (t.varis_lat - t.kalkis_lat) * progress;
@@ -1122,7 +1123,7 @@ function getTruckPos(t, idx, nowMs) {
   }
   // Bilinen konum var (admin'den girilmiş)
   if (t.lat && t.lng) {
-    const j = t.durum === 'seferde' ? gpsJitter(idx, nowMs) : [0, 0];
+    const j = (t.durum === 'seferde') ? gpsJitter(idx, nowMs) : [0, 0];
     return [t.lat + j[0], t.lng + j[1]];
   }
   // Koordinat yok → şirket merkezi yakınında göster
@@ -1142,6 +1143,12 @@ function getTruckSpeed(t, idx, nowMs) {
 /* Durum etiketi */
 function effectiveStatus(t, nowMs) {
   if (t.durum === 'bakim')   return 'offline';
+  // Aktif sevkiyat koordinatları varsa seferde say
+  const hasSevk = t.kalkis_lat && t.varis_lat && t.sevk_start;
+  if (t.durum === 'seferde' || hasSevk) {
+    const h = new Date(nowMs).getHours();
+    return (h >= 6 && h < 22) ? 'moving' : 'istirahat';
+  }
   if (t.durum === 'musait')  return 'mola';
   if (t.durum === 'seferde') {
     const h = new Date(nowMs).getHours();
@@ -1389,7 +1396,12 @@ let atPwTimer = null;
 /* Şifre ekranını göster */
 function showAtPwScreen(){
   const overlay = document.getElementById('atOverlay');
-  if(!overlay || !overlay.classList.contains('open')) return;
+  if(!overlay) return;
+  // overlay kapalıysa şifre ekranını gösterme, timer'ı da durdur
+  if(!overlay.classList.contains('open')){
+    if(atPwTimer){ clearInterval(atPwTimer); clearTimeout(atPwTimer); atPwTimer = null; }
+    return;
+  }
   document.getElementById('atPwOverlay').style.display = 'flex';
   setTimeout(()=>{ const i=document.getElementById('atPwInput'); if(i){i.value='';i.focus();} },100);
 }
@@ -1494,7 +1506,7 @@ window.checkAtPassword = function(){
     document.getElementById('atDarkOverlay').style.display = 'none';
     document.getElementById('atPwInput').value = '';
     errEl.style.display = 'none';
-    if(atPwTimer) clearTimeout(atPwTimer);
+    if(atPwTimer){ clearInterval(atPwTimer); clearTimeout(atPwTimer); atPwTimer = null; }
     atPwTimer = setTimeout(showAtPwScreen, AT_SESSION_MS);
   } else {
     /* Yanlış şifre → hata mesajı göster, ekranda kal */
