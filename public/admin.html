@@ -64,6 +64,7 @@ body{background:var(--gray);color:var(--text);font-family:var(--sans);font-weigh
 .nav-item:hover{color:var(--navy2);background:rgba(26,45,107,0.04)}
 .nav-item.active{color:var(--navy);border-left-color:var(--red);background:rgba(227,7,19,0.05);font-weight:600}
 .nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-group-label{font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:10px 20px 3px;opacity:0.6}
 .sidebar-bottom{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border)}
 .logout-btn{
   width:100%;padding:8px 12px;border-radius:6px;
@@ -345,11 +346,19 @@ tr:hover td{background:rgba(26,45,107,0.02)}
   .activity-log{width:100%;border-left:none;border-top:1px solid var(--border);max-height:300px}
 }
 @media(max-width:520px){
-  .stats-row{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}
   .table-header{flex-direction:column;align-items:flex-start;gap:8px}
   .search-input{min-width:0;width:100%}
   .page{padding:16px 12px 32px}
+  #lojistikRow{grid-template-columns:1fr 1fr!important}
+  #dashBottomGrid{grid-template-columns:1fr!important}
+  /* Modal scroll fix */
+  #sevkModal > div, .modal-inner{max-height:88vh;overflow-y:auto}
+}
+@media(max-width:700px){
+  #lojistikRow{grid-template-columns:1fr 1fr}
+  #dashBottomGrid{grid-template-columns:1fr}
 }
 /* ── Sevkiyat tablosu mobil: 3→6. kolonları gizle, kebab göster ── */
 @media(max-width:700px){
@@ -425,59 +434,70 @@ tr:hover td{background:rgba(26,45,107,0.02)}
       <img src="/slider/logo.png" alt="Güliz Şirketler Grubu">
       <span>Admin Paneli</span>
     </div>
-    <nav style="padding:8px 0">
-      <div class="nav-item active" onclick="showPage('dashboard')">
+    <nav style="padding:6px 0">
+      <div class="nav-group-label">Genel</div>
+      <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
         <span class="nav-icon">◈</span> Dashboard
       </div>
-      <div class="nav-item" onclick="showPage('bookings')">
+      <div class="nav-item" data-page="stats" onclick="showPage('stats')">
+        <span class="nav-icon">📊</span> İstatistikler
+      </div>
+
+      <div class="nav-group-label">Transfer</div>
+      <div class="nav-item" data-page="bookings" onclick="showPage('bookings')">
         <span class="nav-icon">📋</span> Rezervasyonlar
         <span id="pendingBadge" style="margin-left:auto;background:rgba(251,191,36,0.2);color:#fbbf24;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none"></span>
       </div>
-      <div class="nav-item" onclick="showPage('drivers')">
+      <div class="nav-item" data-page="drivers" onclick="showPage('drivers')">
         <span class="nav-icon">🚐</span> Sürücüler
       </div>
-      <div class="nav-item" onclick="showPage('araclar')">
-        <span class="nav-icon">🚛</span> Araç Filosu
-      </div>
-      <div class="nav-item" onclick="showPage('routes')">
+      <div class="nav-item" data-page="routes" onclick="showPage('routes')">
         <span class="nav-icon">📍</span> Rotalar & Fiyatlar
       </div>
-      <div class="nav-item" onclick="showPage('stats')">
-        <span class="nav-icon">📊</span> İstatistikler
+
+      <div class="nav-group-label">Lojistik</div>
+      <div class="nav-item" data-page="araclar" onclick="showPage('araclar')">
+        <span class="nav-icon">🚛</span> Araç Filosu
       </div>
-      <div class="nav-item" onclick="showPage('support')">
-        <span class="nav-icon">💬</span> Canlı Destek
-        <span id="supportBadge" style="margin-left:auto;background:rgba(74,222,128,0.2);color:#4ade80;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
-      </div>
-      <div class="nav-item" onclick="showPage('ihaleler')">
-        <span class="nav-icon">🏗️</span> İhale Yönetimi
-      </div>
-      <div class="nav-item" onclick="showPage('insaat')">
-        <span class="nav-icon">🧱</span> İnşaat Yönetimi
-      </div>
-      <div class="nav-item" onclick="showPage('kurumlar')">
-        <span class="nav-icon">🏛️</span> Kurum Yönetimi
-      </div>
-      <div class="nav-item" onclick="showPage('sevkiyatlar')">
+      <div class="nav-item" data-page="sevkiyatlar" onclick="showPage('sevkiyatlar')">
         <span class="nav-icon">🚚</span> Sevkiyat Takip
       </div>
-      <div class="nav-item" onclick="showPage('yukbildirim')">
+      <div class="nav-item" data-page="yukbildirim" onclick="showPage('yukbildirim')">
         <span class="nav-icon">📦</span> Yük Bildirimleri
         <span id="yukBadge" style="margin-left:auto;background:rgba(251,191,36,0.2);color:#fbbf24;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
-      <div class="nav-item" onclick="showPage('iletisim')">
+
+      <div class="nav-group-label">Kurumsal</div>
+      <div class="nav-item" data-page="ihaleler" onclick="showPage('ihaleler')">
+        <span class="nav-icon">🏗️</span> İhale Yönetimi
+      </div>
+      <div class="nav-item" data-page="insaat" onclick="showPage('insaat')">
+        <span class="nav-icon">🧱</span> İnşaat Yönetimi
+      </div>
+      <div class="nav-item" data-page="kurumlar" onclick="showPage('kurumlar')">
+        <span class="nav-icon">🏛️</span> Kurum Yönetimi
+      </div>
+
+      <div class="nav-group-label">İletişim</div>
+      <div class="nav-item" data-page="support" onclick="showPage('support')">
+        <span class="nav-icon">💬</span> Canlı Destek
+        <span id="supportBadge" style="margin-left:auto;background:rgba(74,222,128,0.2);color:#4ade80;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
+      </div>
+      <div class="nav-item" data-page="iletisim" onclick="showPage('iletisim')">
         <span class="nav-icon">✉️</span> İletişim Mesajları
         <span id="iletisimBadge" style="margin-left:auto;background:rgba(96,165,250,0.2);color:#60a5fa;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
-      <div class="nav-item" onclick="showPage('ik')">
+      <div class="nav-item" data-page="ik" onclick="showPage('ik')">
         <span class="nav-icon">👔</span> İK Başvuruları
         <span id="ikBadge" style="margin-left:auto;background:rgba(167,139,250,0.2);color:#a78bfa;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
-      <div class="nav-item" onclick="showPage('teklifler')">
+      <div class="nav-item" data-page="teklifler" onclick="showPage('teklifler')">
         <span class="nav-icon">💰</span> Teklif Talepleri
         <span id="teklifBadge" style="margin-left:auto;background:rgba(5,150,105,0.15);color:#059669;font-size:0.62rem;padding:1px 6px;border-radius:20px;display:none">0</span>
       </div>
-      <div class="nav-item" onclick="showPage('settings')">
+
+      <div class="nav-group-label">Sistem</div>
+      <div class="nav-item" data-page="settings" onclick="showPage('settings')">
         <span class="nav-icon">⚙</span> Ayarlar
       </div>
     </nav>
@@ -504,7 +524,31 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
-      <div class="stats-row" id="statsRow">
+      <!-- Satır 1: Lojistik özet -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem" id="lojistikRow">
+        <div class="stat-card" style="cursor:pointer" onclick="showPage('sevkiyatlar')">
+          <div class="stat-label">Yolda Sevkiyat</div>
+          <div class="stat-val" id="st-sevk-yolda" style="color:#4ade80">—</div>
+          <div class="stat-sub">Aktif sevkiyat</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="showPage('sevkiyatlar')">
+          <div class="stat-label">Bekleyen Sevkiyat</div>
+          <div class="stat-val" id="st-sevk-bekle" style="color:#fbbf24">—</div>
+          <div class="stat-sub">Atanmayı bekliyor</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="showPage('araclar')">
+          <div class="stat-label">Seferdeki Araç</div>
+          <div class="stat-val" id="st-arac-sefer" style="color:#60a5fa">—</div>
+          <div class="stat-sub" id="st-arac-sub">Filoda</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="showPage('yukbildirim')">
+          <div class="stat-label">Yük Bildirimi</div>
+          <div class="stat-val" id="st-yuk-yeni" style="color:#a78bfa">—</div>
+          <div class="stat-sub">Okunmamış</div>
+        </div>
+      </div>
+      <!-- Satır 2: Transfer özet -->
+      <div class="stats-row" id="statsRow" style="margin-bottom:1rem">
         <div class="stat-card"><div class="stat-label">Toplam Rezervasyon</div><div class="stat-val" id="st-total">—</div></div>
         <div class="stat-card"><div class="stat-label">Bugünkü Transfer</div><div class="stat-val" id="st-today">—</div></div>
         <div class="stat-card"><div class="stat-label">Toplam Gelir</div><div class="stat-val" id="st-revenue">—</div><div class="stat-sub">Onaylı ödemeler</div></div>
@@ -520,14 +564,25 @@ tr:hover td{background:rgba(26,45,107,0.02)}
           <div id="topRoutesEl"></div>
         </div>
       </div>
-      <div class="table-wrap">
-        <div class="table-header">
-          <h3>Son Rezervasyonlar</h3>
-          <button class="btn btn-outline btn-sm" onclick="showPage('bookings')">Tümünü Gör →</button>
+      <!-- Son Sevkiyatlar + Son Rezervasyonlar yan yana -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0" id="dashBottomGrid">
+        <div class="table-wrap" style="margin-top:0">
+          <div class="table-header">
+            <h3>Son Sevkiyatlar</h3>
+            <button class="btn btn-outline btn-sm" onclick="showPage('sevkiyatlar')">Tümünü Gör →</button>
+          </div>
+          <table><thead><tr><th>Kod</th><th>Güzergah</th><th>Araç</th><th>Durum</th></tr></thead>
+          <tbody id="recentSevkiyatlar"></tbody></table>
         </div>
-        <table><thead><tr>
-          <th>Ref</th><th>Müşteri</th><th>Güzergah</th><th>Tarih</th><th>Tutar</th><th>Durum</th>
-        </tr></thead><tbody id="recentBookings"></tbody></table>
+        <div class="table-wrap" style="margin-top:0">
+          <div class="table-header">
+            <h3>Son Rezervasyonlar</h3>
+            <button class="btn btn-outline btn-sm" onclick="showPage('bookings')">Tümünü Gör →</button>
+          </div>
+          <table><thead><tr>
+            <th>Ref</th><th>Müşteri</th><th>Güzergah</th><th>Tutar</th><th>Durum</th>
+          </tr></thead><tbody id="recentBookings"></tbody></table>
+        </div>
       </div>
     </div>
 
@@ -993,8 +1048,36 @@ tr:hover td{background:rgba(26,45,107,0.02)}
     <!-- SEVKİYAT TAKİP -->
     <div class="page" id="page-sevkiyatlar">
       <div class="section-head">
-        <h2>Sevkiyat Takip Yönetimi</h2>
+        <h2>Sevkiyat Takip</h2>
         <button class="btn btn-gold" onclick="openSevkModal()">+ Yeni Sevkiyat</button>
+      </div>
+      <!-- Lojistik mini-dashboard -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1rem">
+        <div class="stat-card" style="padding:0.75rem 1rem;cursor:pointer" onclick="sevkFilterDurum('')">
+          <div class="stat-label">Toplam</div><div class="stat-val" id="sevk-stat-toplam">—</div>
+        </div>
+        <div class="stat-card" style="padding:0.75rem 1rem;cursor:pointer" onclick="sevkFilterDurum('yolda')">
+          <div class="stat-label">Yolda</div><div class="stat-val" id="sevk-stat-yolda" style="color:#4ade80">—</div>
+        </div>
+        <div class="stat-card" style="padding:0.75rem 1rem;cursor:pointer" onclick="sevkFilterDurum('beklemede')">
+          <div class="stat-label">Beklemede</div><div class="stat-val" id="sevk-stat-bekle" style="color:#fbbf24">—</div>
+        </div>
+        <div class="stat-card" style="padding:0.75rem 1rem;cursor:pointer" onclick="sevkFilterDurum('teslim_edildi')">
+          <div class="stat-label">Teslim</div><div class="stat-val" id="sevk-stat-teslim" style="color:#94a3b8">—</div>
+        </div>
+      </div>
+      <!-- Arama + filtre -->
+      <div style="display:flex;gap:0.6rem;margin-bottom:0.8rem;flex-wrap:wrap">
+        <input type="text" id="sevkSearch" placeholder="🔍  Müşteri, plaka veya takip kodu..." oninput="sevkFilterUygula()"
+          style="flex:1;min-width:200px;background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.5rem 0.75rem;border-radius:6px;font-family:var(--sans);font-size:0.82rem">
+        <select id="sevkFilterDurum" onchange="sevkFilterUygula()" style="background:#fff;border:0.5px solid #ccc;color:#0a1235;padding:0.5rem 0.75rem;border-radius:6px;font-family:var(--sans);font-size:0.82rem">
+          <option value="">Tüm Durumlar</option>
+          <option value="beklemede">Beklemede</option>
+          <option value="yolda">Yolda</option>
+          <option value="teslim_edildi">Teslim Edildi</option>
+          <option value="iptal">İptal</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="loadSevkiyatlar()">↻</button>
       </div>
 
       <!-- Modal -->
@@ -1430,6 +1513,38 @@ function enterAdmin() {
   loadDashboard();
   loadDrivers();
   loadRoutes();
+  // Badge polling — 45 saniyede bir tüm sayaçları güncelle
+  setInterval(refreshBadges, 45000);
+}
+
+async function refreshBadges() {
+  try {
+    const [yukRows, iletisimRows, ikRows, teklifRows, sevkRows, stats] = await Promise.all([
+      api('/api/yuk-bildirimleri').catch(() => []),
+      api('/api/iletisim').catch(() => []),
+      api('/api/is-basvurulari').catch(() => []),
+      api('/api/teklifler').catch(() => []),
+      api('/api/takip').catch(() => []),
+      api('/api/stats/dashboard').catch(() => null),
+    ]);
+    const setBadge = (id, count) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (count > 0) { el.textContent = count; el.style.display = 'inline-block'; }
+      else el.style.display = 'none';
+    };
+    setBadge('yukBadge',      yukRows.filter(r=>!r.okundu).length);
+    setBadge('iletisimBadge', iletisimRows.filter(r=>!r.okundu).length);
+    setBadge('ikBadge',       ikRows.filter(r=>!r.okundu).length);
+    setBadge('teklifBadge',   teklifRows.filter(r=>!r.okundu).length);
+    if (stats?.pendingCount > 0) setBadge('pendingBadge', stats.pendingCount);
+    // Dashboard lojistik kartları
+    if (document.getElementById('page-dashboard')?.classList.contains('active')) {
+      document.getElementById('st-sevk-yolda').textContent = sevkRows.filter(s=>s.durum==='yolda').length;
+      document.getElementById('st-sevk-bekle').textContent = sevkRows.filter(s=>s.durum==='beklemede').length;
+      document.getElementById('st-yuk-yeni').textContent   = yukRows.filter(r=>!r.okundu).length;
+    }
+  } catch(_) {}
 }
 
 
@@ -1857,8 +1972,8 @@ function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const pages = ['dashboard','bookings','drivers','araclar','routes','stats','support','ihaleler','insaat','kurumlar','sevkiyatlar','yukbildirim','iletisim','ik','teklifler','settings'];
-  document.querySelectorAll('.nav-item')[pages.indexOf(name)].classList.add('active');
+  const activeNav = document.querySelector(`.nav-item[data-page="${name}"]`);
+  if (activeNav) activeNav.classList.add('active');
   const titles = {dashboard:'Dashboard',bookings:'Rezervasyonlar',drivers:'Sürücüler',araclar:'Araç Filosu',routes:'Rotalar & Fiyatlar',stats:'İstatistikler',support:'Canlı Destek',ihaleler:'İhale Yönetimi',insaat:'İnşaat Yönetimi',kurumlar:'Kurum Yönetimi',sevkiyatlar:'Sevkiyat Takip',yukbildirim:'Yük Bildirimleri',iletisim:'İletişim Mesajları',ik:'İK Başvuruları',teklifler:'Teklif Talepleri',settings:'Ayarlar'};
   document.getElementById('pageTitle').textContent = titles[name];
   closeMobileSidebar();
@@ -1900,6 +2015,35 @@ async function api(path, opts={}) {
 
 /* ── DASHBOARD ── */
 async function loadDashboard() {
+  // Lojistik özet
+  try {
+    const [sevkRows, aracRows, yukRows] = await Promise.all([
+      api('/api/takip').catch(() => []),
+      api('/api/araclar').catch(() => []),
+      api('/api/yuk-bildirimleri').catch(() => []),
+    ]);
+    const sevkYolda  = sevkRows.filter(s => s.durum === 'yolda').length;
+    const sevkBekle  = sevkRows.filter(s => s.durum === 'beklemede').length;
+    const aracSefer  = aracRows.filter(a => a.durum === 'seferde').length;
+    const yukYeni    = yukRows.filter(r => !r.okundu).length;
+    document.getElementById('st-sevk-yolda').textContent = sevkYolda;
+    document.getElementById('st-sevk-bekle').textContent = sevkBekle;
+    document.getElementById('st-arac-sefer').textContent = aracSefer;
+    document.getElementById('st-arac-sub').textContent   = `${aracRows.length} araçtan`;
+    document.getElementById('st-yuk-yeni').textContent   = yukYeni;
+
+    // Son sevkiyatlar tablosu
+    const DURUM_BADGE_S = { beklemede:'<span style="background:rgba(251,191,36,0.15);color:#fbbf24;font-size:10px;padding:2px 8px;border-radius:20px">Beklemede</span>', yolda:'<span style="background:rgba(74,222,128,0.15);color:#4ade80;font-size:10px;padding:2px 8px;border-radius:20px">Yolda</span>', teslim_edildi:'<span style="background:rgba(148,163,184,0.15);color:#94a3b8;font-size:10px;padding:2px 8px;border-radius:20px">Teslim</span>', iptal:'<span style="background:rgba(248,113,113,0.15);color:#f87171;font-size:10px;padding:2px 8px;border-radius:20px">İptal</span>' };
+    document.getElementById('recentSevkiyatlar').innerHTML = sevkRows.slice(0,5).map(s => `
+      <tr>
+        <td style="color:var(--gold);font-size:0.75rem;font-family:monospace">${s.takip_kodu}</td>
+        <td style="font-size:0.78rem">${s.kalkis}<br><span style="color:var(--muted)">→ ${s.varis}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted)">${s.arac_plaka||'—'}</td>
+        <td>${DURUM_BADGE_S[s.durum]||s.durum}</td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1rem">Sevkiyat yok</td></tr>';
+  } catch(e) { console.error('Lojistik özet yüklenemedi:', e); }
+
+  // Transfer stats
   try {
     const stats = await api('/api/stats/dashboard');
     document.getElementById('st-total').textContent   = stats.totalBookings;
@@ -1944,13 +2088,12 @@ async function loadDashboard() {
     const recent = await api('/api/bookings');
     document.getElementById('recentBookings').innerHTML = recent.slice(0,6).map(b => `
       <tr>
-        <td style="font-family:monospace;color:var(--gold);font-size:0.78rem">${b.booking_ref}</td>
-        <td>${escapeHtml(b.customer_name)}</td>
-        <td style="font-size:0.78rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
-        <td style="font-size:0.78rem">${b.transfer_date}</td>
-        <td style="color:var(--gold)">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
+        <td style="font-family:monospace;color:var(--gold);font-size:0.75rem">${b.booking_ref}</td>
+        <td style="font-size:0.8rem">${escapeHtml(b.customer_name)}</td>
+        <td style="font-size:0.75rem;color:var(--muted)">${b.from_point.replace('Gazipaşa Havalimanı (GZP)','GZP')} → ${b.to_point}</td>
+        <td style="color:var(--gold);font-size:0.8rem">₺${parseInt(b.price).toLocaleString('tr-TR')}</td>
         <td><span class="badge badge-${b.status}">${statusLabel(b.status)}</span></td>
-      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1rem">Henüz rezervasyon yok.</td></tr>';
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1rem">Henüz rezervasyon yok.</td></tr>';
   } catch(e) { console.error('Son rezervasyonlar yüklenemedi:', e); }
 }
 
@@ -2637,12 +2780,32 @@ const DURUM_BADGE = {
   iptal:         '<span style="background:rgba(248,113,113,.15);color:#f87171;padding:2px 8px;border-radius:12px;font-size:0.72rem">❌ İptal</span>',
 };
 
-async function loadSevkiyatlar() {
-  try {
-    const rows = await api('/api/takip');
-    const tbody = document.getElementById('sevkBody');
-    document.getElementById('sevkCount').textContent = rows.length + ' sevkiyat';
-    tbody.innerHTML = rows.map(s => {
+let _allSevkiyatlar = [];
+
+function sevkFilterDurum(durum) {
+  document.getElementById('sevkFilterDurum').value = durum;
+  sevkFilterUygula();
+}
+
+function sevkFilterUygula() {
+  const q     = (document.getElementById('sevkSearch')?.value || '').toLowerCase();
+  const durum = document.getElementById('sevkFilterDurum')?.value || '';
+  const filtered = _allSevkiyatlar.filter(s => {
+    const matchDurum = !durum || s.durum === durum;
+    const matchQ = !q || (s.takip_kodu||'').toLowerCase().includes(q)
+      || (s.musteri_adi||'').toLowerCase().includes(q)
+      || (s.arac_plaka||'').toLowerCase().includes(q)
+      || (s.kalkis||'').toLowerCase().includes(q)
+      || (s.varis||'').toLowerCase().includes(q);
+    return matchDurum && matchQ;
+  });
+  document.getElementById('sevkCount').textContent = filtered.length + ' / ' + _allSevkiyatlar.length + ' sevkiyat';
+  renderSevkTable(filtered);
+}
+
+function renderSevkTable(rows) {
+  const tbody = document.getElementById('sevkBody');
+  tbody.innerHTML = rows.map(s => {
       const sq = JSON.stringify(s).replace(/"/g,'&quot;');
       return `
       <tr>
@@ -2683,7 +2846,21 @@ async function loadSevkiyatlar() {
           </span>
         </td>
       </tr>`;
-    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Henüz sevkiyat yok.</td></tr>';
+    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Sonuç bulunamadı.</td></tr>';
+}
+
+async function loadSevkiyatlar() {
+  try {
+    const rows = await api('/api/takip');
+    _allSevkiyatlar = rows;
+    // Stat kartları
+    document.getElementById('sevk-stat-toplam').textContent = rows.length;
+    document.getElementById('sevk-stat-yolda').textContent  = rows.filter(s=>s.durum==='yolda').length;
+    document.getElementById('sevk-stat-bekle').textContent  = rows.filter(s=>s.durum==='beklemede').length;
+    document.getElementById('sevk-stat-teslim').textContent = rows.filter(s=>s.durum==='teslim_edildi').length;
+    const tbody = document.getElementById('sevkBody');
+    document.getElementById('sevkCount').textContent = rows.length + ' sevkiyat';
+    sevkFilterUygula();
   } catch(e) { console.error(e); }
 }
 
