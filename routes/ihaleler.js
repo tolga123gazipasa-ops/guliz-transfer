@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
       'SELECT * FROM ihaleler ORDER BY durum DESC, sira ASC, id ASC'
     );
     res.json(rows);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // Yeni ihale ekle (admin)
@@ -24,7 +24,7 @@ router.post('/', auth, async (req, res) => {
       [kurum.trim(), baslik.trim(), tur.trim(), durum]
     );
     res.status(201).json(rows[0]);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // İhale güncelle (admin)
@@ -39,7 +39,7 @@ router.put('/:id', auth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // İhale sil (admin)
@@ -47,7 +47,7 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     await db.query('DELETE FROM ihaleler WHERE id=$1', [req.params.id]);
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

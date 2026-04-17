@@ -41,15 +41,16 @@ const db = require('./models/db');
 
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server, {
-  cors: { origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : true }
-});
+const io     = new Server(server, { cors: { origin: '*' } });
 
 app.set('trust proxy', 1);
 app.use(compression());
 app.use(helmet({
-  contentSecurityPolicy: false, // inline script'ler var (admin.html), CSP ayrıca ayarlanabilir
-  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy:        false, // inline script'ler var
+  crossOriginEmbedderPolicy:    false, // Socket.IO + external resources
+  crossOriginOpenerPolicy:      false, // popup / OAuth akışları
+  crossOriginResourcePolicy:    false, // CDN kaynakları (Leaflet, fonts)
+  originAgentCluster:           false,
 }));
 
 /* ── www → non-www yönlendirmesi (SEO: tek canonical domain) ── */
@@ -192,7 +193,7 @@ app.post('/api/yuk-bildirimi', async (req, res) => {
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.get('/api/yuk-bildirimleri', async (req, res) => {
@@ -203,7 +204,7 @@ app.get('/api/yuk-bildirimleri', async (req, res) => {
       `SELECT * FROM yuk_bildirimleri ORDER BY created_at DESC LIMIT 200`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
@@ -212,7 +213,7 @@ app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
     try {
       await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
       res.json({ ok: true });
-    } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
   });
 });
 
@@ -222,7 +223,7 @@ app.delete('/api/yuk-bildirimleri/:id', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM yuk_bildirimleri WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── İLETİŞİM MESAJLARI ── */
@@ -250,7 +251,7 @@ app.post('/api/iletisim', async (req, res) => {
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.get('/api/iletisim', async (req, res) => {
@@ -261,7 +262,7 @@ app.get('/api/iletisim', async (req, res) => {
       `SELECT * FROM iletisim_mesajlari ORDER BY created_at DESC LIMIT 300`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.delete('/api/iletisim/:id', async (req, res) => {
@@ -270,7 +271,7 @@ app.delete('/api/iletisim/:id', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM iletisim_mesajlari WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── İK BAŞVURULARI ── */
@@ -320,7 +321,7 @@ app.get('/api/ik', async (req, res) => {
       `SELECT * FROM is_basvurulari ORDER BY created_at DESC LIMIT 300`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── CV İNDİR ── */
@@ -345,7 +346,7 @@ app.get('/api/ik/:id/cv', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(rows[0].cv_original_name || 'cv.pdf')}"`);
     res.setHeader('Content-Type', 'application/pdf');
     res.sendFile(filePath);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.delete('/api/ik/:id', async (req, res) => {
@@ -359,7 +360,7 @@ app.delete('/api/ik/:id', async (req, res) => {
     }
     await db.query(`DELETE FROM is_basvurulari WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── TEKLİF TALEPLERİ ── */
@@ -388,7 +389,7 @@ app.post('/api/teklif', async (req, res) => {
       `🕐 ${new Date().toLocaleString('tr-TR')}`
     );
     res.json({ ok: true, id: rows[0].id });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.get('/api/teklifler', async (req, res) => {
@@ -399,7 +400,7 @@ app.get('/api/teklifler', async (req, res) => {
       `SELECT * FROM teklifler ORDER BY created_at DESC LIMIT 300`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 app.delete('/api/teklifler/:id', async (req, res) => {
@@ -408,7 +409,7 @@ app.delete('/api/teklifler/:id', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM teklifler WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── CHAT SESSION SİL ── */
@@ -433,7 +434,7 @@ app.delete('/api/chat/:sessionId', async (req, res) => {
     }
     broadcastVisitors();
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ══════════════════════════════════════════

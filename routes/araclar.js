@@ -29,7 +29,7 @@ router.get('/public', async (req, res) => {
       ORDER BY a.created_at DESC
     `);
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: tüm araçlar (aktif sevkiyat konumuyla birlikte) ── */
@@ -51,7 +51,7 @@ router.get('/', auth, async (req, res) => {
       ORDER BY a.created_at DESC
     `);
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: araç konumu güncelle ── */
@@ -64,7 +64,7 @@ router.patch('/:id/konum', auth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Araç bulunamadı.' });
     res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: araç ekle ── */
@@ -79,7 +79,7 @@ router.post('/', auth, async (req, res) => {
        surucu_adi||null, surucu_tel||null, durum||'musait', notlar||null]
     );
     res.status(201).json(rows[0]);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: araç güncelle ── */
@@ -95,7 +95,7 @@ router.put('/:id', auth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Araç bulunamadı.' });
     res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: araç sil ── */
@@ -103,7 +103,7 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     await db.query('DELETE FROM araclar WHERE id=$1', [req.params.id]);
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

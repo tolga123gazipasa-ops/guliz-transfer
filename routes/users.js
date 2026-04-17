@@ -50,7 +50,7 @@ router.post('/register', async (req, res) => {
       userId: user.id,
       needsVerification: true,
     });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── SMS Doğrula ── */
@@ -68,7 +68,7 @@ router.post('/verify-phone', async (req, res) => {
     await db.query('UPDATE users SET phone_verified=true, otp_code=NULL, otp_expires_at=NULL WHERE id=$1', [userId]);
     const token = genToken(user);
     res.json({ message: 'Telefon doğrulandı', token, user: { id: user.id, name: user.name, email: user.email, phone: user.phone } });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── OTP yeniden gönder ── */
@@ -84,7 +84,7 @@ router.post('/resend-otp', async (req, res) => {
     sendOtp(user.phone, otp).catch(e => console.error('SMS:', e.message));
     sendOtpEmail(user, otp).catch(() => {});
     res.json({ message: 'Kod yeniden gönderildi' });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Giriş ── */
@@ -103,7 +103,7 @@ router.post('/login', async (req, res) => {
       token,
       user: { id: user.id, name: user.name, email: user.email, phone: user.phone, phone_verified: user.phone_verified },
     });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Şifremi Unuttum — telefon ile OTP gönder ── */
@@ -122,7 +122,7 @@ router.post('/forgot-password', async (req, res) => {
     sendOtp(phone, msg).catch(e => console.error('SMS:', e.message));
     sendOtpEmail(user, otp).catch(() => {});
     res.json({ message: 'Kod gönderildi', userId: user.id });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Şifre Sıfırla — OTP doğrula + yeni şifre ── */
@@ -143,7 +143,7 @@ router.post('/reset-password', async (req, res) => {
     const hash = await bcrypt.hash(newPassword, 12);
     await db.query('UPDATE users SET password=$1, otp_code=NULL, otp_expires_at=NULL WHERE id=$2', [hash, userId]);
     res.json({ message: 'Şifre başarıyla güncellendi. Giriş yapabilirsiniz.' });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Profil (auth gerekli) ── */
@@ -169,7 +169,7 @@ router.put('/me', userAuth, async (req, res) => {
   try {
     const { rows } = await db.query('UPDATE users SET name=$1, phone=$2 WHERE id=$3 RETURNING id,name,email,phone', [name, phone, req.user.id]);
     res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

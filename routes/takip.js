@@ -20,7 +20,7 @@ router.get('/aktif', async (req, res) => {
        FROM sevkiyatlar WHERE durum='yolda' AND mevcut_lat IS NOT NULL ORDER BY updated_at DESC`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Herkese açık: takip kodu sorgula ── */

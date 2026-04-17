@@ -32,7 +32,7 @@ router.get('/', adminAuth, async (req, res) => {
        FROM kurumlar ORDER BY created_at DESC`
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: Kurum oluştur ── */
@@ -74,7 +74,7 @@ router.put('/:id', adminAuth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Kurum bulunamadı' });
     res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Admin: Kurum sil ── */
@@ -82,7 +82,7 @@ router.delete('/:id', adminAuth, async (req, res) => {
   try {
     await db.query('DELETE FROM kurumlar WHERE id=$1', [req.params.id]);
     res.json({ message: 'Kurum silindi' });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Public: Kurum giriş ── */
@@ -103,7 +103,7 @@ router.post('/login', async (req, res) => {
       token,
       kurum: { id: kurum.id, kurum_adi: kurum.kurum_adi, username: kurum.username, yetkili_ad: kurum.yetkili_ad }
     });
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Kurum: Kendi sevkiyatları ── */
@@ -118,7 +118,7 @@ router.get('/:id/sevkiyatlar', kurumAuth, async (req, res) => {
       [req.params.id]
     );
     res.json(rows);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── Kurum: Kendi bilgisi ── */
@@ -130,7 +130,7 @@ router.get('/me', kurumAuth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(rows[0]);
-  } catch (e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

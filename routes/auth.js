@@ -20,7 +20,7 @@ router.post('/login', async (req, res) => {
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
     tgAdminLogin(rows[0], ip).catch(() => {});
     res.json({ token, admin: { id: rows[0].id, name: rows[0].name, email: rows[0].email, role: rows[0].role } });
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.post('/change-password', authMW, async (req, res) => {
@@ -33,7 +33,7 @@ router.post('/change-password', authMW, async (req, res) => {
     const hash = await bcrypt.hash(newPassword, 12);
     await db.query('UPDATE admins SET password=$1 WHERE id=$2', [hash, req.admin.id]);
     res.json({ message: 'Şifre güncellendi' });
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.put('/update-profile', authMW, async (req, res) => {
@@ -47,7 +47,7 @@ router.put('/update-profile', authMW, async (req, res) => {
       [name, email, req.admin.id]
     );
     res.json({ message: 'Profil güncellendi', admin: rows[0] });
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;

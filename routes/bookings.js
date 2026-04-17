@@ -32,7 +32,7 @@ router.get('/', auth, async (req, res) => {
   }
   q += ' ORDER BY b.created_at DESC';
   try { const { rows } = await db.query(q, p); res.json(rows); }
-  catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.get('/:id', auth, async (req, res) => {
@@ -42,7 +42,7 @@ router.get('/:id', auth, async (req, res) => {
        FROM bookings b LEFT JOIN drivers d ON b.driver_id=d.id WHERE b.id=$1`, [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Bulunamadı' });
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // Public endpoint — müşteri sitesinden rezervasyon
@@ -82,7 +82,7 @@ router.post('/', async (req, res) => {
     // Müşteri onay maili
     sendBookingConfirmation({ name: customer_name, email: customer_email }, booking).catch(() => {});
     res.status(201).json(booking);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 // Ödeme kaydet — public endpoint (iyzico callback gibi)
@@ -109,7 +109,7 @@ router.post('/:id/payment', async (req, res) => {
     notifyAdminSms(`[GULIZ] ODEME ALINDI: ${booking.booking_ref} | ${booking.customer_name} | TL${parseInt(finalAmount).toLocaleString('tr-TR')}`).catch(() => {});
     tgPayment(booking, finalAmount).catch(() => {});
     res.json({ message: 'Ödeme kaydedildi', booking_ref: booking.booking_ref });
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.patch('/:id/status', auth, async (req, res) => {
@@ -120,7 +120,7 @@ router.patch('/:id/status', auth, async (req, res) => {
     const { rows } = await db.query(
       'UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *', [status, req.params.id]);
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 router.patch('/:id/assign', auth, async (req, res) => {
@@ -131,7 +131,7 @@ router.patch('/:id/assign', auth, async (req, res) => {
       [driver_id, req.params.id]);
     await db.query("UPDATE drivers SET status='busy' WHERE id=$1", [driver_id]);
     res.json(rows[0]);
-  } catch(e) { res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 module.exports = router;
