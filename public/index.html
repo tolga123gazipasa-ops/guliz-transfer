@@ -1013,7 +1013,7 @@ function posOnPingPong(pts,km){
    • Gece 22:00–06:00: sürücü uyur, araç durur
    • Gündüz: hız×aktif_saat kümülatif km
 ════════════════════════════ */
-const EPOCH=1745107200000; // 2026-04-20 00:00 UTC — sabit referans
+const EPOCH=1742860800000; // 2026-03-25 00:00 UTC — araçlar 23 gün önce yola çıktı
 const DRIVE_START=6, DRIVE_END=22, DRIVE_H=16; // 16 saat/gün
 
 /* nowMs anına kadar toplam aktif (sürüş) saati */
@@ -1136,16 +1136,23 @@ function effectiveStatus(t,nowMs){
 const SC={moving:'#4ade80',offline:'#6b7280',mola:'#fbbf24',yukleme:'#60a5fa',istirahat:'#8b5cf6'};
 const SL={moving:'AKTİF',offline:'KAPALI',mola:'MOLA',yukleme:'YÜKLEME',istirahat:'İSTİRAHAT'};
 
-function buildTruckIcon(eSt){
+function calcBearing(from,to){
+  if(!from||!to) return 0;
+  const lat1=from[0]*Math.PI/180,lat2=to[0]*Math.PI/180,dLng=(to[1]-from[1])*Math.PI/180;
+  const y=Math.sin(dLng)*Math.cos(lat2);
+  const x=Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+  return(Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+
+function buildTruckIcon(eSt,rot){
   const c=SC[eSt], isAnim=eSt==='moving';
-  const pulse=isAnim?`<div style="position:absolute;inset:-6px;border-radius:50%;background:${c}20;animation:pulse 1.5s infinite;"></div>`:'';
+  const pulse=isAnim?`<div style="position:absolute;inset:-8px;border-radius:50%;background:${c}22;animation:pulse 1.8s ease-out infinite;pointer-events:none"></div>`:'';
+  const arrow=isAnim?`<div style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:8px solid rgba(0,0,0,0.55);transform:rotate(${rot||0}deg);position:absolute;top:50%;left:50%;margin:-4px 0 0 -4px;"></div>`:'';
   return L.divIcon({
-    html:`<div style="position:relative;width:14px;height:14px;">${pulse}
-      <div style="width:14px;height:14px;background:${c};border-radius:50%;
-        border:2px solid rgba(255,255,255,0.85);
-        box-shadow:0 0 ${isAnim?'10px':'4px'} ${c};position:relative;z-index:1;"></div>
+    html:`<div style="position:relative;width:22px;height:22px;">${pulse}
+      <div style="position:absolute;inset:0;border-radius:50%;background:${c};border:2.5px solid rgba(255,255,255,0.9);box-shadow:0 0 ${isAnim?'12':'5'}px ${c}aa;">${arrow}</div>
     </div>`,
-    iconSize:[14,14],iconAnchor:[7,7],className:''
+    iconSize:[22,22],iconAnchor:[11,11],className:''
   });
 }
 
@@ -1174,17 +1181,39 @@ function popupContent(t,idx,nowMs){
 
 /* ── Harita ── */
 let atMap=null,atMarkers={},atInterval=null,atInited=false;
+let atPrev={},atTarget={},atLastTick=Date.now(),atRaf=null;
+const LERP_MS=2500; // smooth geçiş süresi (ms)
+
+/* Smooth pozisyon interpolasyonu — her frame */
+function atAnimFrame(){
+  if(!atMap) return;
+  const now=Date.now();
+  const t=Math.min(1,(now-atLastTick)/LERP_MS);
+  TRUCKS.forEach((_,i)=>{
+    if(!atMarkers[i]||!atPrev[i]||!atTarget[i]) return;
+    const lat=atPrev[i][0]+(atTarget[i][0]-atPrev[i][0])*t;
+    const lng=atPrev[i][1]+(atTarget[i][1]-atPrev[i][1])*t;
+    atMarkers[i].setLatLng([lat,lng]);
+  });
+  atRaf=requestAnimationFrame(atAnimFrame);
+}
 
 function updateTrucks(nowMs){
   TRUCKS.forEach((t,i)=>{
     const eSt=effectiveStatus(t,nowMs);
-    const pos=getTruckPos(t,i,nowMs);
+    const newPos=getTruckPos(t,i,nowMs);
+    // Bearing hesapla (smooth için mevcut marker konumundan)
+    const curLatLng=atMarkers[i]?.getLatLng();
+    const from=curLatLng?[curLatLng.lat,curLatLng.lng]:newPos;
+    const rot=calcBearing(from,newPos);
     if(atMarkers[i]){
-      atMarkers[i].setLatLng(pos);
-      atMarkers[i].setIcon(buildTruckIcon(eSt));
+      atPrev[i]=from;
+      atTarget[i]=newPos;
+      atMarkers[i].setIcon(buildTruckIcon(eSt,rot));
       atMarkers[i].getPopup()?.setContent(popupContent(t,i,nowMs));
     }
   });
+  atLastTick=nowMs;
   renderSidebar(nowMs);
   const el=document.getElementById('at-update-time');
   if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
@@ -1219,21 +1248,28 @@ window.atFocusTruck=function(i){
 function initAtMap(){
   if(atInited) return;
   atInited=true;
-  atMap=L.map('at-map',{center:[42.5,35.0],zoom:5,zoomControl:false,attributionControl:false});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18}).addTo(atMap);
+  atMap=L.map('at-map',{center:[39.5,33.5],zoom:6,zoomControl:false,attributionControl:false});
+  L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{subdomains:['0','1','2','3'],maxZoom:20,attribution:'© Google Maps'}).addTo(atMap);
   L.control.zoom({position:'topright'}).addTo(atMap);
   const nowMs=Date.now();
   TRUCKS.forEach((t,i)=>{
     const eSt=effectiveStatus(t,nowMs);
     const pos=getTruckPos(t,i,nowMs);
-    atMarkers[i]=L.marker(pos,{icon:buildTruckIcon(eSt)})
+    atPrev[i]=pos; atTarget[i]=pos;
+    atMarkers[i]=L.marker(pos,{icon:buildTruckIcon(eSt,0)})
       .bindPopup(popupContent(t,i,nowMs),{className:'at-popup',maxWidth:240})
       .addTo(atMap);
   });
   renderSidebar(nowMs);
   const el=document.getElementById('at-update-time');
   if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
-  atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
+  // Yol rotalarını arka planda yükle
+  loadRoadRoutes().then(()=>{ if(roadReady) updateTrucks(Date.now()); });
+  // 2.5 sn'de bir pozisyon güncelle + RAF ile smooth hareket
+  atLastTick=nowMs;
+  atInterval=setInterval(()=>updateTrucks(Date.now()),2500);
+  if(atRaf) cancelAnimationFrame(atRaf);
+  atRaf=requestAnimationFrame(atAnimFrame);
 }
 
 /* ════════════════════════════════════════════════════
@@ -1287,42 +1323,6 @@ async function loadRoadRoutes() {
 
 /* Kullanılacak rota noktaları: OSRM varsa yol üzerinde, yoksa düz çizgi */
 function getRoutePts(key){ return (ROAD[key]?.length>5) ? ROAD[key] : R[key]; }
-
-/* initAtMap içinde tiles değişti → Google Maps */
-function initAtMap(){
-  if(atInited) return;
-  atInited=true;
-  atMap=L.map('at-map',{center:[39.5,33.5],zoom:6,zoomControl:false,attributionControl:false});
-
-  /* Google Maps standart yol haritası */
-  L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
-    subdomains:['0','1','2','3'],
-    maxZoom:20,
-    attribution:'© Google Maps'
-  }).addTo(atMap);
-
-  L.control.zoom({position:'topright'}).addTo(atMap);
-
-  const nowMs=Date.now();
-  TRUCKS.forEach((t,i)=>{
-    const eSt=effectiveStatus(t,nowMs);
-    const pos=getTruckPos(t,i,nowMs);
-    atMarkers[i]=L.marker(pos,{icon:buildTruckIcon(eSt)})
-      .bindPopup(popupContent(t,i,nowMs),{className:'at-popup',maxWidth:240})
-      .addTo(atMap);
-  });
-
-  renderSidebar(nowMs);
-  const el=document.getElementById('at-update-time');
-  if(el) el.textContent=`Son güncelleme: ${fmtTime(nowMs)}`;
-
-  /* Yol rotalarını arka planda yükle */
-  loadRoadRoutes().then(()=>{
-    if(roadReady) updateTrucks(Date.now()); // rotalar hazır → yeniden çiz
-  });
-
-  atInterval=setInterval(()=>updateTrucks(Date.now()),6000);
-}
 
 /* ── Erişim anahtarları (localStorage) ── */
 const AT_FREE_KEY    = 'at_free_expires';   // 45 sn ücretsiz sürenin bitiş zamanı
@@ -1398,7 +1398,8 @@ window.closeAracTakip = function(){
   document.querySelector('.chat-btn').style.zIndex = '';
   document.getElementById('chatBox').style.zIndex  = '';
   if(atInterval){ clearInterval(atInterval); atInterval = null; }
-  atInited = false; atMarkers = {};
+  if(atRaf){ cancelAnimationFrame(atRaf); atRaf = null; }
+  atInited = false; atMarkers = {}; atPrev = {}; atTarget = {};
   if(atMap){ atMap.remove(); atMap = null; }
 };
 
