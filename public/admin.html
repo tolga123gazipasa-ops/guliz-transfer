@@ -3030,6 +3030,16 @@ async function aiSevkiyatParse() {
   }
 }
 
+/* Nominatim ile şehir/adres → koordinat (Google Maps key gerektirmez) */
+async function geocodeNominatim(text) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(text + ', Türkiye')}&format=json&limit=1`);
+    const d = await r.json();
+    if (d[0]) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
+  } catch(_) {}
+  return null;
+}
+
 async function saveSevk() {
   const id      = document.getElementById('sevk-edit-id').value;
   const musteri = document.getElementById('sevk-musteri').value.trim();
@@ -3040,6 +3050,25 @@ async function saveSevk() {
   if (!musteri || !kalkis || !varis) {
     msg.textContent = 'Müşteri, kalkış ve varış zorunludur.';
     msg.style.cssText = 'display:block;color:#f87171'; return;
+  }
+
+  let kalkis_lat = parseFloat(document.getElementById('sevk-kalkis-lat').value) || null;
+  let kalkis_lng = parseFloat(document.getElementById('sevk-kalkis-lng').value) || null;
+  let varis_lat  = parseFloat(document.getElementById('sevk-varis-lat').value)  || null;
+  let varis_lng  = parseFloat(document.getElementById('sevk-varis-lng').value)  || null;
+
+  // Koordinat yoksa otomatik geocode et
+  if (!kalkis_lat || !kalkis_lng) {
+    msg.textContent = '📍 Kalkış konumu aranıyor...';
+    msg.style.cssText = 'display:block;color:#a78bfa';
+    const g = await geocodeNominatim(kalkis);
+    if (g) { kalkis_lat = g.lat; kalkis_lng = g.lng; }
+  }
+  if (!varis_lat || !varis_lng) {
+    msg.textContent = '📍 Varış konumu aranıyor...';
+    msg.style.cssText = 'display:block;color:#a78bfa';
+    const g = await geocodeNominatim(varis);
+    if (g) { varis_lat = g.lat; varis_lng = g.lng; }
   }
 
   const body = {
@@ -3055,10 +3084,7 @@ async function saveSevk() {
     notlar:           document.getElementById('sevk-notlar').value.trim(),
     arac_id:          parseInt(document.getElementById('sevk-arac-id')?.value) || null,
     yuk_cinsi:        document.getElementById('sevk-yuk-cinsi')?.value || null,
-    kalkis_lat:       parseFloat(document.getElementById('sevk-kalkis-lat').value) || null,
-    kalkis_lng:       parseFloat(document.getElementById('sevk-kalkis-lng').value) || null,
-    varis_lat:        parseFloat(document.getElementById('sevk-varis-lat').value) || null,
-    varis_lng:        parseFloat(document.getElementById('sevk-varis-lng').value) || null,
+    kalkis_lat, kalkis_lng, varis_lat, varis_lng,
     mevcut_lat:       parseFloat(document.getElementById('sevk-konum-lat').value) || null,
     mevcut_lng:       parseFloat(document.getElementById('sevk-konum-lng').value) || null,
     rota_polyline:    document.getElementById('sevk-rota-polyline')?.value || null,
