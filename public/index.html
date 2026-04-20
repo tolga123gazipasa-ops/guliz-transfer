@@ -1410,8 +1410,10 @@ function getRoutePts(key){ return (ROAD[key]?.length>5) ? ROAD[key] : R[key]; }
 /* ── Erişim anahtarları (localStorage) ── */
 const AT_FREE_KEY    = 'at_free_expires';   // 45 sn ücretsiz sürenin bitiş zamanı
 const AT_ACCESS_KEY  = 'at_access_until';   // doğru şifre sonrası 1 saatlik erişim bitiş zamanı
+const AT_LOCKED_KEY  = 'at_locked_until';   // 45 sn dolunca 24 saatlik kilit bitiş zamanı
 const AT_FREE_MS     = 45 * 1000;           // 45 saniye
 const AT_SESSION_MS  = 3600 * 1000;         // 1 saat
+const AT_LOCK_MS     = 24 * 3600 * 1000;    // 24 saat kilit
 
 let atPwTimer = null;
 
@@ -1459,6 +1461,8 @@ window.openAracTakip = function(){
       if(Date.now() > acc){
         if(cdEl) cdEl.textContent = '';
         clearInterval(atPwTimer); atPwTimer = null;
+        /* Oturum bitti → 24 saatlik kilit başlat */
+        localStorage.setItem(AT_LOCKED_KEY, (Date.now() + AT_LOCK_MS).toString());
         showAtPwScreen();
         return;
       }
@@ -1468,9 +1472,17 @@ window.openAracTakip = function(){
     return;
   }
 
-  /* 2) 45 saniyelik ücretsiz süre — her açılışta taze başlar */
-  const freeExpires = now + AT_FREE_MS;
-  localStorage.setItem(AT_FREE_KEY, freeExpires.toString());
+  /* 2) 24 saatlik kilit aktif mi? */
+  const lockedUntil = parseInt(localStorage.getItem(AT_LOCKED_KEY) || '0');
+  if(lockedUntil > now){
+    showAtPwScreen();
+    return;
+  }
+
+  /* 3) 45 saniyelik ücretsiz süre — sadece ilk açılışta başlar, yenilemede devam eder */
+  const storedFree = parseInt(localStorage.getItem(AT_FREE_KEY) || '0');
+  const freeExpires = (storedFree > now) ? storedFree : now + AT_FREE_MS;
+  if(storedFree <= now) localStorage.setItem(AT_FREE_KEY, freeExpires.toString());
 
   /* Her saniye kontrol + geri sayım göster */
   atPwTimer = setInterval(()=>{
@@ -1488,6 +1500,9 @@ window.openAracTakip = function(){
     } else {
       if(cdEl) cdEl.textContent = '';
       clearInterval(atPwTimer); atPwTimer = null;
+      /* 45 saniye doldu → 24 saatlik kilit başlat */
+      localStorage.removeItem(AT_FREE_KEY);
+      localStorage.setItem(AT_LOCKED_KEY, (Date.now() + AT_LOCK_MS).toString());
       showAtPwScreen();
     }
   }, 1000);
@@ -1512,7 +1527,9 @@ window.checkAtPassword = function(){
   const pw = document.getElementById('atPwInput').value;
   const errEl = document.getElementById('atPwErr');
   if(pw === '1453'){
-    /* Doğru şifre → 1 saatlik oturum kaydet */
+    /* Doğru şifre → kilidi ve ücretsiz süreyi temizle, 1 saatlik oturum kaydet */
+    localStorage.removeItem(AT_LOCKED_KEY);
+    localStorage.removeItem(AT_FREE_KEY);
     const until = Date.now() + AT_SESSION_MS;
     localStorage.setItem(AT_ACCESS_KEY, until.toString());
     document.getElementById('atPwOverlay').style.display = 'none';

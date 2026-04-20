@@ -3352,9 +3352,48 @@ function _thInitMap() {
     _thPolyline = L.polyline(pts, { color:'#1d4ed8', weight:3, opacity:0.65, dashArray:'8,6' }).addTo(_thMap);
     _thMap.fitBounds(_thPolyline.getBounds(), { padding:[40,40] });
   }
+
+  // 10 saniyede bir konumu API'den yenile
+  if (_thRefreshInterval) clearInterval(_thRefreshInterval);
+  _thRefreshInterval = setInterval(async () => {
+    if (!_thSevk || _thKonumModu) return;
+    try {
+      const rows = await api('/api/takip');
+      const fresh = rows.find(r => r.id === _thSevk.id);
+      if (!fresh) return;
+      const latChanged = parseFloat(fresh.mevcut_lat) !== parseFloat(_thSevk.mevcut_lat);
+      const lngChanged = parseFloat(fresh.mevcut_lng) !== parseFloat(_thSevk.mevcut_lng);
+      if (latChanged || lngChanged) {
+        Object.assign(_thSevk, fresh);
+        _thUpdateMarker(fresh);
+      }
+    } catch(_) {}
+  }, 10000);
+}
+
+function _thUpdateMarker(s) {
+  if (!_thMap || !s.mevcut_lat || !s.mevcut_lng) return;
+  const lat = parseFloat(s.mevcut_lat), lng = parseFloat(s.mevcut_lng);
+  if (_thMarkerArac) {
+    _thMarkerArac.setLatLng([lat, lng]);
+    _thMarkerArac.setPopupContent(`<b>🚛 ${s.arac_plaka||'Araç'}</b><br>${s.mevcut_konum_adi||''}`);
+  } else {
+    _thMarkerArac = L.marker([lat, lng], { icon:_thIconArac(), draggable:false })
+      .bindPopup(`<b>🚛 ${s.arac_plaka||'Araç'}</b><br>${s.mevcut_konum_adi||''}`).addTo(_thMap).openPopup();
+  }
+  // Polyline'ı yeniden çiz
+  if (_thPolyline) { _thMap.removeLayer(_thPolyline); _thPolyline = null; }
+  const pts = [];
+  if (s.kalkis_lat) pts.push([parseFloat(s.kalkis_lat), parseFloat(s.kalkis_lng)]);
+  pts.push([lat, lng]);
+  if (s.varis_lat)  pts.push([parseFloat(s.varis_lat), parseFloat(s.varis_lng)]);
+  if (pts.length >= 2) {
+    _thPolyline = L.polyline(pts, { color:'#1d4ed8', weight:3, opacity:0.65, dashArray:'8,6' }).addTo(_thMap);
+  }
 }
 
 function closeTakipHarita() {
+  if (_thRefreshInterval) { clearInterval(_thRefreshInterval); _thRefreshInterval = null; }
   document.getElementById('takipHaritaModal').style.display = 'none';
   thKonumModuKapat();
   _thSevk = null; _thYeniKonum = null; _thKonumModu = false;
@@ -3403,6 +3442,9 @@ async function thKonumKaydet() {
     _thSevk.mevcut_lng = _thYeniKonum.lng;
     _thSevk.mevcut_konum_adi = adres;
 
+    // Marker ve polyline'ı anında güncelle
+    _thUpdateMarker(_thSevk);
+
     // Bilgi satırını güncelle
     const bilgi = [];
     if (_thSevk.mesafe_km)      bilgi.push(`📏 ${_thSevk.mesafe_km} km`);
@@ -3421,61 +3463,71 @@ async function thKonumKaydet() {
 }
 
 /* ── Tüm Araçlar Haritası — Leaflet ── */
-let _tumHaritaMap = null, _tumHaritaMarkers = [];
-async function openTumAraclarHarita() {
-  document.getElementById('tumAraclarModal').style.display = 'flex';
+let _tumHaritaMap = null, _tumHaritaMarkers = [], _tumHaritaInterval = null, _thRefreshInterval = null;
+function _tumHaritaRender(aktif) {
+  const el = document.getElementById('tumAraclarHarita');
+  if (!el) return;
+  if (!_tumHaritaMap) {
+    _tumHaritaMap = L.map(el, { center:[37.0,35.3], zoom:6 });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap', maxZoom:19
+    }).addTo(_tumHaritaMap);
+    setTimeout(() => _tumHaritaMap.invalidateSize(), 100);
+  }
+
+  _tumHaritaMarkers.forEach(m => _tumHaritaMap.removeLayer(m));
+  _tumHaritaMarkers = [];
+
+  if (!aktif.length) return;
+
+  const pts = [];
+  const DURUM_COLOR = { yolda:'#16a34a', teslim_edildi:'#1d4ed8', beklemede:'#ca8a04', iptal:'#ef4444' };
+  aktif.forEach(s => {
+    const lat = parseFloat(s.mevcut_lat), lng = parseFloat(s.mevcut_lng);
+    const c = DURUM_COLOR[s.durum] || '#94a3b8';
+    const icon = L.divIcon({
+      html: `<div style="background:${c};border:2.5px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🚛</div>`,
+      className:'', iconSize:[32,32], iconAnchor:[16,16]
+    });
+    const durumStr = { beklemede:'⏳ Beklemede',yolda:'🚛 Yolda',teslim_edildi:'✅ Teslim',iptal:'❌ İptal' }[s.durum]||s.durum;
+    const sq = JSON.stringify(s).replace(/"/g,'&quot;');
+    const marker = L.marker([lat,lng], { icon })
+      .bindPopup(`<div style="font-size:13px;min-width:160px"><b>${s.arac_plaka||s.takip_kodu}</b><br>${s.mevcut_konum_adi||''}<br><b>${s.kalkis} → ${s.varis}</b><br><span style="color:${c}">${durumStr}</span><br><a href="#" onclick="closeTumAraclarHarita();openTakipHarita(${sq});return false" style="color:#1d4ed8;font-size:12px">Detay →</a></div>`)
+      .addTo(_tumHaritaMap);
+    _tumHaritaMarkers.push(marker);
+    pts.push([lat, lng]);
+
+    if (s.kalkis_lat && s.varis_lat) {
+      const pl = L.polyline([
+        [parseFloat(s.kalkis_lat), parseFloat(s.kalkis_lng)],
+        [lat, lng],
+        [parseFloat(s.varis_lat), parseFloat(s.varis_lng)]
+      ], { color:'#94a3b8', weight:2, opacity:0.5, dashArray:'6,6' }).addTo(_tumHaritaMap);
+      _tumHaritaMarkers.push(pl);
+    }
+  });
+  if (pts.length) _tumHaritaMap.fitBounds(L.latLngBounds(pts), { padding:[40,40] });
+}
+
+async function _tumHaritaYukle() {
   const rows = await api('/api/takip').catch(() => []);
   const aktif = rows.filter(s => s.mevcut_lat && s.mevcut_lng);
-
-  _thEnsureLeaflet(() => setTimeout(() => {
-    const el = document.getElementById('tumAraclarHarita');
-    if (!_tumHaritaMap) {
-      _tumHaritaMap = L.map(el, { center:[37.0,35.3], zoom:6 });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:'© OpenStreetMap', maxZoom:19
-      }).addTo(_tumHaritaMap);
-    }
-    setTimeout(() => _tumHaritaMap.invalidateSize(), 100);
-
-    // Eski marker'ları temizle
-    _tumHaritaMarkers.forEach(m => _tumHaritaMap.removeLayer(m));
-    _tumHaritaMarkers = [];
-
-    if (!aktif.length) {
-      el.querySelector('.leaflet-pane') || (el.innerHTML += '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#666;font-size:0.85rem;z-index:1000;background:#fff;padding:8px 14px;border-radius:8px">Konumu bilinen araç yok</div>');
-      return;
-    }
-
-    const pts = [];
-    const DURUM_COLOR = { yolda:'#16a34a', teslim_edildi:'#1d4ed8', beklemede:'#ca8a04', iptal:'#ef4444' };
-    aktif.forEach(s => {
-      const lat = parseFloat(s.mevcut_lat), lng = parseFloat(s.mevcut_lng);
-      const c = DURUM_COLOR[s.durum] || '#94a3b8';
-      const icon = L.divIcon({
-        html: `<div style="background:${c};border:2.5px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🚛</div>`,
-        className:'', iconSize:[32,32], iconAnchor:[16,16]
-      });
-      const durumStr = { beklemede:'⏳ Beklemede',yolda:'🚛 Yolda',teslim_edildi:'✅ Teslim',iptal:'❌ İptal' }[s.durum]||s.durum;
-      const sq = JSON.stringify(s).replace(/"/g,'&quot;');
-      const marker = L.marker([lat,lng], { icon })
-        .bindPopup(`<div style="font-size:13px;min-width:160px"><b>${s.arac_plaka||s.takip_kodu}</b><br>${s.mevcut_konum_adi||''}<br><b>${s.kalkis} → ${s.varis}</b><br><span style="color:${c}">${durumStr}</span><br><a href="#" onclick="closeTumAraclarHarita();openTakipHarita(${sq});return false" style="color:#1d4ed8;font-size:12px">Detay →</a></div>`)
-        .addTo(_tumHaritaMap);
-      _tumHaritaMarkers.push(marker);
-      pts.push([lat, lng]);
-
-      if (s.kalkis_lat && s.varis_lat) {
-        const pl = L.polyline([
-          [parseFloat(s.kalkis_lat), parseFloat(s.kalkis_lng)],
-          [lat, lng],
-          [parseFloat(s.varis_lat), parseFloat(s.varis_lng)]
-        ], { color:'#94a3b8', weight:2, opacity:0.5, dashArray:'6,6' }).addTo(_tumHaritaMap);
-        _tumHaritaMarkers.push(pl);
-      }
-    });
-    if (pts.length) _tumHaritaMap.fitBounds(L.latLngBounds(pts), { padding:[40,40] });
-  }, 80));
+  if (typeof L !== 'undefined') {
+    _tumHaritaRender(aktif);
+  } else {
+    _thEnsureLeaflet(() => setTimeout(() => _tumHaritaRender(aktif), 80));
+  }
 }
+
+async function openTumAraclarHarita() {
+  document.getElementById('tumAraclarModal').style.display = 'flex';
+  await _tumHaritaYukle();
+  if (_tumHaritaInterval) clearInterval(_tumHaritaInterval);
+  _tumHaritaInterval = setInterval(_tumHaritaYukle, 10000);
+}
+
 function closeTumAraclarHarita() {
+  if (_tumHaritaInterval) { clearInterval(_tumHaritaInterval); _tumHaritaInterval = null; }
   document.getElementById('tumAraclarModal').style.display = 'none';
 }
 
