@@ -255,6 +255,16 @@ app.get('/api/iletisim', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
+app.patch('/api/iletisim/:id/okundu', async (req, res) => {
+  const auth = require('./middleware/auth');
+  auth(req, res, async () => {
+    try {
+      await db.query(`UPDATE iletisim_mesajlari SET okundu=true WHERE id=$1`, [req.params.id]);
+      res.json({ ok: true });
+    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  });
+});
+
 app.delete('/api/iletisim/:id', async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
@@ -339,11 +349,20 @@ app.get('/api/ik/:id/cv', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
+app.patch('/api/ik/:id/okundu', async (req, res) => {
+  const auth = require('./middleware/auth');
+  auth(req, res, async () => {
+    try {
+      await db.query(`UPDATE is_basvurulari SET okundu=true WHERE id=$1`, [req.params.id]);
+      res.json({ ok: true });
+    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  });
+});
+
 app.delete('/api/ik/:id', async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
     if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
-    // CV dosyasını da sil
     const { rows } = await db.query(`SELECT cv_path FROM is_basvurulari WHERE id=$1`, [req.params.id]);
     if (rows.length && rows[0].cv_path) {
       fs.unlink(path.join(CV_DIR, rows[0].cv_path), () => {});
@@ -391,6 +410,16 @@ app.get('/api/teklifler', async (req, res) => {
     );
     res.json(rows);
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
+});
+
+app.patch('/api/teklifler/:id/okundu', async (req, res) => {
+  const auth = require('./middleware/auth');
+  auth(req, res, async () => {
+    try {
+      await db.query(`UPDATE teklifler SET okundu=true WHERE id=$1`, [req.params.id]);
+      res.json({ ok: true });
+    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
+  });
 });
 
 app.delete('/api/teklifler/:id', async (req, res) => {

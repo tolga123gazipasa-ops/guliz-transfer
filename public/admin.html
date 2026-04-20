@@ -282,7 +282,13 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 /* Hot lead toast */
 .hot-toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:#0a1235;border:1.5px solid #ef4444;border-radius:12px;padding:14px 18px;min-width:260px;max-width:320px;box-shadow:0 8px 32px rgba(239,68,68,0.3);animation:toastIn .35s ease}
 @keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(10px)}}
 .hot-toast-close{position:absolute;top:8px;right:10px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem;line-height:1}
+/* Genel toast bildirimleri */
+.gt-toast{position:fixed;top:72px;right:20px;z-index:10000;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.25);animation:toastIn .3s ease;max-width:320px;display:flex;align-items:center;gap:10px}
+.gt-toast.success{background:#052e16;border:1px solid #16a34a;color:#4ade80}
+.gt-toast.error  {background:#1c0a0a;border:1px solid #dc2626;color:#f87171}
+.gt-toast.info   {background:#0f172a;border:1px solid #3b82f6;color:#93c5fd}
 /* Form field capture items */
 .ff-item{padding:7px 12px;border-bottom:0.5px solid var(--gray2);font-size:11.5px}
 .ff-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
@@ -1718,7 +1724,7 @@ async function saveIhale() {
   const tur    = document.getElementById('if-tur').value.trim();
   const durum  = document.getElementById('if-durum').value;
   if (!kurum || !baslik || !tur) {
-    alert('Kurum, başlık ve tür alanları zorunludur.');
+    showToast('Kurum, başlık ve tür alanları zorunludur.', 'error');
     return;
   }
   try {
@@ -1729,7 +1735,8 @@ async function saveIhale() {
     }
     closeIhaleModal();
     loadIhaleler();
-  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+    showToast('İhale kaydedildi.', 'success');
+  } catch(e) { showToast('Kayıt hatası: ' + e.message, 'error'); }
 }
 
 async function deleteIhale(id, baslik) {
@@ -1737,7 +1744,8 @@ async function deleteIhale(id, baslik) {
   try {
     await api('/api/ihaleler/'+id, { method:'DELETE' });
     loadIhaleler();
-  } catch(e) { alert('Silme hatası: ' + e.message); }
+    showToast('İhale silindi.', 'success');
+  } catch(e) { showToast('Silme hatası: ' + e.message, 'error'); }
 }
 
 /* ══════════════════════════════════
@@ -1858,7 +1866,7 @@ async function saveInsaat() {
   const aciklama= document.getElementById('ins-aciklama').value.trim();
   const sira    = document.getElementById('ins-sira').value;
   if (!baslik || !yil) {
-    alert('Proje başlığı ve yılı zorunludur.');
+    showToast('Proje başlığı ve yılı zorunludur.', 'error');
     return;
   }
   const body = { baslik, proje_yili: parseInt(yil), durum, konum: konum||null, aciklama: aciklama||null, sira: parseInt(sira)||0 };
@@ -1870,7 +1878,8 @@ async function saveInsaat() {
     }
     closeInsaatModal();
     await loadInsaat();
-  } catch(e) { alert('Kayıt hatası: ' + e.message); }
+    showToast('Proje kaydedildi.', 'success');
+  } catch(e) { showToast('Kayıt hatası: ' + e.message, 'error'); }
 }
 
 async function deleteInsaat(id, baslik) {
@@ -1878,7 +1887,8 @@ async function deleteInsaat(id, baslik) {
   try {
     await api('/api/insaat/'+id, { method:'DELETE' });
     loadInsaat();
-  } catch(e) { alert('Silme hatası: ' + e.message); }
+    showToast('Proje silindi.', 'success');
+  } catch(e) { showToast('Silme hatası: ' + e.message, 'error'); }
 }
 
 async function uploadInsaatFoto() {
@@ -2002,7 +2012,8 @@ async function toggleKurum(id, newStatus, kurum_adi, yetkili_ad, yetkili_tel) {
   try {
     await api('/api/kurumlar/' + id, { method:'PUT', body: JSON.stringify({ kurum_adi, yetkili_ad, yetkili_tel, is_active: newStatus }) });
     loadKurumlar();
-  } catch(e) { alert('Hata: ' + e.message); }
+    showToast(newStatus ? 'Kurum aktifleştirildi.' : 'Kurum pasifleştirildi.', 'success');
+  } catch(e) { showToast('Hata: ' + e.message, 'error'); }
 }
 
 async function deleteKurum(id, ad) {
@@ -2010,7 +2021,8 @@ async function deleteKurum(id, ad) {
   try {
     await api('/api/kurumlar/' + id, { method:'DELETE' });
     loadKurumlar();
-  } catch(e) { alert('Hata: ' + e.message); }
+    showToast('Kurum silindi.', 'success');
+  } catch(e) { showToast('Hata: ' + e.message, 'error'); }
 }
 
 function doLogout() {
@@ -2241,7 +2253,7 @@ async function openBookingDetail(id) {
       </div>
     `;
     openModal('bookingModal');
-  } catch(e) { alert('Rezervasyon yüklenemedi: ' + e.message); }
+  } catch(e) { showToast('Rezervasyon yüklenemedi: ' + e.message, 'error'); }
 }
 
 function field(label, val, full=false, raw=false) {
@@ -2258,16 +2270,17 @@ async function updateStatus(id, status) {
     closeModal('bookingModal');
     loadBookings();
     loadDashboard();
-  } catch(e) { alert('Durum güncellenemedi: ' + e.message); }
+  } catch(e) { showToast('Durum güncellenemedi: ' + e.message, 'error'); }
 }
 async function assignDriver(id) {
   const d = document.getElementById('assignDriver').value;
-  if (!d) { alert('Lütfen sürücü seçin'); return; }
+  if (!d) { showToast('Lütfen sürücü seçin', 'error'); return; }
   try {
     await api('/api/bookings/'+id+'/assign', { method:'PATCH', body:JSON.stringify({ driver_id: parseInt(d) }) });
     closeModal('bookingModal');
     loadBookings();
-  } catch(e) { alert('Sürücü atanamadı: ' + e.message); }
+    showToast('Sürücü atandı.', 'success');
+  } catch(e) { showToast('Sürücü atanamadı: ' + e.message, 'error'); }
 }
 
 /* ── DRIVERS ── */
@@ -2315,7 +2328,7 @@ async function saveDriver() {
   const name  = document.getElementById('driverName').value;
   const phone = document.getElementById('driverPhone').value;
   const plate = document.getElementById('driverPlate').value;
-  if (!name||!phone||!plate) { alert('Tüm alanları doldurun'); return; }
+  if (!name||!phone||!plate) { showToast('Tüm alanları doldurun', 'error'); return; }
   const editId = parseInt(document.getElementById('driverEditId').value);
   try {
     if (editId) {
@@ -2326,7 +2339,8 @@ async function saveDriver() {
     }
     closeModal('driverModal');
     loadDrivers();
-  } catch(e) { alert('Kaydedilemedi: ' + e.message); }
+    showToast('Sürücü kaydedildi.', 'success');
+  } catch(e) { showToast('Kaydedilemedi: ' + e.message, 'error'); }
 }
 
 async function deleteDriver(id) {
@@ -2334,7 +2348,8 @@ async function deleteDriver(id) {
   try {
     await api('/api/drivers/'+id, { method:'DELETE' });
     loadDrivers();
-  } catch(e) { alert('Silinemedi: ' + e.message); }
+    showToast('Sürücü silindi.', 'success');
+  } catch(e) { showToast('Silinemedi: ' + e.message, 'error'); }
 }
 
 /* ── ROUTES ── */
@@ -2364,12 +2379,12 @@ function renderRoutes() {
 async function saveRoutePrice(id) {
   const r = allRoutes.find(x => x.id===id);
   const newPrice = parseFloat(document.getElementById('price_'+id).value);
-  if (isNaN(newPrice)||newPrice<=0) { alert('Geçerli bir fiyat girin'); return; }
+  if (isNaN(newPrice)||newPrice<=0) { showToast('Geçerli bir fiyat girin', 'error'); return; }
   try {
     await api('/api/routes/'+id, { method:'PUT', body:JSON.stringify({ price:newPrice, duration:r.duration, active:r.active }) });
     r.price = newPrice;
-    alert('Fiyat güncellendi: ₺'+newPrice);
-  } catch(e) { alert('Güncellenemedi: ' + e.message); }
+    showToast('Fiyat güncellendi: ₺' + newPrice, 'success');
+  } catch(e) { showToast('Güncellenemedi: ' + e.message, 'error'); }
 }
 
 async function toggleRoute(id) {
@@ -2378,7 +2393,8 @@ async function toggleRoute(id) {
     await api('/api/routes/'+id, { method:'PUT', body:JSON.stringify({ price:r.price, duration:r.duration, active:!r.active }) });
     r.active = !r.active;
     renderRoutes();
-  } catch(e) { alert('Güncellenemedi: ' + e.message); }
+    showToast(r.active ? 'Rota aktifleştirildi.' : 'Rota pasifleştirildi.', 'success');
+  } catch(e) { showToast('Güncellenemedi: ' + e.message, 'error'); }
 }
 
 function openRouteModal() { openModal('routeModal'); }
@@ -2387,12 +2403,13 @@ async function saveRoute() {
   const to    = document.getElementById('routeTo').value;
   const price = parseFloat(document.getElementById('routePrice').value);
   const dur   = document.getElementById('routeDuration').value;
-  if (!from||!to||!price) { alert('Zorunlu alanları doldurun'); return; }
+  if (!from||!to||!price) { showToast('Zorunlu alanları doldurun', 'error'); return; }
   try {
     await api('/api/routes', { method:'POST', body:JSON.stringify({ from_point:from, to_point:to, price, duration:dur }) });
     closeModal('routeModal');
     loadRoutes();
-  } catch(e) { alert('Kaydedilemedi: ' + e.message); }
+    showToast('Rota eklendi.', 'success');
+  } catch(e) { showToast('Kaydedilemedi: ' + e.message, 'error'); }
 }
 
 /* ── STATS ── */
@@ -2441,7 +2458,24 @@ async function loadStats() {
 function statusLabel(s) {
   return {pending:'Bekliyor',confirmed:'Onaylandı',assigned:'Sürücü Atandı',completed:'Tamamlandı',cancelled:'İptal'}[s] || s;
 }
-function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let _toastTimer = null;
+function showToast(msg, type = 'info') {
+  const existing = document.getElementById('gtToast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'gtToast';
+  el.className = 'gt-toast ' + type;
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+  el.innerHTML = `<span style="font-size:15px">${icon}</span><span>${escapeHtml(msg)}</span>`;
+  document.body.appendChild(el);
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    el.style.animation = 'toastOut .3s ease forwards';
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}
 function actionIcon(action) {
   const map = {
     click:            '🖱',
@@ -3086,10 +3120,6 @@ function timeSince(isoStr) {
 }
 
 /* ── NEW BOOKING MODAL ── */
-function openNewBookingModal() {
-  alert('Yeni rezervasyon formu — gerçek sistemde API ile entegre edilir.');
-}
-
 /* ── SETTINGS ── */
 function loadSettings() {
   document.getElementById('settingsName').value  = currentAdmin?.name  || '';
@@ -3456,7 +3486,7 @@ async function thKonumKaydet() {
     thKonumModuKapat();
     loadSevkiyatlar();
   } catch(e) {
-    alert('Konum kaydedilemedi: ' + e.message);
+    showToast('Konum kaydedilemedi: ' + e.message, 'error');
   } finally {
     btn.disabled = false; btn.textContent = 'Kaydet';
   }
@@ -3749,7 +3779,8 @@ async function deleteSevk(id, kod) {
   try {
     await api('/api/takip/' + id, { method:'DELETE' });
     loadSevkiyatlar();
-  } catch(e) { alert(e.message); }
+    showToast('Sevkiyat silindi.', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 /* ═══════════════════════════════════════
@@ -3850,12 +3881,12 @@ function toggleSevkKonumMap() {
 }
 
 function calcSevkRoute() {
-  if (!_mapsReady) { alert('Google Maps yüklenmedi. API key kontrol edin.'); return; }
+  if (!_mapsReady) { showToast('Google Maps yüklenmedi. API key kontrol edin.', 'error'); return; }
   const kLat = parseFloat(document.getElementById('sevk-kalkis-lat').value);
   const kLng = parseFloat(document.getElementById('sevk-kalkis-lng').value);
   const vLat = parseFloat(document.getElementById('sevk-varis-lat').value);
   const vLng = parseFloat(document.getElementById('sevk-varis-lng').value);
-  if (!kLat || !vLat) { alert('Önce kalkış ve varış noktalarını Google Maps\'tan seçin.'); return; }
+  if (!kLat || !vLat) { showToast('Önce kalkış ve varış noktalarını Google Maps\'tan seçin.', 'error'); return; }
 
   const info = document.getElementById('sevk-rota-info');
   info.style.display = 'block';
@@ -4214,8 +4245,8 @@ async function konumAramaYap() {
       const lat = parseFloat(d[0].lat), lng = parseFloat(d[0].lon);
       document.getElementById('konumModalAdi').value = d[0].display_name.split(',')[0];
       _setKonumMarkerL(lat, lng);
-    } else alert('Yer bulunamadı, daha spesifik yazın.');
-  } catch(e) { alert('Arama hatası: ' + e.message); }
+    } else showToast('Yer bulunamadı, daha spesifik yazın.', 'error');
+  } catch(e) { showToast('Arama hatası: ' + e.message, 'error'); }
 }
 
 function closeKonumModal() {
@@ -4227,12 +4258,13 @@ async function saveKonum() {
   const lat = document.getElementById('konumModalLat').value;
   const lng = document.getElementById('konumModalLng').value;
   const adi = document.getElementById('konumModalAdi').value.trim();
-  if (!lat || !lng) { alert('Haritaya tıklayarak veya arama yaparak konum seçin.'); return; }
+  if (!lat || !lng) { showToast('Haritaya tıklayarak veya arama yaparak konum seçin.', 'error'); return; }
   try {
     await api('/api/araclar/' + id + '/konum', { method:'PATCH', body: JSON.stringify({ lat: parseFloat(lat), lng: parseFloat(lng), konum_adi: adi || null }) });
     closeKonumModal();
     loadAraclar();
-  } catch(e) { alert('Hata: ' + e.message); }
+    showToast('Araç konumu güncellendi.', 'success');
+  } catch(e) { showToast('Hata: ' + e.message, 'error'); }
 }
 
 function openAracModal() {
@@ -4290,8 +4322,8 @@ async function saveArac() {
 
 async function deleteArac(id) {
   if (!confirm('Bu aracı silmek istediğinizden emin misiniz?')) return;
-  try { await api('/api/araclar/' + id, { method:'DELETE' }); loadAraclar(); }
-  catch(e) { alert('Silinemedi: ' + e.message); }
+  try { await api('/api/araclar/' + id, { method:'DELETE' }); loadAraclar(); showToast('Araç silindi.', 'success'); }
+  catch(e) { showToast('Silinemedi: ' + e.message, 'error'); }
 }
 
 /* ── YÜK BİLDİRİMLERİ ── */
@@ -4326,16 +4358,14 @@ async function loadYukBildirimleri() {
         <td style="white-space:nowrap">${durum}<br>${oku}<br><button class="btn btn-danger btn-sm" onclick="yukSil(${r.id})" style="margin-top:4px;font-size:10px;">🗑 Sil</button></td>
       </tr>`;
     }).join('');
-  } catch(e) { alert(e.message); }
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function yukOkundu(id) {
   try {
-    await fetch(API + '/api/yuk-bildirimleri/' + id + '/okundu', {
-      method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token }
-    });
+    await api('/api/yuk-bildirimleri/' + id + '/okundu', { method: 'PATCH' });
     loadYukBildirimleri();
-  } catch(e) { alert(e.message); }
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function yukSil(id) {
@@ -4343,7 +4373,8 @@ async function yukSil(id) {
   try {
     await api('/api/yuk-bildirimleri/' + id, { method: 'DELETE' });
     loadYukBildirimleri();
-  } catch(e) { alert(e.message); }
+    showToast('Kayıt silindi.', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 /* ── İLETİŞİM MESAJLARI ── */
@@ -4363,6 +4394,10 @@ async function loadIletisim() {
     }
     tb.innerHTML = rows.map(r => {
       const tarih = new Date(r.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const durumBadge = r.okundu
+        ? '<span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Okundu</span>'
+        : '<span style="background:rgba(96,165,250,0.15);color:#60a5fa;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Yeni</span>';
+      const okuBtn = r.okundu ? '' : `<button class="btn btn-outline btn-sm" onclick="iletisimOkundu(${r.id})" style="margin-top:4px;font-size:10px;">✓ Okundu</button>`;
       return `<tr style="${r.okundu ? '' : 'background:rgba(96,165,250,0.04);'}">
         <td style="color:var(--muted);font-size:12px;">${r.id}</td>
         <td style="font-weight:600;">${escapeHtml(r.ad_soyad)}</td>
@@ -4371,10 +4406,17 @@ async function loadIletisim() {
         <td style="font-size:11px;color:var(--muted);">${r.kaynak || '-'}</td>
         <td style="font-size:11px;color:var(--muted);font-family:monospace;">${r.ip || '-'}</td>
         <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="iletisimSil(${r.id})">🗑 Sil</button></td>
+        <td style="white-space:nowrap">${durumBadge}<br>${okuBtn}<br><button class="btn btn-danger btn-sm" onclick="iletisimSil(${r.id})" style="margin-top:4px;font-size:10px;">🗑 Sil</button></td>
       </tr>`;
     }).join('');
-  } catch(e) { alert(e.message); }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function iletisimOkundu(id) {
+  try {
+    await api('/api/iletisim/' + id + '/okundu', { method: 'PATCH' });
+    loadIletisim();
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function iletisimSil(id) {
@@ -4382,7 +4424,8 @@ async function iletisimSil(id) {
   try {
     await api('/api/iletisim/' + id, { method: 'DELETE' });
     loadIletisim();
-  } catch(e) { alert(e.message); }
+    showToast('Mesaj silindi.', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 /* ── İK BAŞVURULARI ── */
@@ -4402,19 +4445,34 @@ async function loadIK() {
     }
     tb.innerHTML = rows.map(r => {
       const tarih = new Date(r.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      return `<tr>
+      const durumBadge = r.okundu
+        ? '<span style="background:rgba(74,222,128,0.12);color:#4ade80;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Görüldü</span>'
+        : '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Yeni</span>';
+      const okuBtn = r.okundu ? '' : `<button class="btn btn-outline btn-sm" onclick="ikOkundu(${r.id})" style="font-size:10px;">✓ Görüldü</button>`;
+      const cvBtn = r.cv_path
+        ? `<a href="${API}/api/ik/${r.id}/cv" target="_blank" class="btn btn-outline btn-sm" style="font-size:10px;">📎 CV</a>`
+        : '<span style="color:var(--muted);font-size:11px;">-</span>';
+      return `<tr style="${r.okundu ? '' : 'background:rgba(251,191,36,0.03);'}">
         <td style="color:var(--muted);font-size:12px;">${r.id}</td>
         <td style="font-weight:600;">${escapeHtml(r.ad_soyad)}</td>
         <td><a href="tel:${r.telefon}" style="color:var(--red);text-decoration:none;font-weight:600;">${r.telefon}</a>${r.email ? '<br><span style="font-size:10px;color:var(--muted)">'+escapeHtml(r.email)+'</span>' : ''}</td>
         <td style="font-weight:600;color:var(--navy2)">${escapeHtml(r.pozisyon)}</td>
         <td style="font-size:11px;color:var(--muted);">${r.deneyim || '-'}</td>
         <td style="max-width:200px;white-space:pre-wrap;word-break:break-word;font-size:12px;">${r.mesaj ? escapeHtml(r.mesaj) : '-'}</td>
+        <td>${cvBtn}</td>
         <td style="font-size:11px;color:var(--muted);font-family:monospace;">${r.ip || '-'}</td>
         <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="ikSil(${r.id})">🗑 Sil</button></td>
+        <td style="white-space:nowrap">${durumBadge}<br>${okuBtn}<br><button class="btn btn-danger btn-sm" onclick="ikSil(${r.id})" style="margin-top:4px;font-size:10px;">🗑 Sil</button></td>
       </tr>`;
     }).join('');
-  } catch(e) { alert(e.message); }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function ikOkundu(id) {
+  try {
+    await api('/api/ik/' + id + '/okundu', { method: 'PATCH' });
+    loadIK();
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 async function ikSil(id) {
@@ -4422,7 +4480,8 @@ async function ikSil(id) {
   try {
     await api('/api/ik/' + id, { method: 'DELETE' });
     loadIK();
-  } catch(e) { alert(e.message); }
+    showToast('Başvuru silindi.', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
 }
 
 /* ── TEKLİF TALEPLERİ ── */
@@ -4431,7 +4490,7 @@ async function loadTeklifler() {
   try {
     tkAllRows = await api('/api/teklifler');
     renderTeklifler(tkAllRows);
-  } catch(e) { alert(e.message); }
+  } catch(e) { showToast(e.message, 'error'); }
 }
 function filterTeklifler() {
   const q = (document.getElementById('teklifSearch')?.value || '').toLowerCase();
@@ -4466,17 +4525,22 @@ function renderTeklifler(rows) {
       <td style="font-size:12px;color:var(--muted);">${r.mesafe_km ? r.mesafe_km+' km' : '-'}</td>
       <td style="font-weight:700;color:var(--navy);">${fiyat} ₺</td>
       <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
-      <td>
+      <td style="white-space:nowrap">
+        ${!r.okundu ? `<button class="btn btn-outline btn-sm" onclick="teklifOkundu(${r.id})" style="font-size:10px;margin-bottom:4px;display:block;">✓ Görüldü</button>` : ''}
         <a href="https://wa.me/${r.telefon.replace(/\D/g,'').replace(/^0/,'90')}" target="_blank" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;margin-right:4px;">WhatsApp</a>
         <button class="btn btn-danger btn-sm" onclick="teklifSil(${r.id})">🗑</button>
       </td>
     </tr>`;
   }).join('');
 }
+async function teklifOkundu(id) {
+  try { await api('/api/teklifler/'+id+'/okundu',{method:'PATCH'}); loadTeklifler(); }
+  catch(e) { showToast(e.message, 'error'); }
+}
 async function teklifSil(id) {
   if (!confirm('Bu teklif talebini silmek istediğinizden emin misiniz?')) return;
-  try { await api('/api/teklifler/'+id,{method:'DELETE'}); loadTeklifler(); }
-  catch(e) { alert(e.message); }
+  try { await api('/api/teklifler/'+id,{method:'DELETE'}); loadTeklifler(); showToast('Teklif silindi.','success'); }
+  catch(e) { showToast(e.message, 'error'); }
 }
 
 /* ── CHAT SESSION SİL ── */
@@ -4508,7 +4572,7 @@ async function deleteChatSession() {
     document.getElementById('chatPanelContent').style.display = 'none';
     document.getElementById('noChatSelected').style.display   = 'flex';
     renderVisitorList(allVisitorsData);
-  } catch(e) { alert('Silinemedi: ' + e.message); }
+  } catch(e) { showToast('Silinemedi: ' + e.message, 'error'); }
 }
 
 /* ── YENİ REZERVASYON ── */
