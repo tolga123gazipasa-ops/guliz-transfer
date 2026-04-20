@@ -3,6 +3,16 @@ const router  = express.Router();
 const db      = require('../models/db');
 const auth    = require('../middleware/auth');
 const { tgSevkiyatYolda, tgSevkiyatTeslim } = require('../services/telegram');
+const { sendSms } = require('../services/sms');
+
+function formatPhone(tel) {
+  if (!tel) return null;
+  const d = tel.replace(/\D/g, '');
+  if (d.startsWith('90') && d.length === 12) return '+' + d;
+  if (d.startsWith('0')  && d.length === 11) return '+9' + d;
+  if (d.length === 10) return '+90' + d;
+  return tel;
+}
 
 const DURUM_LABEL = {
   beklemede:     'Beklemede',
@@ -163,10 +173,33 @@ router.put('/:id', auth, async (req, res) => {
       ).catch(() => {});
     }
 
-    // Durum değiştiyse Telegram bildirimi gönder
+    // Durum değiştiyse bildirimler gönder
     if (durum && durum !== eskiDurum) {
-      if (durum === 'yolda')         tgSevkiyatYolda(guncellenen).catch(() => {});
-      if (durum === 'teslim_edildi') tgSevkiyatTeslim(guncellenen).catch(() => {});
+      if (durum === 'yolda') {
+        tgSevkiyatYolda(guncellenen).catch(() => {});
+        // Araca "seferde" durumu ata
+        if (guncellenen.arac_id) {
+          db.query(`UPDATE araclar SET durum='seferde' WHERE id=$1`, [guncellenen.arac_id]).catch(() => {});
+        }
+        // Müşteriye SMS
+        const tel = formatPhone(guncellenen.musteri_tel);
+        if (tel) sendSms(tel, `Guliz Transfer: Sevkiyatiniz yola cikti. Takip kodu: ${guncellenen.takip_kodu} | gulizlojistik.com`).catch(() => {});
+      }
+      if (durum === 'teslim_edildi') {
+        tgSevkiyatTeslim(guncellenen).catch(() => {});
+        // Araca "müsait" durumu ata
+        if (guncellenen.arac_id) {
+          db.query(`UPDATE araclar SET durum='musait' WHERE id=$1`, [guncellenen.arac_id]).catch(() => {});
+        }
+        // Müşteriye SMS
+        const tel = formatPhone(guncellenen.musteri_tel);
+        if (tel) sendSms(tel, `Guliz Transfer: Sevkiyatiniz teslim edildi. Takip kodu: ${guncellenen.takip_kodu}. Hizmetimizi tercih ettiginiz icin tesekkur ederiz.`).catch(() => {});
+      }
+      if (durum === 'iptal') {
+        if (guncellenen.arac_id) {
+          db.query(`UPDATE araclar SET durum='musait' WHERE id=$1`, [guncellenen.arac_id]).catch(() => {});
+        }
+      }
     }
 
     res.json(guncellenen);

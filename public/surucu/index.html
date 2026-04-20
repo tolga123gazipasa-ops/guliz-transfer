@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Güliz Transfer — Sürücü</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: rgba(10,10,10,0.95);
+      border-bottom: 0.5px solid rgba(201,168,76,0.2);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logo { color: #C9A84C; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; }
+    .header-sub  { color: rgba(255,255,255,0.3); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      gap: 24px;
+    }
+    .login-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.08);
+      border: 0.5px solid rgba(201,168,76,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+    }
+    .login-title { font-size: 22px; font-weight: 300; text-align: center; }
+    .login-sub   { color: rgba(255,255,255,0.4); font-size: 14px; text-align: center; line-height: 1.5; }
+    .pin-wrap {
+      width: 100%;
+      max-width: 280px;
+    }
+    .pin-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 0.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 28px;
+      letter-spacing: 12px;
+      text-align: center;
+      padding: 18px 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pin-input:focus { border-color: rgba(201,168,76,0.5); }
+    .pin-input::placeholder { letter-spacing: 4px; font-size: 18px; color: rgba(255,255,255,0.2); }
+    .btn-login {
+      width: 100%;
+      max-width: 280px;
+      background: #C9A84C;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 16px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.2s;
+    }
+    .btn-login:active { opacity: 0.8; }
+    .error-msg {
+      color: #f87171;
+      font-size: 13px;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    /* ── TRACK SCREEN ── */
+    #track-screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      padding: 20px;
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 0.5px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+    .card-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 10px;
+    }
+
+    /* Driver info */
+    .driver-name  { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .driver-plate {
+      display: inline-block;
+      background: rgba(201,168,76,0.1);
+      border: 0.5px solid rgba(201,168,76,0.3);
+      color: #C9A84C;
+      font-size: 13px;
+      font-family: monospace;
+      letter-spacing: 2px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    /* GPS status */
+    .gps-row { display: flex; align-items: center; gap: 12px; }
+    .gps-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #6b7280;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .gps-dot.active   { background: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,0.5); }
+    .gps-dot.waiting  { background: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.4); animation: pulse 1.5s infinite; }
+    .gps-dot.error    { background: #f87171; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    .gps-text   { font-size: 14px; color: rgba(255,255,255,0.8); }
+    .gps-detail { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+    .gps-coords { font-size: 12px; color: rgba(255,255,255,0.35); font-family: monospace; margin-top: 4px; }
+
+    /* Sevkiyat */
+    .sevk-route {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .sevk-row { display: flex; justify-content: space-between; margin-top: 6px; }
+    .sevk-key { font-size: 12px; color: rgba(255,255,255,0.35); }
+    .sevk-val { font-size: 12px; color: rgba(255,255,255,0.75); text-align: right; }
+    .sevk-empty { font-size: 13px; color: rgba(255,255,255,0.3); text-align: center; padding: 8px 0; }
+
+    /* Counter */
+    .counter-wrap { display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .counter-box  { text-align: center; }
+    .counter-num  { font-size: 28px; font-weight: 300; color: #C9A84C; font-variant-numeric: tabular-nums; }
+    .counter-lbl  { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+    .counter-div  { width: 0.5px; height: 40px; background: rgba(255,255,255,0.08); }
+
+    /* Buttons */
+    .btn-refresh {
+      width: 100%;
+      background: rgba(201,168,76,0.08);
+      border: 0.5px solid rgba(201,168,76,0.25);
+      color: #C9A84C;
+      border-radius: 10px;
+      font-size: 14px;
+      padding: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-refresh:active { background: rgba(201,168,76,0.15); }
+    .btn-logout {
+      width: 100%;
+      background: transparent;
+      border: 0.5px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.35);
+      border-radius: 10px;
+      font-size: 13px;
+      padding: 12px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .btn-logout:active { background: rgba(255,255,255,0.04); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">Güliz Transfer</div>
+    <div class="header-sub">Sürücü Paneli</div>
+  </div>
+  <span style="font-size:24px">🚛</span>
+</div>
+
+<!-- GİRİŞ EKRANI -->
+<div id="login-screen">
+  <div class="login-icon">🔐</div>
+  <div>
+    <div class="login-title">Sürücü Girişi</div>
+    <div class="login-sub" style="margin-top:8px">PIN kodunuzu girerek başlayın</div>
+  </div>
+  <div class="pin-wrap">
+    <input type="password" inputmode="numeric" id="pin-input"
+           class="pin-input" maxlength="6" placeholder="• • • • • •"
+           autocomplete="current-password">
+  </div>
+  <button class="btn-login" id="login-btn">Giriş Yap</button>
+  <div class="error-msg" id="login-error"></div>
+</div>
+
+<!-- TAKİP EKRANI -->
+<div id="track-screen">
+  <!-- Sürücü bilgisi -->
+  <div class="card">
+    <div class="card-label">Sürücü</div>
+    <div class="driver-name" id="d-name">—</div>
+    <div style="margin-top:8px">
+      <span class="driver-plate" id="d-plate">—</span>
+    </div>
+  </div>
+
+  <!-- GPS durumu -->
+  <div class="card">
+    <div class="card-label">GPS Konumu</div>
+    <div class="gps-row">
+      <div class="gps-dot waiting" id="gps-dot"></div>
+      <div>
+        <div class="gps-text" id="gps-text">Konum bekleniyor…</div>
+        <div class="gps-detail" id="gps-detail"></div>
+      </div>
+    </div>
+    <div class="gps-coords" id="gps-coords"></div>
+  </div>
+
+  <!-- Sayaç -->
+  <div class="card">
+    <div class="card-label">Oturum İstatistikleri</div>
+    <div class="counter-wrap">
+      <div class="counter-box">
+        <div class="counter-num" id="cnt-updates">0</div>
+        <div class="counter-lbl">Konum</div>
+      </div>
+      <div class="counter-div"></div>
+      <div class="counter-box">
+        <div class="counter-num" id="cnt-mins">0</div>
+        <div class="counter-lbl">Dakika</div>
+      </div>
+      <div class="counter-div"></div>
+      <div class="counter-box">
+        <div class="counter-num" id="cnt-errors">0</div>
+        <div class="counter-lbl">Hata</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aktif sevkiyat -->
+  <div class="card">
+    <div class="card-label">Aktif Sevkiyat</div>
+    <div id="sevk-container">
+      <div class="sevk-empty">Atanmış aktif sevkiyat yok</div>
+    </div>
+  </div>
+
+  <button class="btn-refresh" id="refresh-btn">🔄 Sevkiyatı Yenile</button>
+  <button class="btn-logout" id="logout-btn">Çıkış Yap</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const STORAGE_KEY = 'gt_driver';
+  let driver        = null;
+  let gpsInterval   = null;
+  let minuteTimer   = null;
+  let sessionStart  = null;
+  let updateCount   = 0;
+  let errorCount    = 0;
+  let lastLat       = null;
+  let lastLng       = null;
+
+  /* ── DOM ── */
+  const $login  = document.getElementById('login-screen');
+  const $track  = document.getElementById('track-screen');
+  const $pinIn  = document.getElementById('pin-input');
+  const $loginB = document.getElementById('login-btn');
+  const $loginE = document.getElementById('login-error');
+  const $dot    = document.getElementById('gps-dot');
+  const $gpsT   = document.getElementById('gps-text');
+  const $gpsD   = document.getElementById('gps-detail');
+  const $gpsC   = document.getElementById('gps-coords');
+
+  /* ── Stored session restore ── */
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) driver = JSON.parse(stored);
+  } catch (_) {}
+  if (driver) showTrack();
+
+  /* ── Login ── */
+  $loginB.addEventListener('click', doLogin);
+  $pinIn.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  async function doLogin() {
+    const pin = $pinIn.value.trim();
+    if (!pin) return;
+    $loginB.disabled = true;
+    $loginB.textContent = 'Giriş yapılıyor…';
+    $loginE.textContent = '';
+    try {
+      const r = await fetch('/api/surucu/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Giriş başarısız.');
+      driver = data;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(driver));
+      showTrack();
+    } catch (e) {
+      $loginE.textContent = e.message;
+      $loginB.disabled = false;
+      $loginB.textContent = 'Giriş Yap';
+    }
+  }
+
+  /* ── Track screen ── */
+  function showTrack() {
+    $login.style.display = 'none';
+    $track.style.display = 'flex';
+    document.getElementById('d-name').textContent  = driver.name  || '—';
+    document.getElementById('d-plate').textContent = driver.plate || '—';
+    renderSevkiyat(driver.sevkiyat);
+    sessionStart = Date.now();
+    startGPS();
+    startMinuteTimer();
+  }
+
+  function renderSevkiyat(sevk) {
+    const container = document.getElementById('sevk-container');
+    if (!sevk) {
+      container.innerHTML = '<div class="sevk-empty">Atanmış aktif sevkiyat yok</div>';
+      return;
+    }
+    const eta = sevk.tahmini_teslim
+      ? new Date(sevk.tahmini_teslim).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
+      : '—';
+    container.innerHTML = `
+      <div class="sevk-route">${sevk.kalkis} <span style="color:#C9A84C">→</span> ${sevk.varis}</div>
+      <div class="sevk-row">
+        <span class="sevk-key">Müşteri</span>
+        <span class="sevk-val">${sevk.musteri_adi}</span>
+      </div>
+      <div class="sevk-row">
+        <span class="sevk-key">Takip Kodu</span>
+        <span class="sevk-val" style="font-family:monospace;color:#C9A84C">${sevk.takip_kodu}</span>
+      </div>
+      <div class="sevk-row">
+        <span class="sevk-key">Tahmini Varış</span>
+        <span class="sevk-val">${eta}</span>
+      </div>`;
+  }
+
+  /* ── GPS ── */
+  function startGPS() {
+    if (!navigator.geolocation) {
+      setGpsState('error', 'GPS desteklenmiyor', '');
+      return;
+    }
+    setGpsState('waiting', 'Konum alınıyor…', '');
+    sendLocation(); // İlk anda hemen dene
+    gpsInterval = setInterval(sendLocation, 30000);
+  }
+
+  function sendLocation() {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+        lastLat = lat; lastLng = lng;
+        updateCount++;
+        document.getElementById('cnt-updates').textContent = updateCount;
+        $gpsC.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        const acc = accuracy ? `±${Math.round(accuracy)}m` : '';
+        setGpsState('active', 'Konum paylaşılıyor', acc);
+
+        fetch('/api/surucu/konum', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ driver_id: driver.id, pin: getPinFromStorage(), lat, lng, accuracy })
+        }).catch(() => {
+          errorCount++;
+          document.getElementById('cnt-errors').textContent = errorCount;
+        });
+      },
+      err => {
+        errorCount++;
+        document.getElementById('cnt-errors').textContent = errorCount;
+        const msgs = { 1: 'Konum izni reddedildi', 2: 'Konum alınamadı', 3: 'Zaman aşımı' };
+        setGpsState('error', msgs[err.code] || 'GPS hatası', '');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 20000 }
+    );
+  }
+
+  function setGpsState(state, text, detail) {
+    $dot.className = 'gps-dot ' + state;
+    $gpsT.textContent = text;
+    $gpsD.textContent = detail;
+  }
+
+  function getPinFromStorage() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY))?.pin || $pinIn.value; } catch { return ''; }
+  }
+
+  /* ── Dakika sayacı ── */
+  function startMinuteTimer() {
+    minuteTimer = setInterval(() => {
+      const mins = Math.floor((Date.now() - sessionStart) / 60000);
+      document.getElementById('cnt-mins').textContent = mins;
+    }, 30000);
+  }
+
+  /* ── Sevkiyat yenile ── */
+  document.getElementById('refresh-btn').addEventListener('click', async () => {
+    if (!driver) return;
+    try {
+      const r = await fetch('/api/surucu/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: getPinFromStorage() })
+      });
+      const data = await r.json();
+      if (r.ok) {
+        driver.sevkiyat = data.sevkiyat;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(driver));
+        renderSevkiyat(driver.sevkiyat);
+      }
+    } catch (_) {}
+  });
+
+  /* ── Çıkış ── */
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    if (!confirm('Çıkış yapmak istediğinizden emin misiniz?')) return;
+    clearInterval(gpsInterval);
+    clearInterval(minuteTimer);
+    localStorage.removeItem(STORAGE_KEY);
+    driver = null;
+    $track.style.display = 'none';
+    $login.style.display  = 'flex';
+    $pinIn.value = '';
+    $loginB.disabled = false;
+    $loginB.textContent = 'Giriş Yap';
+    updateCount = errorCount = 0;
+  });
+
+  /* ── Ekran kapanmasın: wake lock ── */
+  if ('wakeLock' in navigator) {
+    navigator.wakeLock.request('screen').catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && driver) {
+        navigator.wakeLock.request('screen').catch(() => {});
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

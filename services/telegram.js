@@ -190,7 +190,7 @@ async function handleCommand(update) {
     const { rows: rezRows } = await db.query(
       `SELECT
          COUNT(*) FILTER (WHERE status='pending')   AS bekleyen,
-         COUNT(*) FILTER (WHERE status='confirmed') AS onaylandı,
+         COUNT(*) FILTER (WHERE status='confirmed') AS onaylandi,
          COUNT(*) FILTER (WHERE DATE(created_at)=CURRENT_DATE) AS bugun
        FROM bookings`
     );

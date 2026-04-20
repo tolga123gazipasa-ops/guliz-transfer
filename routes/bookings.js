@@ -81,6 +81,20 @@ router.post('/', async (req, res) => {
     tgNewBooking(booking).catch(() => {});
     // Müşteri onay maili
     sendBookingConfirmation({ name: customer_name, email: customer_email }, booking).catch(() => {});
+
+    // Confirmed rezervasyondan otomatik sevkiyat oluştur
+    if (bookingStatus === 'confirmed') {
+      const takipKodu = 'GT' + Date.now().toString(36).toUpperCase().slice(-6);
+      db.query(
+        `INSERT INTO sevkiyatlar (takip_kodu, musteri_adi, musteri_tel, kalkis, varis, kalkis_zamani, notlar, durum)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,'beklemede')`,
+        [takipKodu, customer_name, customer_phone || null,
+         from_point, to_point,
+         `${transfer_date}T${transfer_time}`,
+         `Rezervasyon: ${ref}${notes ? ' — ' + notes : ''}`]
+      ).catch(() => {});
+    }
+
     res.status(201).json(booking);
   } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
@@ -117,9 +131,30 @@ router.patch('/:id/status', auth, async (req, res) => {
   const allowed = ['pending','confirmed','assigned','completed','cancelled'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Geçersiz durum' });
   try {
+    const { rows: old } = await db.query('SELECT status FROM bookings WHERE id=$1', [req.params.id]);
     const { rows } = await db.query(
       'UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *', [status, req.params.id]);
-    res.json(rows[0]);
+    const booking = rows[0];
+
+    // İlk kez confirmed olunca sevkiyat aç
+    if (status === 'confirmed' && old[0]?.status !== 'confirmed') {
+      const exists = await db.query(
+        `SELECT id FROM sevkiyatlar WHERE notlar LIKE $1 LIMIT 1`, [`%${booking.booking_ref}%`]
+      );
+      if (!exists.rows.length) {
+        const takipKodu = 'GT' + Date.now().toString(36).toUpperCase().slice(-6);
+        db.query(
+          `INSERT INTO sevkiyatlar (takip_kodu, musteri_adi, musteri_tel, kalkis, varis, kalkis_zamani, notlar, durum)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,'beklemede')`,
+          [takipKodu, booking.customer_name, booking.customer_phone || null,
+           booking.from_point, booking.to_point,
+           `${booking.transfer_date}T${booking.transfer_time}`,
+           `Rezervasyon: ${booking.booking_ref}${booking.notes ? ' — ' + booking.notes : ''}`]
+        ).catch(() => {});
+      }
+    }
+
+    res.json(booking);
   } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 

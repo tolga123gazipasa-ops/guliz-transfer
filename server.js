@@ -37,6 +37,7 @@ const insaatRoutes   = require('./routes/insaat');
 const takipRoutes    = require('./routes/takip');
 const araclarRoutes  = require('./routes/araclar');
 const { tgChatMessage, tgVisitorOnline, initBot } = require('./services/telegram');
+const auth = require('./middleware/auth');
 const db = require('./models/db');
 
 const app    = express();
@@ -119,9 +120,7 @@ app.get('/api/config.js', (req, res) => {
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
 
 /* ── AI Asistan: Sevkiyat açıklamasını parse et ── */
-app.post('/api/ai/sevkiyat-parse', async (req, res) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
+app.post('/api/ai/sevkiyat-parse', auth, async (req, res) => {
   const { metin } = req.body;
   if (!metin) return res.status(400).json({ error: 'metin zorunlu' });
   if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: 'AI_DISABLED' });
@@ -186,10 +185,8 @@ app.post('/api/yuk-bildirimi', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.get('/api/yuk-bildirimleri', async (req, res) => {
+app.get('/api/yuk-bildirimleri', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const { rows } = await db.query(
       `SELECT * FROM yuk_bildirimleri ORDER BY created_at DESC LIMIT 200`
     );
@@ -197,20 +194,15 @@ app.get('/api/yuk-bildirimleri', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.patch('/api/yuk-bildirimleri/:id/okundu', async (req, res) => {
-  const auth = require('./middleware/auth');
-  auth(req, res, async () => {
-    try {
-      await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
-      res.json({ ok: true });
-    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
-  });
+app.patch('/api/yuk-bildirimleri/:id/okundu', auth, async (req, res) => {
+  try {
+    await db.query(`UPDATE yuk_bildirimleri SET okundu=true WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.delete('/api/yuk-bildirimleri/:id', async (req, res) => {
+app.delete('/api/yuk-bildirimleri/:id', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM yuk_bildirimleri WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
@@ -244,10 +236,8 @@ app.post('/api/iletisim', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.get('/api/iletisim', async (req, res) => {
+app.get('/api/iletisim', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const { rows } = await db.query(
       `SELECT * FROM iletisim_mesajlari ORDER BY created_at DESC LIMIT 300`
     );
@@ -255,20 +245,15 @@ app.get('/api/iletisim', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.patch('/api/iletisim/:id/okundu', async (req, res) => {
-  const auth = require('./middleware/auth');
-  auth(req, res, async () => {
-    try {
-      await db.query(`UPDATE iletisim_mesajlari SET okundu=true WHERE id=$1`, [req.params.id]);
-      res.json({ ok: true });
-    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
-  });
+app.patch('/api/iletisim/:id/okundu', auth, async (req, res) => {
+  try {
+    await db.query(`UPDATE iletisim_mesajlari SET okundu=true WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.delete('/api/iletisim/:id', async (req, res) => {
+app.delete('/api/iletisim/:id', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM iletisim_mesajlari WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
@@ -313,10 +298,8 @@ app.post('/api/ik', (req, res, next) => {
   }
 });
 
-app.get('/api/ik', async (req, res) => {
+app.get('/api/ik', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const { rows } = await db.query(
       `SELECT * FROM is_basvurulari ORDER BY created_at DESC LIMIT 300`
     );
@@ -325,10 +308,8 @@ app.get('/api/ik', async (req, res) => {
 });
 
 /* ── CV İNDİR ── */
-app.get('/api/ik/:id/cv', async (req, res) => {
+app.get('/api/ik/:id/cv', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const { rows } = await db.query(
       `SELECT cv_path, cv_original_name FROM is_basvurulari WHERE id=$1`, [req.params.id]
     );
@@ -349,20 +330,15 @@ app.get('/api/ik/:id/cv', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.patch('/api/ik/:id/okundu', async (req, res) => {
-  const auth = require('./middleware/auth');
-  auth(req, res, async () => {
-    try {
-      await db.query(`UPDATE is_basvurulari SET okundu=true WHERE id=$1`, [req.params.id]);
-      res.json({ ok: true });
-    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
-  });
+app.patch('/api/ik/:id/okundu', auth, async (req, res) => {
+  try {
+    await db.query(`UPDATE is_basvurulari SET okundu=true WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.delete('/api/ik/:id', async (req, res) => {
+app.delete('/api/ik/:id', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const { rows } = await db.query(`SELECT cv_path FROM is_basvurulari WHERE id=$1`, [req.params.id]);
     if (rows.length && rows[0].cv_path) {
       fs.unlink(path.join(CV_DIR, rows[0].cv_path), () => {});
@@ -401,10 +377,8 @@ app.post('/api/teklif', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.get('/api/teklifler', async (req, res) => {
+app.get('/api/teklifler', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const { rows } = await db.query(
       `SELECT * FROM teklifler ORDER BY created_at DESC LIMIT 300`
     );
@@ -412,30 +386,23 @@ app.get('/api/teklifler', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.patch('/api/teklifler/:id/okundu', async (req, res) => {
-  const auth = require('./middleware/auth');
-  auth(req, res, async () => {
-    try {
-      await db.query(`UPDATE teklifler SET okundu=true WHERE id=$1`, [req.params.id]);
-      res.json({ ok: true });
-    } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
-  });
+app.patch('/api/teklifler/:id/okundu', auth, async (req, res) => {
+  try {
+    await db.query(`UPDATE teklifler SET okundu=true WHERE id=$1`, [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
-app.delete('/api/teklifler/:id', async (req, res) => {
+app.delete('/api/teklifler/:id', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     await db.query(`DELETE FROM teklifler WHERE id=$1`, [req.params.id]);
     res.json({ ok: true });
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
 /* ── CHAT SESSION SİL ── */
-app.delete('/api/chat/:sessionId', async (req, res) => {
+app.delete('/api/chat/:sessionId', auth, async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.status(401).json({ error: 'Yetkisiz' });
     const sid = req.params.sessionId;
     // Önce mesajları sil (CASCADE yoksa bile çalışsın)
     await db.query(`DELETE FROM chat_messages WHERE session_id=$1`, [sid]).catch(() => {});
@@ -932,17 +899,6 @@ io.on('connection', (socket) => {
     broadcastVisitors();
   });
 
-  /* ── visitor:action — scoring ekle ── */
-  socket.on('visitor:action_score', ({ sessionId, action }) => {
-    // Mevcut visitor:action handler'ına scoring eklemek için
-    // (asıl handler üstte, bu ek scoring)
-    const v = visitors.get(sessionId);
-    if (!v) return;
-    if (action === 'booking_attempt') addScore(v, 'booking_attempt');
-    if (action === 'chat_opened')     addScore(v, 'chat_opened');
-    if (action === 'scroll') { /* scroll scoring visitor:action içinde */ }
-  });
-
   /* ── Bağlantı kesildi ── */
   socket.on('disconnect', () => {
     adminSockets.delete(socket.id);
@@ -1272,12 +1228,75 @@ app.use((err, req, res, _next) => {
     `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS kurum_id INTEGER REFERENCES kurumlar(id) ON DELETE SET NULL`,
     `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS son_konum_adi TEXT`,
     `ALTER TABLE sevkiyatlar ADD COLUMN IF NOT EXISTS driver_id INTEGER REFERENCES drivers(id) ON DELETE SET NULL`,
+    `ALTER TABLE drivers ADD COLUMN IF NOT EXISTS pin VARCHAR(6)`,
   ];
   for (const sql of cols) {
     await db.query(sql).catch(e => console.warn('Migration uyarısı:', e.message));
   }
   console.log('✅ Sütun migration\'ları tamamlandı.');
 })();
+
+/* ── SÜRÜCÜ GPS ── */
+app.post('/api/surucu/login', async (req, res) => {
+  const { pin } = req.body;
+  if (!pin || !/^\d{4,6}$/.test(String(pin)))
+    return res.status(400).json({ error: 'Geçersiz PIN formatı.' });
+  try {
+    const { rows } = await db.query(
+      `SELECT id, name, phone, plate, status FROM drivers WHERE pin=$1`, [pin]
+    );
+    if (!rows.length) return res.status(401).json({ error: 'Hatalı PIN.' });
+    // Aktif sevkiyatı da döndür
+    const { rows: sevk } = await db.query(
+      `SELECT takip_kodu, musteri_adi, kalkis, varis, tahmini_teslim
+       FROM sevkiyatlar WHERE driver_id=$1 AND durum='yolda' LIMIT 1`, [rows[0].id]
+    );
+    res.json({ ...rows[0], sevkiyat: sevk[0] || null });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası.' }); }
+});
+
+app.post('/api/surucu/konum', async (req, res) => {
+  const { driver_id, pin, lat, lng, accuracy } = req.body;
+  if (!driver_id || !pin || lat == null || lng == null)
+    return res.status(400).json({ error: 'driver_id, pin, lat, lng zorunlu.' });
+  try {
+    const { rows } = await db.query(
+      `SELECT id FROM drivers WHERE id=$1 AND pin=$2`, [driver_id, pin]
+    );
+    if (!rows.length) return res.status(401).json({ error: 'Yetkisiz.' });
+
+    // Aktif sevkiyatın konumunu güncelle
+    await db.query(
+      `UPDATE sevkiyatlar SET mevcut_lat=$1, mevcut_lng=$2, updated_at=NOW()
+       WHERE driver_id=$3 AND durum='yolda'`,
+      [lat, lng, driver_id]
+    );
+    // İlgili aracın son konumunu güncelle
+    await db.query(
+      `UPDATE araclar SET son_lat=$1, son_lng=$2
+       WHERE id IN (SELECT arac_id FROM sevkiyatlar WHERE driver_id=$3 AND durum='yolda')`,
+      [lat, lng, driver_id]
+    );
+    // Socket.IO ile admin paneline anlık ilet
+    io.to('admins').emit('surucu:konum', { driver_id, lat, lng, accuracy: accuracy || null, ts: new Date().toISOString() });
+
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası.' }); }
+});
+
+/* Sürücü PIN set et (admin) */
+app.patch('/api/surucu/:id/pin', auth, async (req, res) => {
+  const { pin } = req.body;
+  if (!pin || !/^\d{4,6}$/.test(String(pin)))
+    return res.status(400).json({ error: '4-6 haneli sayısal PIN gerekli.' });
+  try {
+    const { rows } = await db.query(
+      `UPDATE drivers SET pin=$1 WHERE id=$2 RETURNING id, name, plate`, [pin, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Sürücü bulunamadı.' });
+    res.json({ ok: true, driver: rows[0] });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Sunucu hatası.' }); }
+});
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
