@@ -1560,6 +1560,14 @@ let bookingFilter = 'all';
 let allDrivers = [];
 let allRoutes  = [];
 let currentChatSessionId = null;
+let adminSessionActive = false;
+
+function isTokenExpired(t) {
+  try {
+    const payload = JSON.parse(atob(t.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch { return true; }
+}
 
 /* ── AUTH ── */
 async function doLogin() {
@@ -1586,6 +1594,7 @@ async function doLogin() {
 }
 
 function enterAdmin() {
+  adminSessionActive = true;
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('adminLayout').style.display = 'flex';
   document.getElementById('adminNameDisplay').textContent = currentAdmin.name;
@@ -2032,11 +2041,18 @@ function doLogout() {
   location.reload();
 }
 
-/* Auto-login if token exists */
+/* Auto-login if token exists and not expired */
 if (token && currentAdmin) {
-  document.addEventListener('DOMContentLoaded', () => {
-    enterAdmin();
-  });
+  if (isTokenExpired(token)) {
+    localStorage.removeItem('gt_token');
+    localStorage.removeItem('gt_admin');
+    token = null;
+    currentAdmin = null;
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      enterAdmin();
+    });
+  }
 }
 
 /* ── NAV ── */
@@ -2086,7 +2102,12 @@ async function api(path, opts={}) {
   if (res.status === 401) {
     localStorage.removeItem('gt_token');
     localStorage.removeItem('gt_admin');
-    alert('Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.');
+    token = null;
+    currentAdmin = null;
+    if (adminSessionActive) {
+      adminSessionActive = false;
+      alert('Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.');
+    }
     location.reload();
     return;
   }
