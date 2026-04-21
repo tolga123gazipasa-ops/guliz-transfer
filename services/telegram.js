@@ -347,6 +347,34 @@ async function handleCommand(update) {
   }
 }
 
+/* ── Sürücüye Atama Bildirimi ── */
+async function tgDriverAssigned(driver, booking) {
+  if (!driver?.phone) return;
+  const chatId = driver.telegram_chat_id || null;
+  const text =
+    `🚘 <b>YENİ GÖREV ATANDI</b>\n` +
+    `📋 Ref: <code>${booking.booking_ref || booking.takip_kodu}</code>\n` +
+    `👤 Müşteri: ${booking.customer_name || booking.musteri_adi}\n` +
+    `📞 Tel: ${booking.customer_phone || booking.musteri_tel || '—'}\n` +
+    `📍 Güzergah: ${booking.from_point || booking.kalkis} → ${booking.to_point || booking.varis}\n` +
+    `📅 Tarih: ${booking.transfer_date ? booking.transfer_date + ' ' + (booking.transfer_time || '') : (booking.kalkis_zamani ? new Date(booking.kalkis_zamani).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—')}\n` +
+    `👥 Yolcu: ${booking.passenger_count || 1}`;
+  if (chatId) {
+    // Sürücünün kişisel Telegram'ına gönder
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    }).catch(() => {});
+  }
+  // Her durumda admin grubuna da bildir
+  return tg(
+    `🚗 <b>SÜRÜCÜ ATANDI</b>\n` +
+    `👤 Sürücü: ${driver.name} (${driver.plate})\n` +
+    `📞 ${driver.phone}\n` + text.slice(text.indexOf('\n') + 1)
+  );
+}
+
 /* ── Yeni Rezervasyon ── */
 function tgNewBooking(b) {
   return tg(
@@ -475,4 +503,4 @@ function tgSevkiyatTeslim(s) {
   );
 }
 
-module.exports = { tg, tgNewBooking, tgPayment, tgNewUser, tgUserLogin, tgAdminLogin, tgChatMessage, tgVisitorOnline, initBot, tgSevkiyatYolda, tgSevkiyatTeslim };
+module.exports = { tg, tgNewBooking, tgPayment, tgNewUser, tgUserLogin, tgAdminLogin, tgChatMessage, tgVisitorOnline, initBot, tgSevkiyatYolda, tgSevkiyatTeslim, tgDriverAssigned };

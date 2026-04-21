@@ -575,6 +575,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
       <div class="stats-row" id="statsRow" style="margin-bottom:1rem">
         <div class="stat-card"><div class="stat-label">Toplam Rezervasyon</div><div class="stat-val" id="st-total">—</div></div>
         <div class="stat-card"><div class="stat-label">Bugünkü Transfer</div><div class="stat-val" id="st-today">—</div></div>
+        <div class="stat-card"><div class="stat-label">Bu Ay Rezervasyon</div><div class="stat-val" id="st-month" style="color:#60a5fa">—</div></div>
         <div class="stat-card"><div class="stat-label">Toplam Gelir</div><div class="stat-val" id="st-revenue">—</div><div class="stat-sub">Onaylı ödemeler</div></div>
         <div class="stat-card"><div class="stat-label">Bekleyen Onay</div><div class="stat-val" id="st-pending" style="color:#fbbf24">—</div></div>
       </div>
@@ -643,7 +644,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
       </div>
       <div class="table-wrap">
         <table><thead><tr>
-          <th>Ad Soyad</th><th>Telefon</th><th>Plaka</th><th>Durum</th><th>İşlem</th>
+          <th>Ad Soyad</th><th>Telefon</th><th>Plaka</th><th>Durum</th><th>PIN</th><th>İşlem</th>
         </tr></thead><tbody id="driversTable"></tbody></table>
       </div>
     </div>
@@ -2133,6 +2134,7 @@ async function loadDashboard() {
     const stats = await api('/api/stats/dashboard');
     document.getElementById('st-total').textContent   = stats.totalBookings;
     document.getElementById('st-today').textContent   = stats.todayBookings;
+    document.getElementById('st-month').textContent   = stats.thisMonthBookings;
     document.getElementById('st-revenue').textContent = '₺' + parseFloat(stats.totalRevenue).toLocaleString('tr-TR');
     document.getElementById('st-pending').textContent = stats.pendingCount;
     if (stats.pendingCount > 0) {
@@ -2298,9 +2300,11 @@ function renderDrivers() {
       <td>${d.phone}</td>
       <td style="font-family:monospace;color:var(--gold)">${d.plate}</td>
       <td><span class="badge badge-${d.status}">${d.status==='available'?'Müsait':d.status==='busy'?'Görevde':'Çevrimdışı'}</span></td>
+      <td><span style="font-family:monospace;font-size:0.75rem;color:var(--muted)">${d.pin ? '••••••'.slice(0,d.pin.length) : '—'}</span></td>
       <td>
         <div style="display:flex;gap:0.4rem">
           <button class="btn btn-outline btn-sm" onclick="openDriverModal(${d.id})">Düzenle</button>
+          <button class="btn btn-outline btn-sm" onclick="assignDriverPin(${d.id},'${d.name.replace(/'/g,"\\'")}')">PIN Ata</button>
           <button class="btn btn-danger btn-sm" onclick="deleteDriver(${d.id})">Sil</button>
         </div>
       </td>
@@ -2350,6 +2354,17 @@ async function deleteDriver(id) {
     loadDrivers();
     showToast('Sürücü silindi.', 'success');
   } catch(e) { showToast('Silinemedi: ' + e.message, 'error'); }
+}
+
+async function assignDriverPin(id, name) {
+  const pin = prompt(`${name} için 4-6 haneli PIN girin:`, '');
+  if (pin === null) return;
+  if (!/^\d{4,6}$/.test(pin)) { showToast('PIN 4-6 rakamdan oluşmalı.', 'error'); return; }
+  try {
+    await api('/api/surucu/'+id+'/pin', { method:'PATCH', body: JSON.stringify({ pin }) });
+    showToast(`${name} için PIN atandı.`, 'success');
+    loadDrivers();
+  } catch(e) { showToast('PIN atanamadı: ' + e.message, 'error'); }
 }
 
 /* ── ROUTES ── */

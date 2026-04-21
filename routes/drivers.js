@@ -3,7 +3,7 @@ const db     = require('../models/db');
 const auth   = require('../middleware/auth');
 
 router.get('/', auth, async (req, res) => {
-  try { const { rows } = await db.query('SELECT * FROM drivers ORDER BY name'); res.json(rows); }
+  try { const { rows } = await db.query('SELECT id,name,phone,plate,status,CASE WHEN pin IS NOT NULL THEN LENGTH(pin::text) ELSE NULL END as pin FROM drivers ORDER BY name'); res.json(rows); }
   catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 

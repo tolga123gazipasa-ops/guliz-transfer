@@ -3,7 +3,7 @@ const db     = require('../models/db');
 const auth   = require('../middleware/auth');
 const { notifyAdminNewBooking, sendBookingConfirmation } = require('../services/email');
 const { notifyAdminSms } = require('../services/sms');
-const { tgNewBooking, tgPayment } = require('../services/telegram');
+const { tgNewBooking, tgPayment, tgDriverAssigned } = require('../services/telegram');
 
 function genRef() { return 'GT-' + Math.floor(100000 + Math.random() * 900000); }
 
@@ -18,6 +18,21 @@ function validateEmail(e) {
   if (!e) return true; // email opsiyonel
   return EMAIL_RE.test(e);
 }
+
+// Public endpoint — müşteri kendi rezervasyonunu sorgular
+router.get('/public/:ref', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT b.booking_ref, b.status, b.payment_status, b.customer_name,
+              b.from_point, b.to_point, b.transfer_date, b.transfer_time,
+              b.passenger_count, b.price, b.notes, b.created_at,
+              d.name as driver_name, d.phone as driver_phone, d.plate as driver_plate
+       FROM bookings b LEFT JOIN drivers d ON b.driver_id=d.id
+       WHERE b.booking_ref=$1`, [req.params.ref.toUpperCase()]);
+    if (!rows.length) return res.status(404).json({ error: 'Rezervasyon bulunamadı.' });
+    res.json(rows[0]);
+  } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
+});
 
 router.get('/', auth, async (req, res) => {
   const { status, date, search } = req.query;
@@ -165,7 +180,10 @@ router.patch('/:id/assign', auth, async (req, res) => {
       `UPDATE bookings SET driver_id=$1, status='assigned' WHERE id=$2 RETURNING *`,
       [driver_id, req.params.id]);
     await db.query("UPDATE drivers SET status='busy' WHERE id=$1", [driver_id]);
-    res.json(rows[0]);
+    const booking = rows[0];
+    const { rows: dRows } = await db.query('SELECT * FROM drivers WHERE id=$1', [driver_id]);
+    if (dRows.length) tgDriverAssigned(dRows[0], booking).catch(() => {});
+    res.json(booking);
   } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 

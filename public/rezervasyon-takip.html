@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rezervasyon Takip — Güliz Transfer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #0a1235;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo { color: #C9A84C; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+    .logo-sub { color: rgba(255,255,255,0.35); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+    main {
+      flex: 1;
+      max-width: 600px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 2px 16px rgba(10,18,53,0.07);
+      margin-bottom: 20px;
+    }
+    h1 { font-size: 22px; font-weight: 700; color: #0a1235; margin-bottom: 6px; }
+    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    input[type=text] {
+      width: 100%;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: monospace;
+      letter-spacing: 2px;
+      color: #0a1235;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type=text]:focus { border-color: #C9A84C; }
+    .btn {
+      width: 100%;
+      background: #C9A84C;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error { color: #ef4444; font-size: 13px; margin-top: 10px; display: none; }
+
+    /* Result card */
+    #result { display: none; }
+    .ref-badge {
+      font-family: monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: #C9A84C;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+    .status-wrap { margin: 16px 0; }
+    .status-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 10px;
+    }
+    .step {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+      position: relative;
+    }
+    .step.done  { color: #059669; }
+    .step.active { color: #C9A84C; font-weight: 700; }
+    .step-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      border: 2px solid #e5e7eb;
+      margin: 0 auto 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+    }
+    .step.done  .step-dot { background: #059669; border-color: #059669; color: #fff; }
+    .step.active .step-dot { background: #C9A84C; border-color: #C9A84C; color: #fff; }
+    .step-line {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+    .step-line.done { background: #059669; }
+    .step:last-child .step-line { display: none; }
+    .step-dot { position: relative; z-index: 1; }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-top: 18px; }
+    .info-item {}
+    .info-key { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; margin-bottom: 4px; }
+    .info-val { font-size: 14px; color: #1a1a2e; }
+    .route-val { font-size: 14px; color: #1a1a2e; display: flex; align-items: center; gap: 6px; }
+    .route-arrow { color: #C9A84C; }
+
+    .driver-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 18px;
+    }
+    .driver-card-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #059669; margin-bottom: 10px; }
+    .driver-info { display: flex; align-items: center; gap: 12px; }
+    .driver-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: #059669;
+      color: #fff;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .driver-name { font-weight: 600; font-size: 15px; color: #065f46; }
+    .driver-plate {
+      display: inline-block;
+      background: #0a1235;
+      color: #C9A84C;
+      font-family: monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 3px;
+    }
+    .driver-phone a { color: #059669; text-decoration: none; font-size: 13px; }
+
+    .cancelled-banner {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 18px;
+      color: #991b1b;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #9ca3af;
+      font-size: 12px;
+    }
+    @media (max-width: 480px) {
+      .info-grid { grid-template-columns: 1fr; }
+      main { margin: 24px auto; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Güliz Transfer</div>
+    <div class="logo-sub">Rezervasyon Takip</div>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h1>Rezervasyonunuzu Takip Edin</h1>
+    <p class="subtitle">Rezervasyon referans kodunuzu girerek detayları görüntüleyin.</p>
+    <label for="ref-input">Rezervasyon Kodu</label>
+    <input type="text" id="ref-input" placeholder="GT-123456" maxlength="10"
+           oninput="this.value=this.value.toUpperCase()"
+           onkeydown="if(event.key==='Enter') doSearch()">
+    <button class="btn" id="search-btn" onclick="doSearch()">Sorgula</button>
+    <div class="error" id="err-msg"></div>
+  </div>
+
+  <div class="card" id="result">
+    <div class="ref-badge" id="r-ref"></div>
+    <div style="font-size:13px;color:#6b7280" id="r-created"></div>
+
+    <div class="status-wrap">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7280;margin-bottom:8px">Durum</div>
+      <div class="status-steps" id="status-steps"></div>
+    </div>
+
+    <div class="info-grid" id="r-info"></div>
+
+    <div id="r-driver"></div>
+    <div id="r-cancelled"></div>
+  </div>
+</main>
+
+<footer>© 2025 Güliz Transfer · <a href="/" style="color:#C9A84C;text-decoration:none">Ana Sayfa</a></footer>
+
+<script>
+const STATUS_STEPS = [
+  { key: 'pending',   label: 'Bekliyor',  icon: '⏳' },
+  { key: 'confirmed', label: 'Onaylandı', icon: '✅' },
+  { key: 'assigned',  label: 'Sürücü Atandı', icon: '🚗' },
+  { key: 'completed', label: 'Tamamlandı', icon: '🏁' },
+];
+const STATUS_ORDER = { pending:0, confirmed:1, assigned:2, completed:3, cancelled:-1 };
+
+async function doSearch() {
+  const ref = document.getElementById('ref-input').value.trim().toUpperCase();
+  const err = document.getElementById('err-msg');
+  const btn = document.getElementById('search-btn');
+  if (!ref || !/^GT-\d{6}$/.test(ref)) {
+    showErr('Geçerli bir rezervasyon kodu girin. (Örnek: GT-123456)'); return;
+  }
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Sorgulanıyor…';
+  try {
+    const res = await fetch('/api/bookings/public/' + ref);
+    const data = await res.json();
+    if (!res.ok) { showErr(data.error || 'Rezervasyon bulunamadı.'); return; }
+    renderResult(data);
+  } catch(e) {
+    showErr('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sorgula';
+  }
+}
+
+function showErr(msg) {
+  const e = document.getElementById('err-msg');
+  e.textContent = msg;
+  e.style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+}
+
+function renderResult(b) {
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('r-ref').textContent = b.booking_ref;
+  document.getElementById('r-created').textContent =
+    'Oluşturulma: ' + new Date(b.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  // Durum adımları
+  const isCancelled = b.status === 'cancelled';
+  const curOrder = STATUS_ORDER[b.status] ?? 0;
+  document.getElementById('status-steps').innerHTML = isCancelled
+    ? `<div style="color:#ef4444;font-weight:700;font-size:14px">❌ Rezervasyon İptal Edildi</div>`
+    : STATUS_STEPS.map((s, i) => {
+        const order = STATUS_ORDER[s.key];
+        const isDone   = curOrder > order;
+        const isActive = curOrder === order;
+        return `<div class="step ${isDone?'done':isActive?'active':''}">
+          <div class="step-dot">${isDone ? '✓' : s.icon}</div>
+          ${i < STATUS_STEPS.length - 1 ? `<div class="step-line ${isDone?'done':''}"></div>` : ''}
+          <div>${s.label}</div>
+        </div>`;
+      }).join('');
+
+  // Bilgi grid
+  const td = new Date(b.transfer_date + 'T' + (b.transfer_time || '00:00'));
+  const dateStr = td.toLocaleDateString('tr-TR', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('r-info').innerHTML = `
+    <div class="info-item" style="grid-column:1/-1">
+      <div class="info-key">Güzergah</div>
+      <div class="route-val">${esc(b.from_point)} <span class="route-arrow">→</span> ${esc(b.to_point)}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-key">Tarih & Saat</div>
+      <div class="info-val">${dateStr}${b.transfer_time ? ', ' + b.transfer_time : ''}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-key">Yolcu Sayısı</div>
+      <div class="info-val">${b.passenger_count} kişi</div>
+    </div>
+    <div class="info-item">
+      <div class="info-key">Müşteri</div>
+      <div class="info-val">${esc(b.customer_name)}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-key">Ücret</div>
+      <div class="info-val">₺${parseFloat(b.price).toLocaleString('tr-TR')}
+        ${b.payment_status === 'paid' ? '<span style="color:#059669;font-size:11px;margin-left:4px">✓ Ödendi</span>' : ''}
+      </div>
+    </div>`;
+
+  // Sürücü
+  const dEl = document.getElementById('r-driver');
+  if (b.driver_name && !isCancelled) {
+    dEl.innerHTML = `
+      <div class="driver-card">
+        <div class="driver-card-title">Sürücü Bilgisi</div>
+        <div class="driver-info">
+          <div class="driver-avatar">🧑‍✈️</div>
+          <div>
+            <div class="driver-name">${esc(b.driver_name)}</div>
+            ${b.driver_plate ? `<div class="driver-plate">${esc(b.driver_plate)}</div>` : ''}
+            ${b.driver_phone ? `<div class="driver-phone" style="margin-top:4px"><a href="tel:${b.driver_phone}">📞 ${b.driver_phone}</a></div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  } else {
+    dEl.innerHTML = '';
+  }
+
+  // İptal
+  const cEl = document.getElementById('r-cancelled');
+  cEl.innerHTML = isCancelled
+    ? `<div class="cancelled-banner">Bu rezervasyon iptal edilmiştir. Sorularınız için lütfen bizimle iletişime geçin.</div>`
+    : '';
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// URL'den ref parametresi var mı?
+(function() {
+  const params = new URLSearchParams(location.search);
+  const ref = params.get('ref');
+  if (ref) {
+    document.getElementById('ref-input').value = ref.toUpperCase();
+    doSearch();
+  }
+})();
+</script>
+</body>
+</html>

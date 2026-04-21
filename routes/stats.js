@@ -4,9 +4,10 @@ const auth   = require('../middleware/auth');
 
 router.get('/dashboard', auth, async (req, res) => {
   try {
-    const [total, today, revenue, pending, topRoutes] = await Promise.all([
+    const [total, today, thisMonth, revenue, pending, topRoutes] = await Promise.all([
       db.query("SELECT COUNT(*) FROM bookings WHERE status!='cancelled'"),
       db.query("SELECT COUNT(*) FROM bookings WHERE transfer_date=CURRENT_DATE AND status!='cancelled'"),
+      db.query("SELECT COUNT(*) FROM bookings WHERE EXTRACT(YEAR FROM created_at)=EXTRACT(YEAR FROM NOW()) AND EXTRACT(MONTH FROM created_at)=EXTRACT(MONTH FROM NOW()) AND status!='cancelled'"),
       db.query("SELECT COALESCE(SUM(price),0) as total FROM bookings WHERE payment_status='paid'"),
       db.query("SELECT COUNT(*) FROM bookings WHERE status='pending'"),
       db.query(`
@@ -15,11 +16,12 @@ router.get('/dashboard', auth, async (req, res) => {
         GROUP BY from_point,to_point ORDER BY count DESC LIMIT 5`),
     ]);
     res.json({
-      totalBookings: parseInt(total.rows[0].count),
-      todayBookings: parseInt(today.rows[0].count),
-      totalRevenue:  parseFloat(revenue.rows[0].total),
-      pendingCount:  parseInt(pending.rows[0].count),
-      topRoutes:     topRoutes.rows,
+      totalBookings:      parseInt(total.rows[0].count),
+      todayBookings:      parseInt(today.rows[0].count),
+      thisMonthBookings:  parseInt(thisMonth.rows[0].count),
+      totalRevenue:       parseFloat(revenue.rows[0].total),
+      pendingCount:       parseInt(pending.rows[0].count),
+      topRoutes:          topRoutes.rows,
     });
   } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });

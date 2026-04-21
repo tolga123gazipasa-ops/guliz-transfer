@@ -192,7 +192,20 @@
       margin-bottom: 8px;
     }
     .btn-logout:active { background: rgba(255,255,255,0.04); }
+
+    /* ── MAP ── */
+    #map-card { display: none; }
+    #map {
+      height: 220px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+      border: 0.5px solid rgba(255,255,255,0.08);
+    }
+    .leaflet-container { background: #1a1a2e !important; }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -273,6 +286,12 @@
     </div>
   </div>
 
+  <!-- Harita -->
+  <div class="card" id="map-card">
+    <div class="card-label">Konumunuz</div>
+    <div id="map"></div>
+  </div>
+
   <button class="btn-refresh" id="refresh-btn">🔄 Sevkiyatı Yenile</button>
   <button class="btn-logout" id="logout-btn">Çıkış Yap</button>
 </div>
@@ -290,6 +309,8 @@
   let errorCount    = 0;
   let lastLat       = null;
   let lastLng       = null;
+  let leafletMap    = null;
+  let leafletMarker = null;
 
   /* ── DOM ── */
   const $login  = document.getElementById('login-screen');
@@ -396,6 +417,8 @@
         const acc = accuracy ? `±${Math.round(accuracy)}m` : '';
         setGpsState('active', 'Konum paylaşılıyor', acc);
 
+        updateMap(lat, lng);
+
         fetch('/api/surucu/konum', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -419,6 +442,28 @@
     $dot.className = 'gps-dot ' + state;
     $gpsT.textContent = text;
     $gpsD.textContent = detail;
+  }
+
+  function updateMap(lat, lng) {
+    const mapCard = document.getElementById('map-card');
+    mapCard.style.display = 'block';
+    if (!leafletMap) {
+      leafletMap = L.map('map', { zoomControl: true, attributionControl: false }).setView([lat, lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+      }).addTo(leafletMap);
+      const icon = L.divIcon({
+        html: '<div style="background:#C9A84C;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 8px rgba(201,168,76,0.8)"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+        className: '',
+      });
+      leafletMarker = L.marker([lat, lng], { icon }).addTo(leafletMap);
+      leafletMarker.bindPopup('Konumunuz').openPopup();
+    } else {
+      leafletMarker.setLatLng([lat, lng]);
+      leafletMap.panTo([lat, lng]);
+    }
   }
 
   function getPinFromStorage() {
@@ -458,6 +503,8 @@
     clearInterval(minuteTimer);
     localStorage.removeItem(STORAGE_KEY);
     driver = null;
+    if (leafletMap) { leafletMap.remove(); leafletMap = null; leafletMarker = null; }
+    document.getElementById('map-card').style.display = 'none';
     $track.style.display = 'none';
     $login.style.display  = 'flex';
     $pinIn.value = '';
