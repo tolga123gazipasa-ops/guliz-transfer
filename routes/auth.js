@@ -4,6 +4,7 @@ const jwt    = require('jsonwebtoken');
 const db     = require('../models/db');
 const authMW = require('../middleware/auth');
 const { tgAdminLogin } = require('../services/telegram');
+const { extractClientIp } = require('../utils/ip');
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -17,7 +18,7 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     );
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+    const ip = extractClientIp(req.headers, req.socket.remoteAddress);
     tgAdminLogin(rows[0], ip).catch(() => {});
     res.json({ token, admin: { id: rows[0].id, name: rows[0].name, email: rows[0].email, role: rows[0].role } });
   } catch(e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }

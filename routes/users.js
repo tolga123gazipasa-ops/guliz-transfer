@@ -6,6 +6,7 @@ const authMW  = require('../middleware/auth');
 const { sendWelcomeEmail, sendOtpEmail, notifyAdminNewUser } = require('../services/email');
 const { sendOtp, notifyAdminSms } = require('../services/sms');
 const { tgNewUser, tgUserLogin } = require('../services/telegram');
+const { extractClientIp } = require('../utils/ip');
 
 function genOtp() { return String(Math.floor(100000 + Math.random() * 900000)); }
 function genToken(user) {
@@ -97,7 +98,7 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(401).json({ error: 'Hatalı e-posta veya şifre' });
     const token = genToken(user);
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '';
+    const ip = extractClientIp(req.headers, req.socket.remoteAddress);
     tgUserLogin(user, ip).catch(() => {});
     res.json({
       token,

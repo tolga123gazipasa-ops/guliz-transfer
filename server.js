@@ -11,14 +11,19 @@ const helmet       = require('helmet');
 const compression  = require('compression');
 
 /* ── GeoIP yardımcısı ── */
-async function geoIP(ip) {
-  if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-    return { country: null, city: null };
-  }
+const { normalizeIp, isPrivateIp, extractClientIp } = require('./utils/ip');
+
+async function geoIP(rawIp) {
+  const ip = normalizeIp(rawIp);
+  // Private/rezerve IP'leri (proxy'nin kendi adresi, ::ffff: sonrası temizlenmiş
+  // olsa bile local ağ aralığında kalanlar dahil) ip-api'ye hiç gönderme —
+  // aksi halde rastgele/yanlış (genelde yurt dışı) bir konum döner.
+  if (isPrivateIp(ip)) return { country: null, city: null };
   try {
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,city,isp&lang=tr`);
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,city,isp&lang=tr`);
     if (!res.ok) return { country: null, city: null };
     const data = await res.json();
+    if (data.status !== 'success') return { country: null, city: null };
     return { country: data.country || null, city: data.city || null };
   } catch {
     return { country: null, city: null };
@@ -172,7 +177,7 @@ app.post('/api/yuk-bildirimi', async (req, res) => {
       return res.status(400).json({ error: 'Ad soyad, telefon ve yük tanımı zorunludur.' });
     if (!isValidPhone(telefon))
       return res.status(400).json({ error: 'Geçersiz telefon numarası. (05xx veya +90 formatı)' });
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const ip = extractClientIp(req.headers, req.ip);
     const { rows } = await db.query(
       `INSERT INTO yuk_bildirimleri (ad_soyad, telefon, yuk_tanimi, kaynak, ip)
        VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at`,
@@ -222,7 +227,7 @@ app.post('/api/iletisim', async (req, res) => {
       return res.status(400).json({ error: 'Ad soyad, telefon ve mesaj zorunludur.' });
     if (!isValidPhone(telefon))
       return res.status(400).json({ error: 'Geçersiz telefon numarası. (05xx veya +90 formatı)' });
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const ip = extractClientIp(req.headers, req.ip);
     const { rows } = await db.query(
       `INSERT INTO iletisim_mesajlari (ad_soyad, telefon, mesaj, kaynak, ip)
        VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at`,
@@ -276,7 +281,7 @@ app.post('/api/ik', (req, res, next) => {
     const { ad_soyad, telefon, email, pozisyon, deneyim, mesaj, kaynak } = req.body;
     if (!ad_soyad || !telefon || !pozisyon)
       return res.status(400).json({ error: 'Ad soyad, telefon ve pozisyon zorunludur.' });
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const ip = extractClientIp(req.headers, req.ip);
     const cv_path          = req.file ? req.file.filename : null;
     const cv_original_name = req.file ? req.file.originalname : null;
     const { rows } = await db.query(
@@ -360,7 +365,7 @@ app.post('/api/teklif', async (req, res) => {
     const { ad_soyad, telefon, kalkis, varis, km, arac, yuk, fiyat } = req.body;
     if (!ad_soyad || !telefon || !kalkis || !varis)
       return res.status(400).json({ error: 'Zorunlu alanlar eksik.' });
-    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || '';
+    const ip = extractClientIp(req.headers, req.ip);
     const { rows } = await db.query(
       `INSERT INTO teklifler (ad_soyad, telefon, kalkis, varis, mesafe_km, arac_tipi, yuk_tipi, fiyat_tahmini, ip)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, created_at`,
@@ -525,8 +530,7 @@ io.on('connection', (socket) => {
     const safePhone = typeof phone === 'string' ? phone.slice(0, 20)  : '';
     name  = safeName;
     phone = safePhone;
-    const ip = socket.handshake.headers['x-forwarded-for']?.split(',')[0].trim()
-               || socket.handshake.address || '';
+    const ip = extractClientIp(socket.handshake.headers, socket.handshake.address);
     const isNew = !visitors.has(sessionId);
     let v = visitors.get(sessionId);
     const now = new Date().toISOString();
