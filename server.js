@@ -348,6 +348,23 @@ app.patch('/api/ik/:id/okundu', auth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
 });
 
+/* ── BAŞVURU DÜZENLE ── */
+app.put('/api/ik/:id', auth, async (req, res) => {
+  try {
+    const { ad_soyad, telefon, email, pozisyon, deneyim, mesaj } = req.body;
+    if (!ad_soyad?.trim() || !telefon?.trim() || !pozisyon?.trim())
+      return res.status(400).json({ error: 'Ad soyad, telefon ve pozisyon zorunludur.' });
+    const { rows } = await db.query(
+      `UPDATE is_basvurulari
+       SET ad_soyad=$1, telefon=$2, email=$3, pozisyon=$4, deneyim=$5, mesaj=$6
+       WHERE id=$7 RETURNING *`,
+      [ad_soyad.trim(), telefon.trim(), email?.trim() || null, pozisyon.trim(), deneyim?.trim() || null, mesaj?.trim() || null, req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Başvuru bulunamadı.' });
+    res.json(rows[0]);
+  } catch (e) { console.error(e); res.status(500).json({ error: "İşlem başarısız oldu." }); }
+});
+
 app.delete('/api/ik/:id', auth, async (req, res) => {
   try {
     const { rows } = await db.query(`SELECT cv_path FROM is_basvurulari WHERE id=$1`, [req.params.id]);

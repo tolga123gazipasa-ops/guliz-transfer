@@ -1369,7 +1369,7 @@ tr:hover td{background:rgba(26,45,107,0.02)}
 
     <!-- İK BAŞVURULARI SAYFASI -->
     <div class="page" id="page-ik">
-      <div class="section-head"><h2>İK Başvuruları</h2><div style="display:flex;gap:8px;align-items:center;"><span id="ikSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn btn-outline btn-sm" onclick="loadIK()">↻ Yenile</button></div></div>
+      <div class="section-head"><h2>İK Başvuruları</h2><div style="display:flex;gap:8px;align-items:center;"><span id="ikSayac" style="font-size:12px;color:var(--muted);"></span><button class="btn btn-outline btn-sm" onclick="ikExportCsv()">⬇ CSV İndir</button><button class="btn btn-outline btn-sm" onclick="loadIK()">↻ Yenile</button></div></div>
       <div class="table-wrap" style="margin-top:16px;">
         <div class="table-header"><h3>İş Başvuruları</h3></div>
         <table>
@@ -1552,6 +1552,28 @@ tr:hover td{background:rgba(26,45,107,0.02)}
         <div class="form-group"><label>Süre</label><input id="routeDuration" type="text" placeholder="25-35 dk"></div>
       </div>
       <button class="btn btn-gold" style="width:100%;padding:0.75rem" onclick="saveRoute()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- İK Başvuru Düzenle Modal -->
+<div class="modal-overlay" id="ikModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Başvuruyu Düzenle</h3>
+      <button class="modal-close" onclick="closeModal('ikModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full"><label>Ad Soyad</label><input id="ikName" type="text" placeholder="Ahmet Yılmaz"></div>
+        <div class="form-group"><label>Telefon</label><input id="ikPhone" type="tel" placeholder="+90 5XX XXX XX XX"></div>
+        <div class="form-group"><label>E-posta</label><input id="ikEmail" type="email" placeholder="ornek@mail.com"></div>
+        <div class="form-group"><label>Pozisyon</label><input id="ikPosition" type="text" placeholder="Sürücü"></div>
+        <div class="form-group"><label>Deneyim</label><input id="ikExperience" type="text" placeholder="3 yıl"></div>
+        <div class="form-group full"><label>Not</label><textarea id="ikNote" rows="3" style="width:100%;padding:0.6rem;border:1px solid var(--border);border-radius:8px;font-family:inherit;resize:vertical;"></textarea></div>
+      </div>
+      <input type="hidden" id="ikEditId">
+      <button class="btn btn-gold" style="width:100%;padding:0.75rem" onclick="saveIk()">Kaydet</button>
     </div>
   </div>
 </div>
@@ -4469,9 +4491,12 @@ async function iletisimSil(id) {
 }
 
 /* ── İK BAŞVURULARI ── */
+let ikRows = [];
+
 async function loadIK() {
   try {
     const rows = await api('/api/ik');
+    ikRows = rows;
     const tb   = document.getElementById('ikTable');
     const okunmamis = rows.filter(r => !r.okundu).length;
     document.getElementById('ikSayac').textContent = `${rows.length} başvuru, ${okunmamis} yeni`;
@@ -4480,7 +4505,7 @@ async function loadIK() {
     else badge.style.display = 'none';
 
     if (!rows.length) {
-      tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted);">Henüz başvuru yok</td></tr>';
+      tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted);">Henüz başvuru yok</td></tr>';
       return;
     }
     tb.innerHTML = rows.map(r => {
@@ -4490,7 +4515,7 @@ async function loadIK() {
         : '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;">Yeni</span>';
       const okuBtn = r.okundu ? '' : `<button class="btn btn-outline btn-sm" onclick="ikOkundu(${r.id})" style="font-size:10px;">✓ Görüldü</button>`;
       const cvBtn = r.cv_path
-        ? `<a href="${API}/api/ik/${r.id}/cv" target="_blank" class="btn btn-outline btn-sm" style="font-size:10px;">📎 CV</a>`
+        ? `<button class="btn btn-outline btn-sm" onclick="ikViewCV(${r.id})" style="font-size:10px;">📎 CV</button>`
         : '<span style="color:var(--muted);font-size:11px;">-</span>';
       return `<tr style="${r.okundu ? '' : 'background:rgba(251,191,36,0.03);'}">
         <td style="color:var(--muted);font-size:12px;">${r.id}</td>
@@ -4502,7 +4527,7 @@ async function loadIK() {
         <td>${cvBtn}</td>
         <td style="font-size:11px;color:var(--muted);font-family:monospace;">${r.ip || '-'}</td>
         <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${tarih}</td>
-        <td style="white-space:nowrap">${durumBadge}<br>${okuBtn}<br><button class="btn btn-danger btn-sm" onclick="ikSil(${r.id})" style="margin-top:4px;font-size:10px;">🗑 Sil</button></td>
+        <td style="white-space:nowrap">${durumBadge}<br>${okuBtn}<br><button class="btn btn-outline btn-sm" onclick="openIkModal(${r.id})" style="margin-top:4px;font-size:10px;">✎ Düzenle</button><br><button class="btn btn-danger btn-sm" onclick="ikSil(${r.id})" style="margin-top:4px;font-size:10px;">🗑 Sil</button></td>
       </tr>`;
     }).join('');
   } catch(e) { showToast(e.message, 'error'); }
@@ -4522,6 +4547,78 @@ async function ikSil(id) {
     loadIK();
     showToast('Başvuru silindi.', 'success');
   } catch(e) { showToast(e.message, 'error'); }
+}
+
+/* CV, korumalı endpoint olduğu için düz <a href> ile açılamıyor (Authorization
+   header'ı taşımaz) — token ile fetch edip blob olarak yeni sekmede açıyoruz. */
+async function ikViewCV(id) {
+  try {
+    const res = await fetch(API + '/api/ik/' + id + '/cv', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'CV açılamadı.');
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+function openIkModal(id) {
+  const r = ikRows.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('ikEditId').value     = r.id;
+  document.getElementById('ikName').value       = r.ad_soyad || '';
+  document.getElementById('ikPhone').value      = r.telefon || '';
+  document.getElementById('ikEmail').value      = r.email || '';
+  document.getElementById('ikPosition').value   = r.pozisyon || '';
+  document.getElementById('ikExperience').value = r.deneyim || '';
+  document.getElementById('ikNote').value       = r.mesaj || '';
+  openModal('ikModal');
+}
+
+async function saveIk() {
+  const id = parseInt(document.getElementById('ikEditId').value);
+  const ad_soyad = document.getElementById('ikName').value.trim();
+  const telefon  = document.getElementById('ikPhone').value.trim();
+  const email    = document.getElementById('ikEmail').value.trim();
+  const pozisyon = document.getElementById('ikPosition').value.trim();
+  const deneyim  = document.getElementById('ikExperience').value.trim();
+  const mesaj    = document.getElementById('ikNote').value.trim();
+  if (!ad_soyad || !telefon || !pozisyon) { showToast('Ad soyad, telefon ve pozisyon zorunludur', 'error'); return; }
+  try {
+    await api('/api/ik/' + id, { method: 'PUT', body: JSON.stringify({ ad_soyad, telefon, email, pozisyon, deneyim, mesaj }) });
+    closeModal('ikModal');
+    loadIK();
+    showToast('Başvuru güncellendi.', 'success');
+  } catch(e) { showToast('Kaydedilemedi: ' + e.message, 'error'); }
+}
+
+function ikExportCsv() {
+  if (!ikRows.length) { showToast('İndirilecek başvuru yok', 'error'); return; }
+  const headers = ['ID','Ad Soyad','Telefon','E-posta','Pozisyon','Deneyim','Not','CV Dosyası','IP','Durum','Tarih'];
+  const csvEsc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const lines = [headers.map(csvEsc).join(',')];
+  ikRows.forEach(r => {
+    lines.push([
+      r.id, r.ad_soyad, r.telefon, r.email || '', r.pozisyon, r.deneyim || '',
+      r.mesaj || '', r.cv_original_name || '', r.ip || '',
+      r.okundu ? 'Görüldü' : 'Yeni',
+      new Date(r.created_at).toLocaleString('tr-TR')
+    ].map(csvEsc).join(','));
+  });
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `ik-basvurulari-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 /* ── TEKLİF TALEPLERİ ── */
