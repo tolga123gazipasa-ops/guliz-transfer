@@ -92,7 +92,12 @@ app.get(['/transfer', '/transfer/*'], (req, res) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ── CV Upload (multer) ── */
-const CV_DIR = path.join(__dirname, 'uploads', 'cv');
+// DİKKAT: Railway'in konteyner diski kalıcı değildir — her deploy/restart'ta
+// sıfırlanır. CV'lerin kaybolmaması için Railway panelinden bir Volume
+// oluşturup Mount Path'i "/data" yapın, sonra CV_DIR ortam değişkenini
+// "/data/cv" olarak ayarlayın. Volume yoksa kod eskisi gibi geçici diske yazmaya
+// devam eder (fallback), ama bu durumda dosyalar deploy sonrası kaybolabilir.
+const CV_DIR = process.env.CV_DIR || path.join(__dirname, 'uploads', 'cv');
 if (!fs.existsSync(CV_DIR)) fs.mkdirSync(CV_DIR, { recursive: true });
 const cvStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, CV_DIR),
