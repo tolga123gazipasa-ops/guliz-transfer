@@ -34,14 +34,6 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/"/>
   </url>
 
-  <!-- ── TRANSFER ── -->
-  <url>
-    <loc>https://gulizlojistik.com/transfer/</loc>
-    <lastmod>2026-04-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>
-
   <!-- ── LOJİSTİK ── -->
   <url>
     <loc>https://gulizlojistik.com/lojistik/</loc>

@@ -78,6 +78,12 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/kurumlar/login', authLimiter);
 
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+
+/* ── VIP Transfer artık ayrı sitede: eski /transfer/ adresini yönlendir ── */
+app.get(['/transfer', '/transfer/*'], (req, res) => {
+  res.redirect(301, 'https://www.gulizvip.com.tr');
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ── CV Upload (multer) ── */
