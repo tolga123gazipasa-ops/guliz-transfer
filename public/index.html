@@ -176,35 +176,6 @@
   }
 
   .cta { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-
-  .transfer-note {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 18px;
-    padding: 10px 20px;
-    background: rgba(232,25,44,0.14);
-    border: 1px solid rgba(232,25,44,0.4);
-    border-radius: 30px;
-    color: #fff;
-    font-size: 12.5px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all .25s;
-  }
-  .transfer-note::before {
-    content: '';
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #e8192c;
-    animation: pulse 1.6s ease-in-out infinite;
-    flex-shrink: 0;
-  }
-  .transfer-note:hover {
-    background: rgba(232,25,44,0.26);
-    border-color: rgba(232,25,44,0.6);
-    transform: translateY(-1px);
-  }
   .btn-red {
     background: #e8192c;
     color: #fff;
@@ -660,7 +631,6 @@
     .tagline { display: none; }
     .badges { gap: 8px; }
     .badge { padding: 8px 12px; }
-    .transfer-note { font-size: 11px; padding: 8px 16px; margin-top: 14px; }
   }
 
   /* ── CANLI DESTEK WIDGET ── */
@@ -829,7 +799,6 @@
       <a class="btn-ghost" href="#" onclick="openYukModal();return false;" data-i18n="cta.cargo">📦 Yük Bildirimi →</a>
     </div>
 
-    <a class="transfer-note" href="https://www.gulizvip.com.tr" target="_blank" rel="noopener" data-i18n="transfer.note">🚐 VIP Transfer artık gulizvip.com.tr'de — Güliz Şirketler Topluluğu güvencesiyle! →</a>
   </div>
 
   <div class="tagline" data-i18n="hero.tagline">Geleceğe adım adım..!</div>
@@ -2053,7 +2022,6 @@ const LANGS = {
     'chat.msgPh':       'Mesajınızı yazın...',
     'badge.transfer':   'VIP Transfer',
     'badge.fleet':      'ARAÇLARIMIZ',
-    'transfer.note':    '🚐 VIP Transfer artık gulizvip.com.tr\'de — Güliz Şirketler Topluluğu güvencesiyle! →',
     'fleet.title':      '🚛 Araç Takip Sistemi',
     'fleet.subtitle':   'Güliz Şirketler Grubu — Filo Yönetimi',
     'fleet.sidebar':    'Araç · Filo Durumu',
@@ -2112,7 +2080,6 @@ const LANGS = {
     'chat.msgPh':       'Type your message...',
     'badge.transfer':   'VIP Transfer',
     'badge.fleet':      'OUR FLEET',
-    'transfer.note':    '🚐 VIP Transfer has moved to gulizvip.com.tr — backed by Güliz Group! →',
     'fleet.title':      '🚛 Vehicle Tracking',
     'fleet.subtitle':   'Güliz Group — Fleet Management',
     'fleet.sidebar':    'Vehicles · Fleet Status',
@@ -2171,7 +2138,6 @@ const LANGS = {
     'chat.msgPh':       'Введите сообщение...',
     'badge.transfer':   'VIP Трансфер',
     'badge.fleet':      'НАШ АВТОПАРК',
-    'transfer.note':    '🚐 VIP Трансфер теперь на gulizvip.com.tr — при поддержке Güliz Group! →',
     'fleet.title':      '🚛 Отслеживание транспорта',
     'fleet.subtitle':   'Güliz Group — Управление автопарком',
     'fleet.sidebar':    'Авто · Статус автопарка',
