@@ -93,13 +93,16 @@
   .hero {
     position: relative;
     width: 100%;
-    height: 100vh;
-    min-height: 640px;
+    height: auto;
+    min-height: 100vh;
     background: linear-gradient(140deg, #0a1235 0%, #1a2d6b 55%, #0f1d4a 100%);
     display: flex;
     align-items: center;
     overflow: hidden;
     padding-top: 86px;
+    /* istatistik barı (~68px) + plaka şeridi (~46px) için pay:
+       kısa ekranlarda içerik altta kesilmesin, sayfa kaydırılabilsin */
+    padding-bottom: 134px;
   }
 
   .bg-circle {
@@ -778,6 +781,36 @@
   @keyframes hfHalo { 0%{opacity:.38} 70%{opacity:0} 100%{opacity:0} }
   @media (max-width:900px) { .hero-fleet { display:none; } }
   @media (prefers-reduced-motion:reduce) { .hf-halo { animation:none; opacity:.28; } }
+
+  /* ── Kayan plaka şeridi (istatistik barının hemen üstünde) ── */
+  .hf-ticker {
+    position: absolute;
+    left: 0; right: 0; bottom: 68px;
+    z-index: 12;
+    overflow: hidden;
+    padding: 5px 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  }
+  .hf-track { display: flex; gap: 10px; width: max-content;
+              animation: hfSlide 60s linear infinite; }
+  .hf-ticker:hover .hf-track { animation-play-state: paused; }
+  @keyframes hfSlide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .hf-card { display: flex; align-items: center; gap: 10px; white-space: nowrap;
+             background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+             border-radius: 10px; padding: 6px 13px 6px 6px; }
+  .hf-tag  { display: inline-flex; align-items: stretch; border-radius: 4px;
+             overflow: hidden; border: 1px solid #d7dce6; }
+  .hf-tag i { background: #12379e; color: #fff; font-size: 8px; font-style: normal;
+              padding: 0 3px; display: flex; align-items: center; letter-spacing: .5px; }
+  .hf-tag b { background: #fff; color: #101828; font-size: 13px; font-weight: 800;
+              padding: 3px 8px; letter-spacing: .4px; }
+  .hf-info { display: flex; flex-direction: column; gap: 2px; line-height: 1.25; }
+  .hf-route { color: #fff; font-size: 12px; font-weight: 600; }
+  .hf-stat  { font-size: 10.5px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+  .hf-stat s { width: 6px; height: 6px; border-radius: 50%; display: inline-block; text-decoration: none; }
+  @media (max-width: 900px) { .hf-ticker { bottom: 60px; } .hf-route { font-size: 11px; } }
+  @media (prefers-reduced-motion: reduce) { .hf-track { animation: none; } }
 </style>
 </head>
 <body>
@@ -883,6 +916,8 @@
       </svg>
     </div>
   </div>
+
+  <div class="hf-ticker" id="hfTicker" aria-hidden="true"><div class="hf-track" id="hfTrack"></div></div>
 
   <div class="stats">
     <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl" data-i18n="stat.projects">Tamamlanan Proje</div></div>
@@ -1781,97 +1816,152 @@ document.addEventListener('keydown', e=>{
 });
 
 /* ══════════════════════════════════════════════
-   HERO CANLI FİLO — kırmızı daire içindeki ülke haritası
-   Açılıştaki anlık filo durumunu gösterir; 6 saniye sonra donar.
-   Sürekli canlı akış yoktur (bilinçli tercih: sayfa yükü ve sadelik).
+   HERO CANLI FİLO — kırmızı daire içindeki ülke haritası + kayan plaka şeridi
+   Her ikisi de aynı fleetSimState motorundan beslenir.
+   Açılıştaki anlık durumu gösterir; 6 saniye sonra donar (canlı akış yok).
 ══════════════════════════════════════════════ */
 (function heroFleet(){
-  const wrap = document.querySelector('.hero-fleet');
-  if (!wrap || typeof FLEET_LEGS === 'undefined') return;
-  if (window.matchMedia('(max-width:900px)').matches) return;
+  if (typeof FLEET_LEGS === 'undefined') return;
+  const wrap    = document.querySelector('.hero-fleet');
+  const track   = document.getElementById('hfTrack');
+  const showMap = !!wrap && !window.matchMedia('(max-width:900px)').matches;
+  if (wrap && !showMap) wrap.style.display = 'none';
+  if (!showMap && !track) return;
 
   const NS = 'http://www.w3.org/2000/svg';
   const MINLNG = 26.0445, MAXLAT = 42.1419, KX = 53.3355, KY = 68.6133;
-  const SC = 0.53, TX = -15, TY = 244;              // <g transform> ile aynı olmalı
-  const mx = lng => (lng - MINLNG) * KX;          // harita grubu içi koordinat
+  const SC = 0.53, TX = -15, TY = 244;            // <g transform> ile aynı olmalı
+  const mx = lng => (lng - MINLNG) * KX;
   const my = lat => (MAXLAT - lat) * KY;
-  const sx = lng => TX + mx(lng) * SC;            // grup dışı (plaka katmanı)
+  const sx = lng => TX + mx(lng) * SC;
   const sy = lat => TY + my(lat) * SC;
 
   const gRoads = document.getElementById('hf-roads');
   const gStops = document.getElementById('hf-stops');
   const gMarks = document.getElementById('hf-marks');
-  const cap    = wrap.querySelector('.hf-cap');
-  if (!gRoads || !gMarks) return;
+  const cap    = wrap ? wrap.querySelector('.hf-cap') : null;
 
-  // Güzergâh (gerçek karayolu) ve durak noktaları — bir kez çizilir
-  FLEET_LEGS.forEach(l => {
-    const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', 'M' + l.p.map(q => mx(q[1]).toFixed(1) + ',' + my(q[0]).toFixed(1)).join('L'));
-    p.setAttribute('fill', 'none');
-    p.setAttribute('stroke', 'rgba(255,214,140,.95)');
-    p.setAttribute('stroke-width', '4');
-    p.setAttribute('stroke-linejoin', 'round');
-    p.setAttribute('stroke-linecap', 'round');
-    gRoads.appendChild(p);
-    const last = l.p[l.p.length - 1];
-    const c = document.createElementNS(NS, 'circle');
-    c.setAttribute('cx', mx(last[1]).toFixed(1));
-    c.setAttribute('cy', my(last[0]).toFixed(1));
-    c.setAttribute('r', '5');
-    c.setAttribute('fill', 'rgba(255,255,255,.7)');
-    gStops.appendChild(c);
-  });
+  // Güzergâh ve duraklar — bir kez çizilir
+  if (showMap && gRoads && gStops) {
+    FLEET_LEGS.forEach(l => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', 'M' + l.p.map(q => mx(q[1]).toFixed(1) + ',' + my(q[0]).toFixed(1)).join('L'));
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', 'rgba(255,214,140,.95)');
+      p.setAttribute('stroke-width', '4');
+      p.setAttribute('stroke-linejoin', 'round');
+      p.setAttribute('stroke-linecap', 'round');
+      gRoads.appendChild(p);
+      const last = l.p[l.p.length - 1];
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', mx(last[1]).toFixed(1));
+      c.setAttribute('cy', my(last[0]).toFixed(1));
+      c.setAttribute('r', '5');
+      c.setAttribute('fill', 'rgba(255,255,255,.7)');
+      gStops.appendChild(c);
+    });
+  }
 
   const COL = { drive:'#22c55e', rest:'#a78bfa', stop:'#38bdf8', home:'#fbbf24' };
-  let sims = [];
+  const TXT = { drive:'Yolda',   rest:'İstirahat', stop:'Yükleme', home:'Ana üs' };
+  const PASSES = 4;                               // şerit kesintisiz aksın diye kopya sayısı
+  const short = s => (s || '').replace(' OSB', '').replace(' (Ana Üs)', '');
+  let sims = [], cards = [];
+
+  function routeLine(s) {
+    if (s.type === 'drive') return short(s.fromLabel) + ' → ' + short(s.toLabel);
+    if (s.type === 'rest')  return short(s.toLabel) + ' yolunda';
+    return short(s.label);
+  }
+  function statusLine(s) {
+    if (s.type === 'drive') return s.atLight ? 'Trafikte bekliyor' : TXT.drive + ' · ' + s.speed + ' km/s';
+    return TXT[s.type] || '—';
+  }
+
+  function buildTicker() {
+    while (track.firstChild) track.removeChild(track.firstChild);
+    cards = [];
+    for (let pass = 0; pass < PASSES; pass++) {
+      sims.forEach(t => {
+        const d = document.createElement('div');
+        d.className = 'hf-card';
+        d.innerHTML = '<span class="hf-tag"><i>TR</i><b></b></span>' +
+                      '<span class="hf-info"><span class="hf-route"></span><span class="hf-stat"></span></span>';
+        d.querySelector('b').textContent = (t.plaka || '—');
+        track.appendChild(d);
+        cards.push(d);
+      });
+    }
+  }
 
   function render() {
     const now = Date.now();
-    while (gMarks.firstChild) gMarks.removeChild(gMarks.firstChild);
-    sims.forEach((t, k) => {
-      const s = fleetSimState(t._simIdx, now);
-      const c = COL[s.type] || '#94a3b8';
-      const x = sx(s.pos[1]), y = sy(s.pos[0]);
 
-      const halo = document.createElementNS(NS, 'circle');
-      halo.setAttribute('cx', x.toFixed(1)); halo.setAttribute('cy', y.toFixed(1));
-      halo.setAttribute('r', '13'); halo.setAttribute('fill', c);
-      halo.setAttribute('class', 'hf-halo');
-      halo.style.animationDelay = (k * 0.5) + 's';
+    if (showMap && gMarks) {
+      while (gMarks.firstChild) gMarks.removeChild(gMarks.firstChild);
+      sims.forEach((t, k) => {
+        const s = fleetSimState(t._simIdx, now);
+        const c = COL[s.type] || '#94a3b8';
+        const x = sx(s.pos[1]), y = sy(s.pos[0]);
+        const halo = document.createElementNS(NS, 'circle');
+        halo.setAttribute('cx', x.toFixed(1)); halo.setAttribute('cy', y.toFixed(1));
+        halo.setAttribute('r', '13'); halo.setAttribute('fill', c);
+        halo.setAttribute('class', 'hf-halo');
+        halo.style.animationDelay = (k * 0.5) + 's';
+        const dot = document.createElementNS(NS, 'circle');
+        dot.setAttribute('cx', x.toFixed(1)); dot.setAttribute('cy', y.toFixed(1));
+        dot.setAttribute('r', '6'); dot.setAttribute('fill', c);
+        dot.setAttribute('stroke', '#fff'); dot.setAttribute('stroke-width', '2');
+        gMarks.appendChild(halo); gMarks.appendChild(dot);
+        const plate = (t.plaka || '').trim();
+        if (plate) {
+          const w = plate.length * 7.6 + 14;
+          const box = document.createElementNS(NS, 'rect');
+          box.setAttribute('x', (x - w / 2).toFixed(1)); box.setAttribute('y', (y - 32).toFixed(1));
+          box.setAttribute('width', w.toFixed(1)); box.setAttribute('height', '19');
+          box.setAttribute('rx', '5'); box.setAttribute('fill', 'rgba(6,12,35,.92)');
+          box.setAttribute('stroke', c); box.setAttribute('stroke-width', '1.2');
+          const tx = document.createElementNS(NS, 'text');
+          tx.setAttribute('x', x.toFixed(1)); tx.setAttribute('y', (y - 18.5).toFixed(1));
+          tx.setAttribute('text-anchor', 'middle'); tx.setAttribute('class', 'hf-plate');
+          tx.textContent = plate;
+          gMarks.appendChild(box); gMarks.appendChild(tx);
+        }
+      });
+    }
 
-      const dot = document.createElementNS(NS, 'circle');
-      dot.setAttribute('cx', x.toFixed(1)); dot.setAttribute('cy', y.toFixed(1));
-      dot.setAttribute('r', '6'); dot.setAttribute('fill', c);
-      dot.setAttribute('stroke', '#fff'); dot.setAttribute('stroke-width', '2');
+    if (track && cards.length) {
+      sims.forEach((t, k) => {
+        const s = fleetSimState(t._simIdx, now);
+        const c = COL[s.type] || '#94a3b8';
+        const rl = routeLine(s), sl = statusLine(s);
+        for (let pass = 0; pass < PASSES; pass++) {
+          const el = cards[pass * sims.length + k];
+          if (!el) continue;
+          el.querySelector('.hf-route').textContent = rl;
+          const st = el.querySelector('.hf-stat');
+          st.style.color = c;
+          st.innerHTML = '<s style="background:' + c + '"></s>';
+          st.appendChild(document.createTextNode(sl));
+        }
+      });
+    }
+  }
 
-      gMarks.appendChild(halo); gMarks.appendChild(dot);
-
-      const plate = (t.plaka || '').trim();
-      if (plate) {
-        const w = plate.length * 7.6 + 14;
-        const box = document.createElementNS(NS, 'rect');
-        box.setAttribute('x', (x - w / 2).toFixed(1)); box.setAttribute('y', (y - 32).toFixed(1));
-        box.setAttribute('width', w.toFixed(1)); box.setAttribute('height', '19');
-        box.setAttribute('rx', '5'); box.setAttribute('fill', 'rgba(6,12,35,.92)');
-        box.setAttribute('stroke', c); box.setAttribute('stroke-width', '1.2');
-        const tx = document.createElementNS(NS, 'text');
-        tx.setAttribute('x', x.toFixed(1)); tx.setAttribute('y', (y - 18.5).toFixed(1));
-        tx.setAttribute('text-anchor', 'middle'); tx.setAttribute('class', 'hf-plate');
-        tx.textContent = plate;
-        gMarks.appendChild(box); gMarks.appendChild(tx);
-      }
-    });
+  function hideAll() {
+    if (wrap) wrap.style.display = 'none';
+    if (track && track.parentNode) track.parentNode.style.display = 'none';
   }
 
   loadVehiclesFromAPI().then(() => {
     sims = TRUCKS.filter(t => t._simulated).slice(0, 5);
-    if (!sims.length) { wrap.style.display = 'none'; return; }
+    if (!sims.length) { hideAll(); return; }
     if (cap) cap.textContent = 'CANLI FİLO · ' + sims.length + ' ARAÇ';
+    if (track) buildTicker();
     render();
-    const iv = setInterval(render, 700);     // 6 sn kuralı: sonra dondur
+    const iv = setInterval(render, 700);          // 6 sn kuralı: sonra dondur
     setTimeout(() => clearInterval(iv), 6000);
-  }).catch(() => { wrap.style.display = 'none'; });
+  }).catch(hideAll);
 })();
 
 })(); // end ARAÇ TAKİP
