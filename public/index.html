@@ -99,10 +99,11 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    padding-top: 86px;
-    /* istatistik barı (~68px) + plaka şeridi (~46px) için pay:
+    /* üst menü 96px — etiket menünün altında kalmasın */
+    padding-top: 106px;
+    /* istatistik barı (82px) + plaka şeridi (54px) + boşluk için pay:
        kısa ekranlarda içerik altta kesilmesin, sayfa kaydırılabilsin */
-    padding-bottom: 134px;
+    padding-bottom: 152px;
   }
 
   .bg-circle {
@@ -785,7 +786,7 @@
   /* ── Kayan plaka şeridi (istatistik barının hemen üstünde) ── */
   .hf-ticker {
     position: absolute;
-    left: 0; right: 0; bottom: 68px;
+    left: 0; right: 0; bottom: 90px;   /* istatistik barı 82px + 8px boşluk */
     z-index: 12;
     overflow: hidden;
     padding: 5px 0;
@@ -809,7 +810,7 @@
   .hf-route { color: #fff; font-size: 12px; font-weight: 600; }
   .hf-stat  { font-size: 10.5px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
   .hf-stat s { width: 6px; height: 6px; border-radius: 50%; display: inline-block; text-decoration: none; }
-  @media (max-width: 900px) { .hf-ticker { bottom: 60px; } .hf-route { font-size: 11px; } }
+  @media (max-width: 900px) { .hf-ticker { bottom: 84px; } .hf-route { font-size: 11px; } }
   @media (prefers-reduced-motion: reduce) { .hf-track { animation: none; } }
 </style>
 </head>
