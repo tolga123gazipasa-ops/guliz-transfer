@@ -329,6 +329,7 @@
   .st-aktif   { background: rgba(74,222,128,0.15); color: #4ade80; }
   .st-kapali  { background: rgba(107,114,128,0.2);  color: #9ca3af; }
   .st-mola    { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+  .st-yukleme { background: rgba(96,165,250,0.15);  color: #60a5fa; }
   .st-yükleme { background: rgba(96,165,250,0.15);  color: #60a5fa; }
   .at-t-speed { font-size: 10px; color: rgba(255,255,255,0.3); }
   .at-footer {
@@ -1049,6 +1050,103 @@ function gpsJitter(idx,nowMs){
 }
 
 /* ════════════════════════════
+   ULUSAL FİLO SİMÜLASYONU
+   Gerçek aktif sevkiyatı olmayan araçlar için: Gazipaşa merkezli, büyük
+   sanayi bölgelerine uğrayan, haftalık döngüyle Gazipaşa'ya dönen
+   gerçekçi bir rota. 4.5 saat sürüş / 1 saat mola döngüsü, sanayi
+   bölgelerinde yük indirme/bindirme duraklaması, azami ~78 km/h,
+   sürüş sırasında ara sıra "trafik ışığı" duraklaması.
+════════════════════════════ */
+const FLEET_ROAD_FACTOR = 1.35;  // düz çizgi mesafesini gerçek yol mesafesine yaklaştırır
+const FLEET_AVG_SPEED   = 58;    // km/h — sürüş segmentlerinde ortalama hız
+const FLEET_HOME = { label:'Gazipaşa (Ana Üs)', pos:[36.27,32.30] };
+
+const FLEET_ROUTE = [
+  FLEET_HOME,
+  { label:'Mersin Tarsus OSB',      pos:[36.92,34.60], stopH:2.5 },
+  { label:'Adana Hacı Sabancı OSB', pos:[37.08,35.25], stopH:2.5 },
+  { label:'Gaziantep OSB',          pos:[37.05,37.50], stopH:3   },
+  { label:'Şanlıurfa OSB',          pos:[37.16,38.90], stopH:2.5 },
+  { label:'Diyarbakır OSB',         pos:[37.92,40.18], stopH:3   },
+  { label:'Malatya OSB',            pos:[38.40,38.20], stopH:2.5 },
+  { label:'Kayseri OSB',            pos:[38.75,35.50], stopH:2.5 },
+  { label:'Sivas OSB',              pos:[39.75,37.02], stopH:2   },
+  { label:'Ankara Ostim OSB',       pos:[39.97,32.60], stopH:3   },
+  { label:'Eskişehir OSB',          pos:[39.78,30.50], stopH:2   },
+  { label:'Bursa Demirtaş OSB',     pos:[40.22,29.06], stopH:3   },
+  { label:'Kocaeli Gebze OSB',      pos:[40.80,29.55], stopH:2.5 },
+  { label:'İstanbul Tuzla OSB',     pos:[40.82,29.30], stopH:3   },
+  { label:'İzmir Kemalpaşa OSB',    pos:[38.42,27.30], stopH:2.5 },
+  { label:'Denizli OSB',            pos:[37.77,29.09], stopH:2   },
+  { label:'Antalya OSB',            pos:[36.90,30.71], stopH:2   },
+  { ...FLEET_HOME, stopH:24 }, // haftalık dönüş — 1 gün Gazipaşa'da
+];
+
+function fleetLerp(a,b,f){ return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]; }
+
+function fleetBuildLeg(from,to){
+  const distKm = hav(from,to) * FLEET_ROAD_FACTOR;
+  let covered = 0;
+  const segs = [];
+  while (covered < distKm - 0.01) {
+    const chunk = Math.min(distKm - covered, FLEET_AVG_SPEED * 4.5);
+    const segFrom = fleetLerp(from, to, covered / distKm);
+    const segTo   = fleetLerp(from, to, (covered + chunk) / distKm);
+    segs.push({ type:'drive', from:segFrom, to:segTo, durationH: chunk / FLEET_AVG_SPEED });
+    covered += chunk;
+    if (covered < distKm - 0.01) segs.push({ type:'rest', at:segTo, durationH:1 });
+  }
+  return segs;
+}
+
+function fleetBuildTimeline(waypoints){
+  const timeline = [];
+  for (let i=0;i<waypoints.length-1;i++){
+    timeline.push(...fleetBuildLeg(waypoints[i].pos, waypoints[i+1].pos));
+    const dest = waypoints[i+1];
+    if (dest.stopH) timeline.push({ type: dest.stopH >= 12 ? 'home' : 'stop', label: dest.label, at: dest.pos, durationH: dest.stopH });
+  }
+  return timeline;
+}
+
+const FLEET_TIMELINE  = fleetBuildTimeline(FLEET_ROUTE);
+const FLEET_CYCLE_H   = FLEET_TIMELINE.reduce((s,x)=>s+x.durationH, 0);
+const FLEET_ANCHOR_MS = Date.UTC(2026, 0, 5, 0, 0, 0); // sabit referans — herkes aynı durumu görür
+const FLEET_COUNT     = 5;
+
+function fleetStateAtHour(hourInCycle){
+  let tRem = ((hourInCycle % FLEET_CYCLE_H) + FLEET_CYCLE_H) % FLEET_CYCLE_H;
+  for (const seg of FLEET_TIMELINE) {
+    if (tRem < seg.durationH) {
+      const frac = seg.durationH > 0 ? Math.min(1, tRem / seg.durationH) : 1;
+      if (seg.type === 'drive') return { type:'drive', pos: fleetLerp(seg.from, seg.to, frac) };
+      return { type: seg.type, pos: seg.at, label: seg.label };
+    }
+    tRem -= seg.durationH;
+  }
+  const last = FLEET_TIMELINE[FLEET_TIMELINE.length-1];
+  return { type: last.type, pos: last.at, label: last.label };
+}
+
+/* idx: 0..4 — döngü boyunca eşit aralıklı başlangıç fazı verir, böylece
+   5 araç aynı anda ülkenin farklı bölgelerinde görünür. */
+function fleetSimState(idx, nowMs){
+  const phaseH  = (FLEET_CYCLE_H / FLEET_COUNT) * (idx % FLEET_COUNT);
+  const hourNow = (nowMs - FLEET_ANCHOR_MS) / 3600000 + phaseH;
+  const st = fleetStateAtHour(hourNow);
+
+  let atLight = false, speed = 0;
+  if (st.type === 'drive') {
+    const slot = Math.floor(nowMs / 25000); // ~25 sn'lik dilimler
+    const r = noise(idx * 31.7 + slot * 2.13);
+    atLight = r < 0.09; // ~%9 ihtimalle "kırmızı ışıkta" duruyor
+    const wave = Math.sin(nowMs / 220000 + idx * 5.5) * 6;
+    speed = atLight ? 0 : Math.min(78, Math.max(38, Math.round(FLEET_AVG_SPEED + wave)));
+  }
+  return { ...st, atLight, speed };
+}
+
+/* ════════════════════════════
    ARAÇ VERİSİ — Admin panelinden
 ════════════════════════════ */
 let TRUCKS = []; // Admin panelinden yüklenir
@@ -1086,6 +1184,17 @@ async function loadVehiclesFromAPI() {
       };
     });
 
+    // Gerçek aktif sevkiyatı olmayan (ve bakımda olmayan) araçlara ulusal
+    // filo simülasyonu ata — böylece harita hiçbir zaman "boş/durgun" görünmez.
+    let _simIdx = 0;
+    TRUCKS.forEach(t => {
+      const hasRealTrip = t.kalkis_lat && t.varis_lat && t.sevk_start;
+      if (!hasRealTrip && t.durum !== 'bakim') {
+        t._simulated = true;
+        t._simIdx = _simIdx++;
+      }
+    });
+
     // Harita açıksa rota çizgilerini güncelle
     if (atMap) drawRouteLines();
     return true;
@@ -1116,6 +1225,7 @@ function drawRouteLines() {
 
 /* ── Pozisyon hesapla (admin paneli verilerinden) ── */
 function getTruckPos(t, idx, nowMs) {
+  if (t._simulated) return fleetSimState(t._simIdx, nowMs).pos;
   // Seferde (veya aktif sevkiyatı olan) + tam rota verisi var → interpolasyon
   const isMoving = t.durum === 'seferde' || (t.kalkis_lat && t.varis_lat);
   if (isMoving && t.kalkis_lat && t.varis_lat && t.sevk_start) {
@@ -1137,6 +1247,7 @@ function getTruckPos(t, idx, nowMs) {
 
 /* Anlık hız tahmini */
 function getTruckSpeed(t, idx, nowMs) {
+  if (t._simulated) return fleetSimState(t._simIdx, nowMs).speed;
   if (t.durum !== 'seferde') return 0;
   const h = new Date(nowMs).getHours();
   if (h < 6 || h >= 22) return 0; // gece istirahat
@@ -1147,6 +1258,13 @@ function getTruckSpeed(t, idx, nowMs) {
 
 /* Durum etiketi */
 function effectiveStatus(t, nowMs) {
+  if (t._simulated) {
+    const s = fleetSimState(t._simIdx, nowMs);
+    if (s.type === 'drive') return 'moving';
+    if (s.type === 'rest')  return 'istirahat';
+    if (s.type === 'stop')  return 'yukleme';
+    if (s.type === 'home')  return 'mola';
+  }
   if (t.durum === 'bakim')   return 'offline';
   // Aktif sevkiyat koordinatları varsa seferde say
   const hasSevk = t.kalkis_lat && t.varis_lat && t.sevk_start;
@@ -1196,6 +1314,13 @@ function popupContent(t, idx, nowMs) {
   const coord = `${pos[0].toFixed(4)}°K, ${pos[1].toFixed(4)}°D`;
   const spdRow = eSt === 'moving' ? `<div>🚀 Anlık hız: <b>${spd} km/s</b></div>` : '';
   const nightRow = eSt === 'istirahat' ? `<div style="color:#a78bfa;font-size:11px;">🌙 Sürücü İstirahat</div>` : '';
+  let simRow = '';
+  if (t._simulated) {
+    const s = fleetSimState(t._simIdx, nowMs);
+    if (s.type === 'drive' && s.atLight) simRow = `<div style="color:#fbbf24;font-size:11px;">🚦 Trafik ışığında bekliyor</div>`;
+    else if (s.type === 'stop') simRow = `<div style="color:#60a5fa;font-size:11px;">📦 ${s.label} — yükleme/boşaltma</div>`;
+    else if (s.type === 'home') simRow = `<div style="color:#4ade80;font-size:11px;">🏠 Gazipaşa'da haftalık mola</div>`;
+  }
   const routeRow = (t.sevk_kalkis && t.sevk_varis)
     ? `<div style="font-size:11px;color:#94a3b8;">🗺 ${t.sevk_kalkis} → ${t.sevk_varis}</div>` : '';
   const konumRow = t.konum_adi ? `<div style="font-size:11px;color:#94a3b8;">📍 ${t.konum_adi}</div>` : '';
@@ -1217,7 +1342,7 @@ function popupContent(t, idx, nowMs) {
     <div style="background:${c}22;color:${c};border:1px solid ${c}44;border-radius:6px;
       padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px;display:inline-block;margin-bottom:8px;">${lbl}</div>
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:6px 0;">
-    ${spdRow}${nightRow}${routeRow}${konumRow}${cargoRow}${progressRow}
+    ${spdRow}${nightRow}${simRow}${routeRow}${konumRow}${cargoRow}${progressRow}
     <div>🚛 ${t.arac_tipi || 'Araç'}</div>
     <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:5px;">📡 ${coord}</div>`;
 }
@@ -1277,7 +1402,7 @@ function renderSidebar(nowMs){
     const c = SC[eSt], lbl = getSL()[eSt];
     const bc = BORDER[eSt] || c;
     const spd = getTruckSpeed(t, i, nowMs);
-    const sub = eSt === 'moving' ? `${spd} km/s` : (eSt === 'offline' ? 'Bakımda' : (eSt === 'istirahat' ? 'İstirahat' : 'Bekliyor'));
+    const sub = eSt === 'moving' ? `${spd} km/s` : (eSt === 'offline' ? 'Bakımda' : (eSt === 'istirahat' ? 'İstirahat' : (eSt === 'yukleme' ? 'Yükleniyor' : 'Bekliyor')));
     let sidebarProgress = '';
     if (t.sevk_start && t.sevk_eta && (eSt === 'moving' || eSt === 'istirahat')) {
       const pct = Math.min(100, Math.max(0, Math.round((nowMs - t.sevk_start) / (t.sevk_eta - t.sevk_start) * 100)));
