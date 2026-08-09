@@ -9,6 +9,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
 <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="/consent-banner.js" defer></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Güliz Lojistik">
 <meta name="theme-color" content="#1A2D6B">
@@ -16,6 +17,10 @@
 <meta name="description" content="Güliz Şirketler Topluluğu KVKK aydınlatma metni, gizlilik politikası ve çerez kullanımı hakkında bilgilendirme.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://gulizlojistik.com/gizlilik-politikasi/">
+<link rel="alternate" hreflang="tr" href="https://gulizlojistik.com/gizlilik-politikasi/" />
+<link rel="alternate" hreflang="en" href="https://gulizlojistik.com/gizlilik-politikasi/?lang=en" />
+<link rel="alternate" hreflang="ru" href="https://gulizlojistik.com/gizlilik-politikasi/?lang=ru" />
+<link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/gizlilik-politikasi/" />
 <meta property="og:type" content="website">
 <meta property="og:title" content="Gizlilik Politikası & KVKK Aydınlatma Metni – Güliz Şirketler Topluluğu">
 <meta property="og:description" content="Güliz Şirketler Topluluğu KVKK aydınlatma metni, gizlilik politikası ve çerez kullanımı hakkında bilgilendirme.">
@@ -31,6 +36,7 @@
 }
 body{font-family:'Montserrat',sans-serif;background:#fff;color:var(--navy);overflow-x:hidden;}
 
+/* ── ÜST MENÜ (anasayfa ile aynı düzen) ── */
 nav{
   position:sticky;top:0;z-index:200;
   display:flex;align-items:center;justify-content:space-between;
@@ -41,6 +47,31 @@ nav ul{list-style:none;display:flex;gap:30px;}
 nav ul li a{text-decoration:none;color:var(--navy2);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
 nav ul li a:hover{color:var(--red);}
 
+/* ── DİL SEÇİCİ (bayrağın üstüne gelince açılır) ── */
+.lang-switcher{position:relative;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+#currentLangFlag{cursor:pointer;display:flex;align-items:center;}
+#currentFlagImg{display:block;border-radius:3px;}
+.lang-dots-btn{background:none;border:none;cursor:pointer;color:var(--navy2);font-size:13px;line-height:1;padding:2px 4px;}
+.lang-dropdown{
+  display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;
+  border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.18);overflow:hidden;
+  z-index:300;min-width:150px;border:1px solid rgba(0,0,0,0.07);
+}
+.lang-dropdown.open{display:block;}
+.lang-switcher:hover .lang-dropdown{display:block;}   /* üstüne gelince aç */
+.lang-dropdown::before{content:'';position:absolute;top:-10px;left:0;right:0;height:10px;} /* fare boşluğu */
+.lang-dropdown button{
+  display:flex;align-items:center;gap:10px;width:100%;padding:11px 16px;background:none;
+  border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--navy2);
+  font-family:'Montserrat',sans-serif;transition:background .15s;border-bottom:1px solid rgba(0,0,0,0.05);
+}
+.lang-dropdown button:last-child{border-bottom:none;}
+.lang-dropdown button:hover{background:var(--gray);}
+.lang-dropdown img{width:22px;height:16px;border-radius:2px;display:block;}
+
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:6px;}
+.nav-toggle span{display:block;width:24px;height:2px;background:var(--navy2);border-radius:2px;}
+
 .hero{
   background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
   padding:70px 60px 46px;color:#fff;
@@ -50,8 +81,8 @@ nav ul li a:hover{color:var(--red);}
   border:1px solid rgba(232,25,44,0.4);border-radius:30px;padding:6px 16px;margin-bottom:18px;
   font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#ff8a95;
 }
-.hero h1{font-size:32px;font-weight:900;max-width:700px;line-height:1.25;}
-.hero p{margin-top:12px;color:rgba(255,255,255,0.65);max-width:640px;font-size:14px;line-height:1.7;}
+.hero h1{font-size:32px;font-weight:900;max-width:760px;line-height:1.25;}
+.hero p{margin-top:12px;color:rgba(255,255,255,0.65);max-width:680px;font-size:14px;line-height:1.7;}
 
 .content{max-width:820px;margin:0 auto;padding:50px 24px 80px;}
 .content h2{font-size:19px;font-weight:800;color:var(--navy2);margin:34px 0 12px;padding-top:8px;border-top:1px solid rgba(26,45,107,0.08);}
@@ -71,10 +102,17 @@ footer{background:#0a1235;padding:32px 60px;display:flex;align-items:center;just
 footer span{font-size:12px;color:rgba(255,255,255,0.35);}
 footer a{color:rgba(255,255,255,0.5);text-decoration:none;font-size:12px;}
 footer a:hover{color:#fff;}
+.foot-links{display:flex;gap:22px;flex-wrap:wrap;}
 
-@media(max-width:768px){
+@media(max-width:900px){
   nav{padding:12px 20px;}
-  nav ul{display:none;}
+  nav ul{
+    display:none;position:absolute;top:100%;left:0;right:0;background:#fff;
+    flex-direction:column;gap:0;padding:8px 0;box-shadow:0 12px 24px rgba(0,0,0,0.12);
+  }
+  nav ul.open{display:flex;}
+  nav ul li a{display:block;padding:13px 24px;}
+  .nav-toggle{display:flex;}
   .hero{padding:50px 24px 34px;}
   .hero h1{font-size:24px;}
   footer{padding:24px 20px;flex-direction:column;align-items:flex-start;}
@@ -85,97 +123,340 @@ footer a:hover{color:#fff;}
 
 <nav>
   <div class="logo">
-    <a href="/"><img src="/slider/logo.png" alt="Güliz Şirketler Topluluğu"></a>
+    <a href="/" style="display:inline-block;line-height:0;">
+      <img src="/slider/logo.png" alt="Güliz Şirketler Topluluğu">
+    </a>
   </div>
-  <ul>
-    <li><a href="/">Anasayfa</a></li>
-    <li><a href="/lojistik/">Lojistik</a></li>
-    <li><a href="/ihale/">Kamu İhalesi</a></li>
-    <li><a href="/insaat/">İnşaat</a></li>
-    <li><a href="/ik/">İnsan Kaynakları</a></li>
-    <li><a href="/iletisim/">İletişim</a></li>
+  <ul id="navMenu">
+    <li><a href="/"          data-i18n="nav.home">Anasayfa</a></li>
+    <li><a href="/lojistik/" data-i18n="nav.logistics">Lojistik</a></li>
+    <li><a href="/ihale/"    data-i18n="nav.tender">Kamu İhalesi</a></li>
+    <li><a href="/insaat/"   data-i18n="nav.construction">İnşaat</a></li>
+    <li><a href="/ik/"       data-i18n="nav.hr">İnsan Kaynakları</a></li>
+    <li><a href="/iletisim/" data-i18n="nav.contact">İletişim</a></li>
   </ul>
+  <div class="lang-switcher" id="langSwitcher">
+    <span id="currentLangFlag" onclick="toggleLangMenu()" title="Dil seç">
+      <img src="https://flagcdn.com/28x21/tr.png" alt="TR" id="currentFlagImg">
+    </span>
+    <button class="lang-dots-btn" onclick="toggleLangMenu()" aria-label="Dil seç">▾</button>
+    <div class="lang-dropdown" id="langDropdown">
+      <button onclick="setLang('tr')"><img src="https://flagcdn.com/28x21/tr.png" alt="TR"> Türkçe</button>
+      <button onclick="setLang('en')"><img src="https://flagcdn.com/28x21/us.png" alt="EN"> English</button>
+      <button onclick="setLang('ru')"><img src="https://flagcdn.com/28x21/ru.png" alt="RU"> Русский</button>
+    </div>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç/kapat">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <div class="hero">
-  <div class="eyebrow">KVKK · Gizlilik</div>
-  <h1>Gizlilik Politikası &amp; KVKK Aydınlatma Metni</h1>
-  <p>Güliz Şirketler Topluluğu olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu sayfa, hangi verileri hangi amaçla topladığımızı ve haklarınızı açıklar.</p>
+  <div class="eyebrow" data-i18n="p.eyebrow">KVKK · Gizlilik</div>
+  <h1 data-i18n="p.title">Gizlilik Politikası &amp; KVKK Aydınlatma Metni</h1>
+  <p data-i18n="p.intro">Güliz Şirketler Topluluğu olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu sayfa, hangi verileri hangi amaçla topladığımızı ve haklarınızı açıklar.</p>
 </div>
 
 <div class="content">
-  <p class="updated">Son güncelleme: 9 Ağustos 2026</p>
+  <p class="updated" data-i18n="p.updated">Son güncelleme: 9 Ağustos 2026</p>
 
-  <h2>1. Veri Sorumlusu</h2>
-  <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, bu internet sitesi (gulizlojistik.com) üzerinden elde edilen kişisel verileriniz, veri sorumlusu sıfatıyla <strong>Güliz Şirketler Topluluğu</strong> tarafından aşağıda açıklanan kapsamda işlenmektedir.</p>
+  <h2 data-i18n="s1.h">1. Veri Sorumlusu</h2>
+  <p data-i18n="s1.p">6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, bu internet sitesi (gulizlojistik.com) üzerinden elde edilen kişisel verileriniz, veri sorumlusu sıfatıyla Güliz Şirketler Topluluğu tarafından aşağıda açıklanan kapsamda işlenmektedir.</p>
 
-  <h2>2. Topladığımız Kişisel Veriler</h2>
-  <p>Sitemizi kullanırken, doldurduğunuz formlar ve etkileşimleriniz aracılığıyla aşağıdaki veriler toplanabilir:</p>
+  <h2 data-i18n="s2.h">2. Topladığımız Kişisel Veriler</h2>
+  <p data-i18n="s2.p">Sitemizi kullanırken, doldurduğunuz formlar ve etkileşimleriniz aracılığıyla aşağıdaki veriler toplanabilir:</p>
   <ul>
-    <li><strong>Kimlik ve iletişim bilgileri:</strong> ad-soyad, telefon numarası, e-posta adresi (rezervasyon, teklif, iletişim ve iş başvurusu formlarında)</li>
-    <li><strong>Özgeçmiş bilgileri:</strong> iş başvurusu yapan adaylardan CV/özgeçmiş dosyası, deneyim ve pozisyon bilgisi</li>
-    <li><strong>Mesaj içerikleri:</strong> canlı destek sohbeti, iletişim formu ve yük bildirimi formlarında paylaştığınız metinler</li>
-    <li><strong>Teknik ve kullanım verileri:</strong> IP adresi, cihaz/tarayıcı bilgisi, ziyaret edilen sayfalar, site içi gezinme ve tıklama davranışları (hizmet kalitesini artırmak ve canlı destek sağlamak amacıyla)</li>
-    <li><strong>Çerezler:</strong> oturumunuzu ve dil tercihinizi hatırlamak için teknik çerezler kullanılır</li>
+    <li><strong data-i18n="s2.l1t">Kimlik ve iletişim bilgileri:</strong> <span data-i18n="s2.l1">ad-soyad, telefon numarası, e-posta adresi (rezervasyon, teklif, iletişim ve iş başvurusu formlarında)</span></li>
+    <li><strong data-i18n="s2.l2t">Özgeçmiş bilgileri:</strong> <span data-i18n="s2.l2">iş başvurusu yapan adaylardan CV/özgeçmiş dosyası, deneyim ve pozisyon bilgisi</span></li>
+    <li><strong data-i18n="s2.l3t">Mesaj içerikleri:</strong> <span data-i18n="s2.l3">canlı destek sohbeti, iletişim formu ve yük bildirimi formlarında paylaştığınız metinler</span></li>
+    <li><strong data-i18n="s2.l4t">Teknik ve kullanım verileri:</strong> <span data-i18n="s2.l4">IP adresi, cihaz/tarayıcı bilgisi, ziyaret edilen sayfalar, site içi gezinme ve tıklama davranışları</span></li>
+    <li><strong data-i18n="s2.l5t">Çerezler:</strong> <span data-i18n="s2.l5">oturumunuzu ve dil tercihinizi hatırlamak için teknik çerezler kullanılır</span></li>
   </ul>
 
-  <h2>3. Verilerin İşlenme Amaçları</h2>
+  <h2 data-i18n="s3.h">3. Verilerin İşlenme Amaçları</h2>
   <ul>
-    <li>Rezervasyon, teklif ve nakliye taleplerinizin karşılanması</li>
-    <li>Tarafınızla iletişime geçilmesi ve müşteri desteği sağlanması</li>
-    <li>İş başvurularının değerlendirilmesi</li>
-    <li>Canlı destek hizmetinin sunulması ve ziyaretçi taleplerine hızlı yanıt verilmesi</li>
-    <li>Site güvenliğinin ve hizmet kalitesinin sağlanması, kötüye kullanımın önlenmesi</li>
-    <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+    <li data-i18n="s3.l1">Rezervasyon, teklif ve nakliye taleplerinizin karşılanması</li>
+    <li data-i18n="s3.l2">Tarafınızla iletişime geçilmesi ve müşteri desteği sağlanması</li>
+    <li data-i18n="s3.l3">İş başvurularının değerlendirilmesi</li>
+    <li data-i18n="s3.l4">Canlı destek hizmetinin sunulması ve ziyaretçi taleplerine hızlı yanıt verilmesi</li>
+    <li data-i18n="s3.l5">Site güvenliğinin ve hizmet kalitesinin sağlanması, kötüye kullanımın önlenmesi</li>
+    <li data-i18n="s3.l6">Yasal yükümlülüklerin yerine getirilmesi</li>
   </ul>
 
-  <h2>4. Verilerin Aktarıldığı Taraflar</h2>
-  <p>Kişisel verileriniz, hizmetin sunulabilmesi için gerekli ölçüde aşağıdaki taraflarla paylaşılabilir:</p>
+  <h2 data-i18n="s4.h">4. Verilerin Aktarıldığı Taraflar</h2>
+  <p data-i18n="s4.p">Kişisel verileriniz, hizmetin sunulabilmesi için gerekli ölçüde aşağıdaki taraflarla paylaşılabilir:</p>
   <ul>
-    <li>Bildirim iletimi için <strong>Telegram</strong> (şirket içi operasyon bildirimleri)</li>
-    <li>E-posta/SMS ile bilgilendirme yapan hizmet sağlayıcılar</li>
-    <li>Sitenin barındırıldığı sunucu ve altyapı sağlayıcıları (Railway) ve içerik dağıtım ağı (Cloudflare)</li>
-    <li>Yasal olarak yetkili kamu kurum ve kuruluşları (talep edilmesi hâlinde)</li>
+    <li data-i18n="s4.l1">Bildirim iletimi için Telegram (şirket içi operasyon bildirimleri)</li>
+    <li data-i18n="s4.l2">E-posta/SMS ile bilgilendirme yapan hizmet sağlayıcılar</li>
+    <li data-i18n="s4.l3">Sitenin barındırıldığı sunucu ve altyapı sağlayıcıları (Railway) ve içerik dağıtım ağı (Cloudflare)</li>
+    <li data-i18n="s4.l4">Yasal olarak yetkili kamu kurum ve kuruluşları (talep edilmesi hâlinde)</li>
   </ul>
-  <p>Verileriniz, yukarıda belirtilenler dışında üçüncü kişilerle pazarlama amacıyla paylaşılmaz veya satılmaz.</p>
+  <p data-i18n="s4.note">Verileriniz, yukarıda belirtilenler dışında üçüncü kişilerle pazarlama amacıyla paylaşılmaz veya satılmaz.</p>
 
-  <h2>5. Verilerin Saklanma Süresi</h2>
-  <p>Kişisel verileriniz, işlenme amacının gerektirdiği süre boyunca ve ilgili mevzuatta öngörülen zamanaşımı süreleri saklı kalmak kaydıyla saklanır; bu sürenin sonunda silinir, yok edilir veya anonim hâle getirilir.</p>
+  <h2 data-i18n="s5.h">5. Verilerin Saklanma Süresi</h2>
+  <p data-i18n="s5.p">Kişisel verileriniz, işlenme amacının gerektirdiği süre boyunca ve ilgili mevzuatta öngörülen zamanaşımı süreleri saklı kalmak kaydıyla saklanır; bu sürenin sonunda silinir, yok edilir veya anonim hâle getirilir.</p>
 
-  <h2>6. KVKK Kapsamındaki Haklarınız</h2>
-  <p>KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:</p>
+  <h2 data-i18n="s6.h">6. KVKK Kapsamındaki Haklarınız</h2>
+  <p data-i18n="s6.p">KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:</p>
   <ul>
-    <li>Kişisel verinizin işlenip işlenmediğini öğrenme</li>
-    <li>İşlenmişse buna ilişkin bilgi talep etme</li>
-    <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme</li>
-    <li>Yurt içinde/yurt dışında aktarıldığı üçüncü kişileri bilme</li>
-    <li>Eksik/yanlış işlenmişse düzeltilmesini isteme</li>
-    <li>KVKK'da öngörülen şartlarda silinmesini/yok edilmesini isteme</li>
-    <li>İşlemlerin, aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
-    <li>Otomatik sistemlerle analiz sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
-    <li>Kanuna aykırı işlenme nedeniyle zararın giderilmesini talep etme</li>
+    <li data-i18n="s6.l1">Kişisel verinizin işlenip işlenmediğini öğrenme</li>
+    <li data-i18n="s6.l2">İşlenmişse buna ilişkin bilgi talep etme</li>
+    <li data-i18n="s6.l3">İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+    <li data-i18n="s6.l4">Yurt içinde/yurt dışında aktarıldığı üçüncü kişileri bilme</li>
+    <li data-i18n="s6.l5">Eksik/yanlış işlenmişse düzeltilmesini isteme</li>
+    <li data-i18n="s6.l6">KVKK'da öngörülen şartlarda silinmesini/yok edilmesini isteme</li>
+    <li data-i18n="s6.l7">İşlemlerin, aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
+    <li data-i18n="s6.l8">Otomatik sistemlerle analiz sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
+    <li data-i18n="s6.l9">Kanuna aykırı işlenme nedeniyle zararın giderilmesini talep etme</li>
   </ul>
-  <p>Bu haklarınızı kullanmak için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz.</p>
+  <p data-i18n="s6.note">Bu haklarınızı kullanmak için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz.</p>
 
-  <h2>7. Çerezler (Cookies)</h2>
-  <p>Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.</p>
+  <h2 data-i18n="s7.h">7. Çerezler (Cookies)</h2>
+  <p data-i18n="s7.p">Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.</p>
 
-  <h2>8. İletişim</h2>
+  <h2 data-i18n="s8.h">8. İletişim</h2>
   <div class="contact-box">
     <strong>Güliz Şirketler Topluluğu</strong><br>
-    Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya<br>
-    Telefon: <a href="tel:+905448654200">+90 544 865 42 00</a><br>
-    E-posta: <a href="mailto:gulizlojistik@hotmail.com">gulizlojistik@hotmail.com</a>
+    <span data-i18n="s8.addr">Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya</span><br>
+    <span data-i18n="s8.phoneLbl">Telefon:</span> <a href="tel:+905448654200">+90 544 865 42 00</a><br>
+    <span data-i18n="s8.mailLbl">E-posta:</span> <a href="mailto:gulizlojistik@hotmail.com">gulizlojistik@hotmail.com</a>
   </div>
 </div>
 
 <footer>
-  <span>© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır</span>
-  <div style="display:flex;gap:24px;">
-    <a href="/">Anasayfa</a>
-    <a href="/iletisim/">İletişim</a>
+  <span data-i18n="foot.copy">© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır</span>
+  <div class="foot-links">
+    <a href="/" data-i18n="foot.home">Ana Sayfa</a>
+    <a href="https://www.gulizvip.com.tr" target="_blank" rel="noopener" data-i18n="foot.transfer">Transfer</a>
+    <a href="/ihale/" data-i18n="foot.tender">İhale</a>
+    <a href="/gizlilik-politikasi/" data-i18n="foot.privacy">Gizlilik Politikası</a>
   </div>
 </footer>
+
+<script>
+/* Dil altyapısı anasayfa ile aynıdır: aynı localStorage anahtarı (gt_lang),
+   aynı ?lang= parametresi, aynı data-i18n yöntemi. */
+const LANGS = {
+  tr: {
+    flag: 'https://flagcdn.com/28x21/tr.png',
+    docTitle: `Gizlilik Politikası & KVKK Aydınlatma Metni – Güliz Şirketler Topluluğu`,
+    'nav.home': `Anasayfa`, 'nav.logistics': `Lojistik`, 'nav.tender': `Kamu İhalesi`,
+    'nav.construction': `İnşaat`, 'nav.hr': `İnsan Kaynakları`, 'nav.contact': `İletişim`,
+    'p.eyebrow': `KVKK · Gizlilik`,
+    'p.title': `Gizlilik Politikası & KVKK Aydınlatma Metni`,
+    'p.intro': `Güliz Şirketler Topluluğu olarak kişisel verilerinizin güvenliğine önem veriyoruz. Bu sayfa, hangi verileri hangi amaçla topladığımızı ve haklarınızı açıklar.`,
+    'p.updated': `Son güncelleme: 9 Ağustos 2026`,
+    's1.h': `1. Veri Sorumlusu`,
+    's1.p': `6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, bu internet sitesi (gulizlojistik.com) üzerinden elde edilen kişisel verileriniz, veri sorumlusu sıfatıyla Güliz Şirketler Topluluğu tarafından aşağıda açıklanan kapsamda işlenmektedir.`,
+    's2.h': `2. Topladığımız Kişisel Veriler`,
+    's2.p': `Sitemizi kullanırken, doldurduğunuz formlar ve etkileşimleriniz aracılığıyla aşağıdaki veriler toplanabilir:`,
+    's2.l1t': `Kimlik ve iletişim bilgileri:`, 's2.l1': `ad-soyad, telefon numarası, e-posta adresi (rezervasyon, teklif, iletişim ve iş başvurusu formlarında)`,
+    's2.l2t': `Özgeçmiş bilgileri:`, 's2.l2': `iş başvurusu yapan adaylardan CV/özgeçmiş dosyası, deneyim ve pozisyon bilgisi`,
+    's2.l3t': `Mesaj içerikleri:`, 's2.l3': `canlı destek sohbeti, iletişim formu ve yük bildirimi formlarında paylaştığınız metinler`,
+    's2.l4t': `Teknik ve kullanım verileri:`, 's2.l4': `IP adresi, cihaz/tarayıcı bilgisi, ziyaret edilen sayfalar, site içi gezinme ve tıklama davranışları`,
+    's2.l5t': `Çerezler:`, 's2.l5': `oturumunuzu ve dil tercihinizi hatırlamak için teknik çerezler kullanılır`,
+    's3.h': `3. Verilerin İşlenme Amaçları`,
+    's3.l1': `Rezervasyon, teklif ve nakliye taleplerinizin karşılanması`,
+    's3.l2': `Tarafınızla iletişime geçilmesi ve müşteri desteği sağlanması`,
+    's3.l3': `İş başvurularının değerlendirilmesi`,
+    's3.l4': `Canlı destek hizmetinin sunulması ve ziyaretçi taleplerine hızlı yanıt verilmesi`,
+    's3.l5': `Site güvenliğinin ve hizmet kalitesinin sağlanması, kötüye kullanımın önlenmesi`,
+    's3.l6': `Yasal yükümlülüklerin yerine getirilmesi`,
+    's4.h': `4. Verilerin Aktarıldığı Taraflar`,
+    's4.p': `Kişisel verileriniz, hizmetin sunulabilmesi için gerekli ölçüde aşağıdaki taraflarla paylaşılabilir:`,
+    's4.l1': `Bildirim iletimi için Telegram (şirket içi operasyon bildirimleri)`,
+    's4.l2': `E-posta/SMS ile bilgilendirme yapan hizmet sağlayıcılar`,
+    's4.l3': `Sitenin barındırıldığı sunucu ve altyapı sağlayıcıları (Railway) ve içerik dağıtım ağı (Cloudflare)`,
+    's4.l4': `Yasal olarak yetkili kamu kurum ve kuruluşları (talep edilmesi hâlinde)`,
+    's4.note': `Verileriniz, yukarıda belirtilenler dışında üçüncü kişilerle pazarlama amacıyla paylaşılmaz veya satılmaz.`,
+    's5.h': `5. Verilerin Saklanma Süresi`,
+    's5.p': `Kişisel verileriniz, işlenme amacının gerektirdiği süre boyunca ve ilgili mevzuatta öngörülen zamanaşımı süreleri saklı kalmak kaydıyla saklanır; bu sürenin sonunda silinir, yok edilir veya anonim hâle getirilir.`,
+    's6.h': `6. KVKK Kapsamındaki Haklarınız`,
+    's6.p': `KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:`,
+    's6.l1': `Kişisel verinizin işlenip işlenmediğini öğrenme`,
+    's6.l2': `İşlenmişse buna ilişkin bilgi talep etme`,
+    's6.l3': `İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme`,
+    's6.l4': `Yurt içinde/yurt dışında aktarıldığı üçüncü kişileri bilme`,
+    's6.l5': `Eksik/yanlış işlenmişse düzeltilmesini isteme`,
+    's6.l6': `KVKK'da öngörülen şartlarda silinmesini/yok edilmesini isteme`,
+    's6.l7': `İşlemlerin, aktarıldığı üçüncü kişilere bildirilmesini isteme`,
+    's6.l8': `Otomatik sistemlerle analiz sonucu aleyhinize bir sonucun ortaya çıkmasına itiraz etme`,
+    's6.l9': `Kanuna aykırı işlenme nedeniyle zararın giderilmesini talep etme`,
+    's6.note': `Bu haklarınızı kullanmak için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz.`,
+    's7.h': `7. Çerezler (Cookies)`,
+    's7.p': `Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.`,
+    's8.h': `8. İletişim`,
+    's8.addr': `Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya`,
+    's8.phoneLbl': `Telefon:`, 's8.mailLbl': `E-posta:`,
+    'foot.copy': `© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır`,
+    'foot.home': `Ana Sayfa`, 'foot.transfer': `Transfer`, 'foot.tender': `İhale`, 'foot.privacy': `Gizlilik Politikası`
+  },
+
+  en: {
+    flag: 'https://flagcdn.com/28x21/us.png',
+    docTitle: `Privacy Policy & KVKK Disclosure Notice – Güliz Şirketler Topluluğu`,
+    'nav.home': `Home`, 'nav.logistics': `Logistics`, 'nav.tender': `Public Tender`,
+    'nav.construction': `Construction`, 'nav.hr': `Human Resources`, 'nav.contact': `Contact`,
+    'p.eyebrow': `KVKK · Privacy`,
+    'p.title': `Privacy Policy & KVKK Disclosure Notice`,
+    'p.intro': `At Güliz Şirketler Topluluğu we take the security of your personal data seriously. This page explains which data we collect, for what purpose, and what rights you have.`,
+    'p.updated': `Last updated: 9 August 2026`,
+    's1.h': `1. Data Controller`,
+    's1.p': `Under Turkish Personal Data Protection Law No. 6698 ("KVKK"), personal data obtained through this website (gulizlojistik.com) is processed by Güliz Şirketler Topluluğu, acting as data controller, within the scope described below.`,
+    's2.h': `2. Personal Data We Collect`,
+    's2.p': `While you use our website, the following data may be collected through the forms you fill in and your interactions with the site:`,
+    's2.l1t': `Identity and contact details:`, 's2.l1': `full name, phone number, e-mail address (in booking, quote, contact and job application forms)`,
+    's2.l2t': `CV information:`, 's2.l2': `CV/résumé file, experience and position details provided by job applicants`,
+    's2.l3t': `Message content:`, 's2.l3': `text you share in live chat, the contact form and cargo request forms`,
+    's2.l4t': `Technical and usage data:`, 's2.l4': `IP address, device and browser information, pages visited, on-site navigation and click behaviour`,
+    's2.l5t': `Cookies:`, 's2.l5': `technical cookies are used to remember your session and language preference`,
+    's3.h': `3. Purposes of Processing`,
+    's3.l1': `Fulfilling your booking, quote and transport requests`,
+    's3.l2': `Contacting you and providing customer support`,
+    's3.l3': `Evaluating job applications`,
+    's3.l4': `Providing live support and responding quickly to visitor requests`,
+    's3.l5': `Ensuring site security and service quality, and preventing misuse`,
+    's3.l6': `Fulfilling legal obligations`,
+    's4.h': `4. Parties We Share Data With`,
+    's4.p': `Your personal data may be shared with the following parties, only to the extent necessary to deliver the service:`,
+    's4.l1': `Telegram, for delivering notifications (internal operational alerts)`,
+    's4.l2': `Service providers that send notifications by e-mail or SMS`,
+    's4.l3': `The hosting and infrastructure provider (Railway) and the content delivery network (Cloudflare)`,
+    's4.l4': `Legally authorised public authorities and institutions (upon official request)`,
+    's4.note': `Apart from the parties listed above, your data is not shared with or sold to third parties for marketing purposes.`,
+    's5.h': `5. Data Retention Period`,
+    's5.p': `Your personal data is retained for as long as the purpose of processing requires, subject to the statutory limitation periods set out in the relevant legislation; at the end of that period it is deleted, destroyed or anonymised.`,
+    's6.h': `6. Your Rights Under KVKK`,
+    's6.p': `Under Article 11 of the KVKK you have the following rights:`,
+    's6.l1': `To learn whether your personal data is being processed`,
+    's6.l2': `To request information if it has been processed`,
+    's6.l3': `To learn the purpose of processing and whether the data is used accordingly`,
+    's6.l4': `To know the third parties in Türkiye or abroad to whom the data is transferred`,
+    's6.l5': `To request correction if the data is incomplete or inaccurate`,
+    's6.l6': `To request deletion or destruction under the conditions set out in the KVKK`,
+    's6.l7': `To request that such actions be notified to the third parties concerned`,
+    's6.l8': `To object to an adverse outcome produced solely by automated analysis`,
+    's6.l9': `To claim compensation for damage caused by unlawful processing`,
+    's6.note': `To exercise these rights, you can reach us through the contact channels below.`,
+    's7.h': `7. Cookies`,
+    's7.p': `Our website uses cookies and similar technologies to remember your session and language preference, to keep the live support service running, and to analyse site usage in order to improve service quality. You can manage or block cookies in your browser settings; however, some parts of the site (such as live support) may then not work as expected.`,
+    's8.h': `8. Contact`,
+    's8.addr': `Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya, Türkiye`,
+    's8.phoneLbl': `Phone:`, 's8.mailLbl': `E-mail:`,
+    'foot.copy': `© 2025 Güliz Şirketler Topluluğu · All rights reserved`,
+    'foot.home': `Home`, 'foot.transfer': `Transfer`, 'foot.tender': `Tenders`, 'foot.privacy': `Privacy Policy`
+  },
+
+  ru: {
+    flag: 'https://flagcdn.com/28x21/ru.png',
+    docTitle: `Политика конфиденциальности и уведомление KVKK – Güliz Şirketler Topluluğu`,
+    'nav.home': `Главная`, 'nav.logistics': `Логистика`, 'nav.tender': `Госзакупки`,
+    'nav.construction': `Строительство`, 'nav.hr': `Персонал`, 'nav.contact': `Контакты`,
+    'p.eyebrow': `KVKK · Конфиденциальность`,
+    'p.title': `Политика конфиденциальности и уведомление KVKK`,
+    'p.intro': `Компания Güliz Şirketler Topluluğu придаёт большое значение безопасности ваших персональных данных. На этой странице описано, какие данные мы собираем, с какой целью и какими правами вы обладаете.`,
+    'p.updated': `Последнее обновление: 9 августа 2026 г.`,
+    's1.h': `1. Оператор персональных данных`,
+    's1.p': `В соответствии с Законом Турции № 6698 о защите персональных данных («KVKK») персональные данные, полученные через этот сайт (gulizlojistik.com), обрабатываются компанией Güliz Şirketler Topluluğu в качестве оператора данных в объёме, описанном ниже.`,
+    's2.h': `2. Собираемые персональные данные`,
+    's2.p': `При использовании нашего сайта через заполняемые вами формы и ваши действия могут собираться следующие данные:`,
+    's2.l1t': `Идентификационные и контактные данные:`, 's2.l1': `имя и фамилия, номер телефона, адрес электронной почты (в формах бронирования, запроса цены, обратной связи и трудоустройства)`,
+    's2.l2t': `Данные резюме:`, 's2.l2': `файл резюме, сведения об опыте и должности, предоставленные соискателями`,
+    's2.l3t': `Содержание сообщений:`, 's2.l3': `тексты, отправленные вами в онлайн-чате, форме обратной связи и форме заявки на груз`,
+    's2.l4t': `Технические данные и данные об использовании:`, 's2.l4': `IP-адрес, сведения об устройстве и браузере, посещённые страницы, навигация и клики на сайте`,
+    's2.l5t': `Файлы cookie:`, 's2.l5': `технические cookie используются для запоминания вашей сессии и языковых предпочтений`,
+    's3.h': `3. Цели обработки данных`,
+    's3.l1': `Выполнение ваших заявок на бронирование, расчёт стоимости и перевозку`,
+    's3.l2': `Связь с вами и предоставление клиентской поддержки`,
+    's3.l3': `Рассмотрение заявлений о приёме на работу`,
+    's3.l4': `Работа онлайн-поддержки и оперативные ответы на запросы посетителей`,
+    's3.l5': `Обеспечение безопасности сайта и качества услуг, предотвращение злоупотреблений`,
+    's3.l6': `Исполнение юридических обязательств`,
+    's4.h': `4. Кому передаются данные`,
+    's4.p': `Ваши персональные данные могут передаваться следующим сторонам только в объёме, необходимом для оказания услуги:`,
+    's4.l1': `Telegram — для доставки уведомлений (внутренние операционные оповещения)`,
+    's4.l2': `Поставщики услуг, рассылающие уведомления по электронной почте или SMS`,
+    's4.l3': `Провайдер хостинга и инфраструктуры (Railway) и сеть доставки контента (Cloudflare)`,
+    's4.l4': `Уполномоченные государственные органы и учреждения (по официальному запросу)`,
+    's4.note': `За исключением перечисленных выше сторон, ваши данные не передаются третьим лицам и не продаются в маркетинговых целях.`,
+    's5.h': `5. Срок хранения данных`,
+    's5.p': `Ваши персональные данные хранятся в течение срока, необходимого для целей обработки, с учётом сроков давности, предусмотренных законодательством; по истечении этого срока они удаляются, уничтожаются или обезличиваются.`,
+    's6.h': `6. Ваши права по закону KVKK`,
+    's6.p': `В соответствии со статьёй 11 закона KVKK вы обладаете следующими правами:`,
+    's6.l1': `Узнать, обрабатываются ли ваши персональные данные`,
+    's6.l2': `Запросить информацию, если обработка производилась`,
+    's6.l3': `Узнать цель обработки и используются ли данные в соответствии с ней`,
+    's6.l4': `Знать третьих лиц внутри страны и за рубежом, которым передаются данные`,
+    's6.l5': `Требовать исправления неполных или неточных данных`,
+    's6.l6': `Требовать удаления или уничтожения данных на условиях, предусмотренных KVKK`,
+    's6.l7': `Требовать уведомления третьих лиц о таких действиях`,
+    's6.l8': `Возражать против неблагоприятного результата, полученного исключительно путём автоматизированного анализа`,
+    's6.l9': `Требовать возмещения ущерба, причинённого незаконной обработкой`,
+    's6.note': `Для реализации этих прав вы можете связаться с нами по указанным ниже контактам.`,
+    's7.h': `7. Файлы cookie`,
+    's7.p': `Наш сайт использует файлы cookie и аналогичные технологии, чтобы запоминать вашу сессию и языковые предпочтения, обеспечивать работу онлайн-поддержки и анализировать использование сайта для повышения качества обслуживания. Вы можете управлять файлами cookie или блокировать их в настройках браузера, однако тогда некоторые разделы сайта (например, онлайн-поддержка) могут работать некорректно.`,
+    's8.h': `8. Контакты`,
+    's8.addr': `Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya, Турция`,
+    's8.phoneLbl': `Телефон:`, 's8.mailLbl': `Эл. почта:`,
+    'foot.copy': `© 2025 Güliz Şirketler Topluluğu · Все права защищены`,
+    'foot.home': `Главная`, 'foot.transfer': `Трансфер`, 'foot.tender': `Тендеры`, 'foot.privacy': `Политика конфиденциальности`
+  }
+};
+
+const OG_LOCALE = { tr: 'tr_TR', en: 'en_US', ru: 'ru_RU' };
+let currentLang = localStorage.getItem('gt_lang') || 'tr';
+
+function setLang(lang) {
+  if (!LANGS[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('gt_lang', lang);
+
+  document.getElementById('currentFlagImg').src = LANGS[lang].flag;
+  document.getElementById('currentFlagImg').alt = lang.toUpperCase();
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (LANGS[lang][key] !== undefined) el.textContent = LANGS[lang][key];
+  });
+
+  document.documentElement.lang = lang;
+  if (LANGS[lang].docTitle) document.title = LANGS[lang].docTitle;
+  const ogl = document.querySelector('meta[property="og:locale"]');
+  if (ogl) ogl.setAttribute('content', OG_LOCALE[lang] || 'tr_TR');
+
+  document.getElementById('langDropdown').classList.remove('open');
+}
+
+function toggleLangMenu() {
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+
+document.addEventListener('click', function (e) {
+  const sw = document.getElementById('langSwitcher');
+  if (sw && !sw.contains(e.target)) {
+    document.getElementById('langDropdown').classList.remove('open');
+  }
+});
+
+// ?lang=en / ?lang=ru
+(function () {
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang && LANGS[urlLang]) {
+    currentLang = urlLang;
+    localStorage.setItem('gt_lang', urlLang);
+  }
+})();
+
+if (currentLang !== 'tr') setLang(currentLang);
+else document.getElementById('currentFlagImg').src = LANGS.tr.flag;
+
+// Mobil menü
+(function () {
+  const toggle = document.getElementById('navToggle');
+  const menu = document.getElementById('navMenu');
+  if (toggle && menu) toggle.addEventListener('click', () => menu.classList.toggle('open'));
+})();
+</script>
 
 </body>
 </html>

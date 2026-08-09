@@ -618,6 +618,23 @@
     border: 1px solid rgba(0,0,0,0.07);
   }
   .lang-dropdown.open { display: block; }
+  .lang-switcher:hover .lang-dropdown { display: block; }   /* bayrağın üstüne gelince aç */
+  .lang-dropdown::before { content:''; position:absolute; top:-10px; left:0; right:0; height:10px; }
+
+  /* ── SİTE ALT BİLGİSİ ── */
+  .site-footer {
+    background: #0a1235;
+    padding: 32px 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .site-footer span { font-size: 12px; color: rgba(255,255,255,0.35); }
+  .site-footer .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
+  .site-footer a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 12px; }
+  .site-footer a:hover { color: #fff; }
+  @media (max-width: 768px) {
+    .site-footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+  }
   .lang-dropdown button {
     display: flex;
     align-items: center;
@@ -2326,6 +2343,11 @@ const LANGS = {
     'fleet.status.maintenance': 'Bakımda',
     'fleet.status.waiting':     'Bekliyor',
     'fleet.status.rest':        'İstirahat',
+    'foot.copy':     '© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır',
+    'foot.home':     'Ana Sayfa',
+    'foot.transfer': 'Transfer',
+    'foot.tender':   'İhale',
+    'foot.privacy':  'Gizlilik Politikası',
   },
   en: {
     flag: 'https://flagcdn.com/28x21/us.png',
@@ -2384,6 +2406,11 @@ const LANGS = {
     'fleet.status.maintenance': 'Maintenance',
     'fleet.status.waiting':     'Waiting',
     'fleet.status.rest':        'Resting',
+    'foot.copy':     '© 2025 Güliz Şirketler Topluluğu · All rights reserved',
+    'foot.home':     'Home',
+    'foot.transfer': 'Transfer',
+    'foot.tender':   'Tenders',
+    'foot.privacy':  'Privacy Policy',
   },
   ru: {
     flag: 'https://flagcdn.com/28x21/ru.png',
@@ -2442,6 +2469,11 @@ const LANGS = {
     'fleet.status.maintenance': 'На ТО',
     'fleet.status.waiting':     'Ожидает',
     'fleet.status.rest':        'Отдыхает',
+    'foot.copy':     '© 2025 Güliz Şirketler Topluluğu · Все права защищены',
+    'foot.home':     'Главная',
+    'foot.transfer': 'Трансфер',
+    'foot.tender':   'Тендеры',
+    'foot.privacy':  'Политика конфиденциальности',
   }
 };
 
@@ -2558,6 +2590,16 @@ if (currentLang !== 'tr') setLang(currentLang);
   <div style="color:rgba(255,255,255,0.45);font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;">Erişim Engellendi</div>
   <div style="color:rgba(255,255,255,0.2);font-size:11px;font-family:'Montserrat',sans-serif;">Kapatmak için sağ üst köşedeki ✕</div>
 </div>
+
+<footer class="site-footer">
+  <span data-i18n="foot.copy">© 2025 Güliz Şirketler Topluluğu · Tüm hakları saklıdır</span>
+  <div class="foot-links">
+    <a href="/" data-i18n="foot.home">Ana Sayfa</a>
+    <a href="https://www.gulizvip.com.tr" target="_blank" rel="noopener" data-i18n="foot.transfer">Transfer</a>
+    <a href="/ihale/" data-i18n="foot.tender">İhale</a>
+    <a href="/gizlilik-politikasi/" data-i18n="foot.privacy">Gizlilik Politikası</a>
+  </div>
+</footer>
 
 </body>
 </html>
