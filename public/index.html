@@ -1289,21 +1289,10 @@ function drawRouteLines() {
   _routeLines.forEach(l => l.remove());
   _routeLines = [];
 
-  // Simülasyondaki araçların izlediği gerçek karayolu güzergâhı
-  if (TRUCKS.some(t => t._simulated)) {
-    FLEET_LEGS.forEach(l => {
-      _routeLines.push(
-        L.polyline(l.p, { color:'#f59e0b', weight:2.5, opacity:0.28, lineJoin:'round' }).addTo(atMap)
-      );
-    });
-    FLEET_LEGS.forEach(l => {
-      _routeLines.push(
-        L.circleMarker(l.p[l.p.length-1], {
-          radius:3.5, fillColor:'#fbbf24', color:'#fff', weight:1, fillOpacity:0.75
-        }).bindTooltip(l.t, { direction:'top' }).addTo(atMap)
-      );
-    });
-  }
+  /* NOT: Filo güzergâhı (FLEET_LEGS) haritada BİLEREK çizilmez.
+     Sabit rota ve durak noktaları görünür olursa araçların aynı hattı
+     tekrarladığı anlaşılır. Araçlar arka planda bu güzergâhı izlemeye
+     devam eder; ziyaretçi yalnızca araçların konumunu görür. */
 
   TRUCKS.forEach(t => {
     if (t.durum !== 'seferde' || !t.kalkis_lat || !t.varis_lat) return;
