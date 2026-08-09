@@ -1231,6 +1231,22 @@ function fleetStateAtHour(hourInCycle) {
            legIdx: last.leg, fromLabel: last.fromLabel, toLabel: last.toLabel };
 }
 
+/* ── HIZ: her araç farklı bir onluk kuşakta ──
+   Aynı anda iki araç aynı onluğa düşmez (ör. 34 ve 61 olur, 52 ve 55 olmaz).
+   Kuşaklar ~18 dakikada bir kayar, böylece bir araç hep aynı hızda kalmaz.
+   Kuşak içinde 0-9 arası sapma verilir; sapma 0 olduğunda 30, 40, 60 gibi
+   tam onluk değerler de çıkar. Kamyon azami hızı 84 km/s ile sınırlıdır. */
+const FLEET_SPEED_BANDS = [20, 30, 40, 50, 60, 70, 80];
+
+function fleetSpeed(idx, nowMs) {
+  const rot  = Math.floor(nowMs / 1080000);                    // 18 dk
+  const band = FLEET_SPEED_BANDS[(idx + rot) % FLEET_SPEED_BANDS.length];
+  const slot = Math.floor(nowMs / 45000);                      // 45 sn
+  const span = band >= 80 ? 5 : 10;                            // 80 kuşağı: 80-84
+  const off  = Math.floor(noise(idx * 12.9 + slot * 3.7) * span);
+  return band + off;
+}
+
 /* idx: 0..4 — döngü boyunca eşit aralıklı faz, 5 araç ülkenin farklı yerlerinde */
 function fleetSimState(idx, nowMs) {
   const phaseH  = (FLEET_CYCLE_H / FLEET_COUNT) * (idx % FLEET_COUNT);
@@ -1240,8 +1256,7 @@ function fleetSimState(idx, nowMs) {
   if (st.type === 'drive') {
     const slot = Math.floor(nowMs / 25000);   // ~25 sn'lik dilimler
     atLight = noise(idx * 31.7 + slot * 2.13) < 0.09;   // ~%9 kırmızı ışık
-    const wave = Math.sin(nowMs / 220000 + idx * 5.5) * 6;
-    speed = atLight ? 0 : Math.min(78, Math.max(38, Math.round(FLEET_AVG_SPEED + wave)));
+    speed = atLight ? 0 : fleetSpeed(idx, nowMs);
   }
   return { ...st, atLight, speed };
 }
@@ -1357,9 +1372,7 @@ function getTruckSpeed(t, idx, nowMs) {
   if (t.durum !== 'seferde') return 0;
   const h = new Date(nowMs).getHours();
   if (h < 6 || h >= 22) return 0; // gece istirahat
-  const seed = (t.plaka||'').length * 7 + idx * 13;
-  const wave = Math.sin(nowMs / 240000 + seed) * 7;
-  return Math.min(79, Math.max(42, Math.round(72 + wave)));
+  return fleetSpeed(idx, nowMs);  // simülasyondakilerle aynı kuşak mantığı
 }
 
 /* Durum etiketi */
