@@ -194,4 +194,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://gulizlojistik.com/ik/"/>
   </url>
 
+  <!-- ── GİZLİLİK POLİTİKASI ── -->
+  <url>
+    <loc>https://gulizlojistik.com/gizlilik-politikasi/</loc>
+    <lastmod>2026-08-09</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
 </urlset>
