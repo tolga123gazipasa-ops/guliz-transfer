@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="GLZ">
+  <!-- Sekme ikonu: küçük boyutlarda okunaklı olsun diye yalnızca GLZ.
+       Tam logo (GÜLİZ / LOJİSTİK) icon-192.svg ve icon-512.svg dosyalarındadır. -->
+  <defs>
+    <clipPath id="glzRound"><rect width="192" height="192" rx="34"/></clipPath>
+  </defs>
+  <g clip-path="url(#glzRound)">
+    <rect width="192" height="192" fill="#0D1F5C"/>
+    <rect x="0" y="0"   width="192" height="24" fill="#CC1F2D"/>
+    <rect x="0" y="168" width="192" height="24" fill="#1A3A8F"/>
+    <text x="96" y="131" font-family="Liberation Sans, Arial, Helvetica, sans-serif"
+          font-size="86" font-weight="bold" fill="#FFFFFF"
+          text-anchor="middle" textLength="140" lengthAdjust="spacingAndGlyphs">GLZ</text>
+  </g>
+</svg>
