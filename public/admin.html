@@ -3212,7 +3212,7 @@ async function saveProfile() {
   if (!name || !email) { showMsg('profileMsg','Ad ve e-posta zorunlu','error'); return; }
 
   try {
-    const data = await api('/auth/update-profile', {
+    const data = await api('/api/auth/update-profile', {
       method: 'PUT',
       body: JSON.stringify({ name, email })
     });
@@ -3235,7 +3235,7 @@ async function changePassword() {
   if (newPw !== confirm)  { showMsg('passMsg','Yeni şifreler eşleşmiyor','error'); return; }
 
   try {
-    const data = await api('/auth/change-password', {
+    const data = await api('/api/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ currentPassword: current, newPassword: newPw })
     });
