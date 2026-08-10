@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<!-- Google tag (gtag.js) — Google Ads AW-18372593815 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18372593815"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18372593815');
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="/manifest.json">
@@ -190,6 +199,7 @@ footer a:hover{color:#fff;}
     <li data-i18n="s4.l2">E-posta/SMS ile bilgilendirme yapan hizmet sağlayıcılar</li>
     <li data-i18n="s4.l3">Sitenin barındırıldığı sunucu ve altyapı sağlayıcıları (Railway) ve içerik dağıtım ağı (Cloudflare)</li>
     <li data-i18n="s4.l4">Yasal olarak yetkili kamu kurum ve kuruluşları (talep edilmesi hâlinde)</li>
+    <li data-i18n="s4.l5">Reklam ölçümü ve yeniden pazarlama için Google (Google Ads etiketi)</li>
   </ul>
   <p data-i18n="s4.note">Verileriniz, yukarıda belirtilenler dışında üçüncü kişilerle pazarlama amacıyla paylaşılmaz veya satılmaz.</p>
 
@@ -212,7 +222,7 @@ footer a:hover{color:#fff;}
   <p data-i18n="s6.note">Bu haklarınızı kullanmak için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz.</p>
 
   <h2 data-i18n="s7.h">7. Çerezler (Cookies)</h2>
-  <p data-i18n="s7.p">Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.</p>
+  <p data-i18n="s7.p">Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Ayrıca reklam ölçümü ve yeniden pazarlama için Google Ads çerezleri kullanılmaktadır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.</p>
 
   <h2 data-i18n="s8.h">8. İletişim</h2>
   <div class="contact-box">
@@ -268,6 +278,7 @@ const LANGS = {
     's4.l2': `E-posta/SMS ile bilgilendirme yapan hizmet sağlayıcılar`,
     's4.l3': `Sitenin barındırıldığı sunucu ve altyapı sağlayıcıları (Railway) ve içerik dağıtım ağı (Cloudflare)`,
     's4.l4': `Yasal olarak yetkili kamu kurum ve kuruluşları (talep edilmesi hâlinde)`,
+    's4.l5': `Reklam ölçümü ve yeniden pazarlama için Google (Google Ads etiketi)`,
     's4.note': `Verileriniz, yukarıda belirtilenler dışında üçüncü kişilerle pazarlama amacıyla paylaşılmaz veya satılmaz.`,
     's5.h': `5. Verilerin Saklanma Süresi`,
     's5.p': `Kişisel verileriniz, işlenme amacının gerektirdiği süre boyunca ve ilgili mevzuatta öngörülen zamanaşımı süreleri saklı kalmak kaydıyla saklanır; bu sürenin sonunda silinir, yok edilir veya anonim hâle getirilir.`,
@@ -284,7 +295,7 @@ const LANGS = {
     's6.l9': `Kanuna aykırı işlenme nedeniyle zararın giderilmesini talep etme`,
     's6.note': `Bu haklarınızı kullanmak için aşağıdaki iletişim kanallarından bize ulaşabilirsiniz.`,
     's7.h': `7. Çerezler (Cookies)`,
-    's7.p': `Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.`,
+    's7.p': `Sitemiz, oturum bilgilerinizi ve dil tercihinizi hatırlamak, canlı destek hizmetini sürdürmek ve site kullanımını analiz ederek hizmet kalitesini artırmak amacıyla çerezler ve benzeri teknolojiler kullanır. Ayrıca reklam ölçümü ve yeniden pazarlama için Google Ads çerezleri kullanılmaktadır. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya engelleyebilirsiniz; ancak bu durumda sitenin bazı bölümleri (canlı destek gibi) beklendiği gibi çalışmayabilir.`,
     's8.h': `8. İletişim`,
     's8.addr': `Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya`,
     's8.phoneLbl': `Telefon:`, 's8.mailLbl': `E-posta:`,
@@ -323,6 +334,7 @@ const LANGS = {
     's4.l2': `Service providers that send notifications by e-mail or SMS`,
     's4.l3': `The hosting and infrastructure provider (Railway) and the content delivery network (Cloudflare)`,
     's4.l4': `Legally authorised public authorities and institutions (upon official request)`,
+    's4.l5': `Google, for advertising measurement and remarketing (Google Ads tag)`,
     's4.note': `Apart from the parties listed above, your data is not shared with or sold to third parties for marketing purposes.`,
     's5.h': `5. Data Retention Period`,
     's5.p': `Your personal data is retained for as long as the purpose of processing requires, subject to the statutory limitation periods set out in the relevant legislation; at the end of that period it is deleted, destroyed or anonymised.`,
@@ -339,7 +351,7 @@ const LANGS = {
     's6.l9': `To claim compensation for damage caused by unlawful processing`,
     's6.note': `To exercise these rights, you can reach us through the contact channels below.`,
     's7.h': `7. Cookies`,
-    's7.p': `Our website uses cookies and similar technologies to remember your session and language preference, to keep the live support service running, and to analyse site usage in order to improve service quality. You can manage or block cookies in your browser settings; however, some parts of the site (such as live support) may then not work as expected.`,
+    's7.p': `Our website uses cookies and similar technologies to remember your session and language preference, to keep the live support service running, and to analyse site usage in order to improve service quality. Google Ads cookies are also used for advertising measurement and remarketing. You can manage or block cookies in your browser settings; however, some parts of the site (such as live support) may then not work as expected.`,
     's8.h': `8. Contact`,
     's8.addr': `Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya, Türkiye`,
     's8.phoneLbl': `Phone:`, 's8.mailLbl': `E-mail:`,
@@ -378,6 +390,7 @@ const LANGS = {
     's4.l2': `Поставщики услуг, рассылающие уведомления по электронной почте или SMS`,
     's4.l3': `Провайдер хостинга и инфраструктуры (Railway) и сеть доставки контента (Cloudflare)`,
     's4.l4': `Уполномоченные государственные органы и учреждения (по официальному запросу)`,
+    's4.l5': `Google — для оценки эффективности рекламы и ремаркетинга (тег Google Ads)`,
     's4.note': `За исключением перечисленных выше сторон, ваши данные не передаются третьим лицам и не продаются в маркетинговых целях.`,
     's5.h': `5. Срок хранения данных`,
     's5.p': `Ваши персональные данные хранятся в течение срока, необходимого для целей обработки, с учётом сроков давности, предусмотренных законодательством; по истечении этого срока они удаляются, уничтожаются или обезличиваются.`,
@@ -394,7 +407,7 @@ const LANGS = {
     's6.l9': `Требовать возмещения ущерба, причинённого незаконной обработкой`,
     's6.note': `Для реализации этих прав вы можете связаться с нами по указанным ниже контактам.`,
     's7.h': `7. Файлы cookie`,
-    's7.p': `Наш сайт использует файлы cookie и аналогичные технологии, чтобы запоминать вашу сессию и языковые предпочтения, обеспечивать работу онлайн-поддержки и анализировать использование сайта для повышения качества обслуживания. Вы можете управлять файлами cookie или блокировать их в настройках браузера, однако тогда некоторые разделы сайта (например, онлайн-поддержка) могут работать некорректно.`,
+    's7.p': `Наш сайт использует файлы cookie и аналогичные технологии, чтобы запоминать вашу сессию и языковые предпочтения, обеспечивать работу онлайн-поддержки и анализировать использование сайта для повышения качества обслуживания. Также используются файлы cookie Google Ads для оценки эффективности рекламы и ремаркетинга. Вы можете управлять файлами cookie или блокировать их в настройках браузера, однако тогда некоторые разделы сайта (например, онлайн-поддержка) могут работать некорректно.`,
     's8.h': `8. Контакты`,
     's8.addr': `Pazarcı Mah. 10003. Sk. No:32/7, Gazipaşa / Antalya, Турция`,
     's8.phoneLbl': `Телефон:`, 's8.mailLbl': `Эл. почта:`,
